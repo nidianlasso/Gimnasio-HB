@@ -28,6 +28,9 @@ def administrator():
 def profile_member():
     return render_template('member/profile.html')
 
+@app.route('/users-manage')
+def manage_users():
+    return render_template('Administrator/manage_users.html')
 
 if __name__ =='__main__':
     app.run(port =4000, debug =True)
