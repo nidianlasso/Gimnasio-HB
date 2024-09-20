@@ -38,3 +38,10 @@ def check_credentials(identificacion, contrasena):
     print(info_user)
     return info_user
 #---VERIFICAR LAS CREDENCIALES DE LOS USUARIOS
+
+#OBTENER EL LISTADO DE MIEMBROS
+def lista_miembros():
+    cursor.execute("SELECT u.identificacion, u.nombre, u.apellido, u.edad, u.correo, u.telefono FROM usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE r.nombre = 'Miembro'")
+    listado_miembros = cursor.fetchall()
+    return listado_miembros
+#OBTENER EL LISTADO DE MIEMBROS
