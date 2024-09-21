@@ -23,9 +23,6 @@ def validarLogin(identificacion, contrasena):
     if info_user:
         rol = info_user[0]  # Obtener el rol del usuario
         resp = make_response()  # Crear la respuesta base
-        
-        # Establecer la cookie de 'identificacion' por 24 horas (86400 segundos)
-        resp.set_cookie('identificacion', identificacion, max_age=86400)  
 
         # Redirigir según el rol del usuario
         if rol == "Administrador":
@@ -34,6 +31,7 @@ def validarLogin(identificacion, contrasena):
             resp = make_response(redirect(url_for('profile_member')))
         
         # Devolver la respuesta con la cookie establecida
+        resp.set_cookie('identificacion', identificacion)  
         return resp  
 
     # Si las credenciales son incorrectas, mostrar error
@@ -42,31 +40,46 @@ def validarLogin(identificacion, contrasena):
 
 # Función para verificar las credenciales en la base de datos
 def check_credentials(identificacion, contrasena):
-    query = """
-        SELECT r.nombre 
-        FROM bd_gimnasio2.usuario u 
-        INNER JOIN rol r ON u.id_rol = r.id_rol 
-        WHERE identificacion = %s AND contrasena = %s
-    """
-    cursor.execute(query, (identificacion, contrasena))
+    cursor.execute("SELECT r.nombre FROM bd_gimnasio2.usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE identificacion = %s AND contrasena = %s", (identificacion, contrasena))
     info_user = cursor.fetchone()
-    
     print("Resultado de la consulta para el login del usuario:")
     print(info_user)  # Verificación del resultado de la consulta para depurar
     return info_user
 
 #--GUARDAR LA COKKIE
-def login_required(f):
+def login_required_admin(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         # Verificar si la cookie 'identificacion' está presente
         identificacion = request.cookies.get('identificacion')
-        
-        if not identificacion:  # Si no hay cookie, redirigir al login
-            print("Usuario no autenticado. Redirigiendo al login.")
+        if identificacion:
+            cursor.execute("SELECT r.nombre FROM bd_gimnasio2.usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE u.identificacion = %s AND r.nombre ='Administrador'", (identificacion))
+            rol_user = cursor.fetchall()
+            print(rol_user, "ROOOOOL DEL USUARIO")
+            if len(rol_user) == 0:  # Si no hay cookie, redirigir al login
+                print("Usuario no autenticado. Redirigiendo al login.")
+                return redirect(url_for('login'))
+        else:
             return redirect(url_for('login'))
-        
-        print(f"Usuario autenticado con identificación: {identificacion}")
+        # Si la cookie existe, proceder a la función protegida
+        return f(*args, **kwargs)
+    return decorated_function
+
+
+def login_required_member(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Verificar si la cookie 'identificacion' está presente
+        identificacion = request.cookies.get('identificacion')
+        if identificacion:
+            cursor.execute("SELECT r.nombre FROM bd_gimnasio2.usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE u.identificacion = %s AND r.nombre ='Miembro'", (identificacion))
+            rol_user = cursor.fetchall()
+            print(rol_user, "ROOOOOL DEL USUARIO")
+            if len(rol_user) == 0:  # Si no hay cookie, redirigir al login
+                print("Usuario no autenticado. Redirigiendo al login.")
+                return redirect(url_for('login'))
+        else:
+            return redirect(url_for('login'))
         # Si la cookie existe, proceder a la función protegida
         return f(*args, **kwargs)
     return decorated_function
@@ -87,6 +100,20 @@ def lista_genero():
     result_gender= cursor.fetchall()
     return result_gender
 #--LISTADO DE GENERO
+
+#--LISTADO PLAN TRABAJO
+def plan_trabajo_lista():
+    cursor.execute("SELECT nombre FROM plan_trabajo")
+    result_plan_trabajo= cursor.fetchall()
+    return result_plan_trabajo
+#--LISTADO PLAN TRABAJO
+
+#--LISTADO roles
+def lista_roles():
+    cursor.execute("SELECT nombre FROM rol")
+    result_rol= cursor.fetchall()
+    return result_rol
+#--LISTADO roles
 
 #--AGREGAR USUARIO
 

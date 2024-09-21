@@ -32,26 +32,45 @@
             <h3 class="edit_perfil" style="text-align: center; margin-bottom: 30px;">Agregar usuario</h3>
             <hr>
             <div class="form-group"></div>
+            <label for="identificacion">Identificacion:</label>
+            <input type="text" id="identificacion" name="identificacion" required class="form-control">
 
-            <label for="nombre">Nombre de cliente:</label>
+            <label for="nombre">Nombre:</label>
             <input type="text" id="nombre" name="nombre" required class="form-control">
 
-            <label for="cedula">Identificacion:</label>
-            <input type="text" id="cedula" name="cedula" required class="form-control">
+            <label for="apellido">Apellido:</label>
+            <input type="text" id="apellido" name="apellido" class="form-control">
 
-            <label for="celular">Celular:</label>
-            <input type="tel" id="celular" name="celular" class="form-control">
+            <label for="edad">Edad:</label>
+            <input type="number" id="edad" name="edad" class="form-control">
 
-            <label for="tel_fijo">Teléfono:</label>
-            <input type="tel" id="tel_fijo" name="tel_fijo" class="form-control">
+            <label for="correo">Correo:</label>
+            <input type="email" id="correo" name="correo" class="form-control">
 
-            <label for="ciudadR">Ciudad de Residencia:</label>
+            <label for="telefono">Teléfono:</label>
+            <input type="text" id="telefono" name="telefono" class="form-control">
+
+            <label for="ciudadR">genero:</label>
             <select class="form-select" name="ciudadR" id="ciudadR">
-                {%for listaCiudades in listaCiudades%}
-                <option value="{{listaCiudades[0]}}">{{listaCiudades[0]}}</option>
+                {%for generos in listaGeneros%}
+                <option value="{{generos[0]}}">{{generos[1 ]}}</option>
                 {% endfor %}
             </select>
             
+            <label for="ciudadR">Plan de trabajo:</label>
+            <select class="form-select" name="ciudadR" id="ciudadR">
+                {%for planes_trabajo in planes_trabajo%}
+                <option value="{{planes_trabajo[0]}}">{{planes_trabajo[0]}}</option>
+                {% endfor %}
+            </select>
+
+            <label for="rol">Rol:</label>
+            <select class="form-select" name="rol" id="rol">
+                {%for roles in roles%}
+                <option value="{{roles[0]}}">{{roles[0]}}</option>
+                {% endfor %}
+            </select>
+
             <label for="contrasena">Contraseña:</label>
             <input type="password" id="contrasena" name="contrasena" required class="form-control">
 
