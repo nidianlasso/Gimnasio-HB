@@ -115,6 +115,24 @@ def lista_roles():
     return result_rol
 #--LISTADO roles
 
+#OBTENER LA CANTIDAD DE ROLES
+def cant_miembros():
+    cursor.execute("SELECT COUNT(*) AS listado_miembros FROM usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE r.nombre = 'Miembro';")
+    resul_lista = cursor.fetchone()[0]
+    return resul_lista
+
+def cant_entrenadores():
+    cursor.execute("SELECT COUNT(*) AS listado_entrenadores FROM usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE r.nombre = 'Entrenador'")
+    resul_lista_entrenador = cursor.fetchone()[0]
+    return resul_lista_entrenador
+
+def conteo_clases_reservadas():
+    cursor.execute("SELECT COUNT(*) AS listado_entrenadores FROM reserva_clase")
+    result_lista_reservas = cursor.fetchone()[0]
+    return result_lista_reservas
+
+#OBTENER LA CANTIDAD DE ROLES
+
 #--AGREGAR USUARIO
 
 #--AGREGAR USUARIO

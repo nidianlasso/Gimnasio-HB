@@ -1,3 +1,24 @@
+.contenedor_opciones{
+    width: 100%;
+    align-items: center;
+    margin-top: 5%;
+    text-align: center;
+}
+.contenedor_opciones .row{
+    margin: 0px;
+}
+.opt_admin{
+    width: 70%; 
+    margin: auto;
+    height: 29vh;
+    border-radius: 4px;
+    padding: 20px;
+    justify-content: center;
+    margin-top: 10px;
+}
+.title_section_admin{
+    color: white;
+}
 .button {
     background-color: #4CAF50;
     border: none;
@@ -46,22 +67,22 @@
 
 body{
     /*background: url('/static/') no-repeat;*/
-    background-repeat: no-repeat;
+    /* background-repeat: no-repeat;
     background-attachment: fixed;
     background-size: cover;
     background-color: #F4F4F4 !important;
-    background-position: right;
+    background-position: right; */
+    /* width: 200vh !important; */
 }
 
 main{
     background-color: rgba(255, 255, 255, 0.7); /* Opacidad del 70% (0.7) */
     padding: 40px 20px;
     margin: 0 auto; /* Centrado horizontal */
-    width: 1000px;
     text-align: center;
     position: relative;
     top: 50%;
-    transform: translateY(-50%);
+    /* transform: translateY(-50%); */
     border-radius: 10px; /* Establece un radio de 10px para los bordes */
     margin-top: 230px; /* Ajusta la distancia vertical desde la barra de menú */ 
     align-items: center; /* Centrado horizontal */
@@ -124,7 +145,7 @@ table.table th {
 /* Estilos para el menú desplegable */
 
 .header__superior{
-    max-width: 1200;
+    max-width: 1200px;
     margin: auto;
     display: flex;  
     align-items: center;
@@ -134,14 +155,15 @@ table.table th {
 /* barra menu */
 
 .container__menu{
-    width: 100%;
+    max-width:100%;
+    min-width: 100%;
     height: 70px;
     background-color: rgb(247, 243, 15);
     padding: 0px 20px;
 }
 
 .menu{
-    max-width: 1200px;
+    /* max-width: 1200px; */
     margin: auto;
     height: 100%;    
 }
@@ -149,7 +171,6 @@ table.table th {
 
 nav{
     height: 100%;
-
 }
 
 nav > ul{

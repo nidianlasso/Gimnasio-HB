@@ -1,7 +1,7 @@
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
 from datetime import datetime, timedelta
-from query import check_credentials, validarLogin, login_required_admin, login_required_member, lista_miembros, lista_genero, plan_trabajo_lista, lista_roles
+from query import validarLogin, login_required_admin, login_required_member, lista_miembros, lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores, conteo_clases_reservadas
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -25,7 +25,10 @@ def login():
 @app.route('/administrator')
 @login_required_admin
 def administrator():
-    return render_template('Administrator/administrator.html')
+    listado_miembros = cant_miembros()
+    listado_entrenadores = cant_entrenadores()
+    conteo_clases = conteo_clases_reservadas()
+    return render_template('Administrator/administrator.html', lista_miembros = listado_miembros, cant_entrenadores = listado_entrenadores, conteo_reserva = conteo_clases)
 
 #LLAMADO AL TEMPLATE MIEMBRO
 @app.route('/profile-member')

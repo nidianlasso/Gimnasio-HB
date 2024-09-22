@@ -12,12 +12,55 @@
 </head>
 
 
-<body class="admin_fondo">
+<body style="background: whitesmoke;">
     {% include 'Administrator/menu.html' %}
-
-        <main>
-            <h2>Bienvenido Administrador</h2>
-        </main>
+    <div class="contenedor_opciones">
+        <div class="row">
+            <div class="col-lg-3 col-md-6 col-xs-12">
+                <div class="opt_admin" style="background: #3D7BB3;">
+                    <img class=" icons_admin" src="../../static/img/cliente.png" alt="" width="60px">
+                    <h5 class="title_section_admin">Cantidad <br> Miembros</h5>
+                            <p class="title_section_admin">{{lista_miembros}}</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-xs-12">
+                <div class="opt_admin" style="background: #57B4A3;">
+                    <img src="../../static/img/entrenador_gym.png" alt="" width="60px">
+                    <h5 class="title_section_admin">Cantidad instructores</h5>
+                        <p class="title_section_admin">{{cant_entrenadores}}</p>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-xs-12">
+                <div class="opt_admin" style="background: #EB8025;">
+                    <img src="../../static/img/maquina.png" alt="" width="60px">
+                    <h5 class="title_section_admin">Inventario de <br> máquinas </h5>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6 col-xs-12">
+                <div class="opt_admin" style="background: #E85857;">
+                    <img src="../../static/img/salario_entrenador.png" alt="" width="60px">
+                    <h5 class="title_section_admin">Gestión de <br> nómina </h5>
+                </div>
+            </div>
+        </div>
+    </div> 
+    <div class="contenedor_opciones">
+        <div class="row">
+            <div class="col-lg-6 col-md-6 col-xs-12">
+                <div class="opt_admin" style="background: #8CA303;">
+                    <img src="../../static/img/reservas.png" alt="" width="60px">
+                    <h5 class="title_section_admin">Clases <br> reservadas</h5>
+                        <p class="title_section_admin">{{conteo_reserva}}</p>
+                </div>
+            </div>
+            <div class="col-lg-6 col-md-6 col-xs-12">
+                <div class="opt_admin" style="background: #8F81FF;">
+                    <img src="../../static/img/proveedores.png" alt="">
+                    <h5 class="title_section_admin">Gestión <br> Proveedores</h5>
+                </div>
+            </div>
+        </div>
+    </div> 
 </body>
 
 </html>
