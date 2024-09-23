@@ -14,20 +14,20 @@
 <body>
     {% include 'Administrator/menu.html' %}
   
-  {% with messages = get_flashed_messages() %}
-  {% if messages %}
-  {% for message in messages%}
-  <div class="alert alert-warning alert-dismissible fade show" role="alert">
-    {{message}}
-  </div>
-  {% endfor %}
-  {% endif %}
+    {% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+      <ul class="flashes">
+        {% for category, message in messages %}
+          <li class="{{ category }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
   {% endwith %}
 
   <main id="tabla" class="d-flex align-items-center justify-content-center">
     <div class="content-container">
       <div class="col-md-80 p-4">
-        <form method="POST" action="/add_users">
+        <form method="POST" action="{{ url_for('add_users') }}">
           <fieldset>
             <h3 class="edit_perfil" style="text-align: center; margin-bottom: 30px;">Agregar usuario</h3>
             <hr>
@@ -50,24 +50,27 @@
             <label for="telefono">Teléfono:</label>
             <input type="text" id="telefono" name="telefono" class="form-control">
 
-            <label for="ciudadR">genero:</label>
-            <select class="form-select" name="ciudadR" id="ciudadR">
+            <label for="genero">genero:</label>
+            <select class="form-select" name="genero" id="genero" required>
+                <option value="">Seleccione...</option>
                 {%for generos in listaGeneros%}
-                <option value="{{generos[0]}}">{{generos[1 ]}}</option>
+                <option value="{{ generos[0] }}">{{ generos[1]}}</option>
                 {% endfor %}
             </select>
             
-            <label for="ciudadR">Plan de trabajo:</label>
-            <select class="form-select" name="ciudadR" id="ciudadR">
+            <label for="plan_trab">Plan de trabajo:</label>
+            <select class="form-select" name="plan_trab" id="plan_trab" required>
+              <option value="">Seleccione...</option>
                 {%for planes_trabajo in planes_trabajo%}
-                <option value="{{planes_trabajo[0]}}">{{planes_trabajo[0]}}</option>
+                <option value="{{planes_trabajo[0]}}">{{planes_trabajo[1]}}</option>
                 {% endfor %}
             </select>
 
             <label for="rol">Rol:</label>
-            <select class="form-select" name="rol" id="rol">
-                {%for roles in roles%}
-                <option value="{{roles[0]}}">{{roles[0]}}</option>
+            <select class="form-select" name="rol" id="rol" required>
+              <option value="">Seleccione...</option>
+                {% for roles in roles %}
+                <option value="{{roles[0]}}">{{roles[1]}}</option>
                 {% endfor %}
             </select>
 

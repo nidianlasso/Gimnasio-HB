@@ -23,13 +23,26 @@ function getListUsers() {
             celdaNombre.textContent = user[1];
             fila.appendChild(celdaNombre);
 
+            const celdaApellido = document.createElement('td');
+            celdaApellido.textContent = user[2];
+            fila.appendChild(celdaApellido);
+
             const celdaEdad = document.createElement('td');
-            celdaEdad.textContent = user[2];
+            celdaEdad.textContent = user[3];
             fila.appendChild(celdaEdad);
 
             const celdaCorreo = document.createElement('td');
-            celdaCorreo.textContent = user[3];
+            celdaCorreo.textContent = user[4];
             fila.appendChild(celdaCorreo);
+
+            
+            const celdaTelefono = document.createElement('td');
+            celdaTelefono.textContent = user[5];
+            fila.appendChild(celdaTelefono);
+
+            const celdaRol = document.createElement('td');
+            celdaRol.textContent = user[6];
+            fila.appendChild(celdaRol);
 
             // Agregar la fila al cuerpo de la tabla
             tablaCuerpo.appendChild(fila);

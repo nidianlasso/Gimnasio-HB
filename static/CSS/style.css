@@ -23,8 +23,29 @@
 /*OCULTAR TABLA MIENTRAS NO SE LE DA CLIC AL BOTON*/
 #miembrosTabla{
     display: none;
+    margin: auto;
 }
 /*----OCULTAR TABLA MIENTRAS NO SE LE DA CLIC AL BOTON*/
+
+.container-gestion{
+    background-color: red;
+}
+
+/*Mensaje*/
+.flashes {
+    list-style-type: none;
+}
+
+.success {
+    color: green;
+    font-weight: bold;
+}
+
+.error {
+    color: red;
+    font-weight: bold;
+}
+/*----*/
 
 
 .title_section_admin{

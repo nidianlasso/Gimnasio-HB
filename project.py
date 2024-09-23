@@ -1,10 +1,13 @@
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
 from datetime import datetime, timedelta
-from query import validarLogin, login_required_admin, login_required_member, lista_miembros, lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores, conteo_clases_reservadas
+from query import validarLogin, login_required_admin, login_required_member, lista_miembros, lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores, conteo_clases_reservadas, add_user
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
+#KEY SECRET
+app.secret_key = '20202578145'
+#--KEY SECRET
 
 @app.route('/login', methods = ['POST', 'GET'])
 def login(): 
@@ -72,15 +75,23 @@ def add_users():
         correo = request.form['correo']
         telefono = request.form['telefono']
         genero = request.form['genero']
-        plan_trabajo = request.form['plan_trabajo']
+        plan_trabajo = request.form['plan_trab']
         rol = request.form['rol']
         contrasena = request.form['contrasena']
-    
+        
+        # Depurar: imprimir los valores que recibes del formulario
+        print("Valores recibidos del formulario:")
+        print(f"Identificación: {cedula}, Nombre: {nombre}, Apellido: {apellido}, Edad: {edad}, Correo: {correo}, Teléfono: {telefono}, Género: {genero}, Plan de trabajo: {plan_trabajo}, Rol: {rol}, Contraseña: {contrasena}")
+        
+        if add_user(cedula, nombre, apellido, edad, correo, telefono, genero, plan_trabajo, rol, contrasena):
+            flash('Registro exitoso!', 'success')  # Mensaje de éxito
+        else:
+            flash('Error al registrar el usuario.', 'error')  # Mensaje de error
+        
     datosGenero = lista_genero()
     planes_trabajo = plan_trabajo_lista()
     roles = lista_roles()
-
-    return render_template('Administrator/add_users.html', listaGeneros = datosGenero, planes_trabajo=planes_trabajo, roles=roles)
+    return render_template('Administrator/add_users.html', listaGeneros=datosGenero, planes_trabajo=planes_trabajo, roles=roles)
 
 if __name__ =='__main__':
     app.run(port =4000, debug =True)

@@ -55,7 +55,6 @@ def login_required_admin(f):
         if identificacion:
             cursor.execute("SELECT r.nombre FROM bd_gimnasio2.usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE u.identificacion = %s AND r.nombre ='Administrador'", (identificacion))
             rol_user = cursor.fetchall()
-            print(rol_user, "ROOOOOL DEL USUARIO")
             if len(rol_user) == 0:  # Si no hay cookie, redirigir al login
                 print("Usuario no autenticado. Redirigiendo al login.")
                 return redirect(url_for('login'))
@@ -87,30 +86,30 @@ def login_required_member(f):
 #--GUARDAR LA COKKIE
 
 
-#OBTENER EL LISTADO DE MIEMBROS
+#OBTENER EL LISTADO DE MIEMBROS PARA GESTION
 def lista_miembros():
-    cursor.execute("SELECT u.identificacion, u.nombre, u.apellido, u.edad, u.correo, u.telefono FROM usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE r.nombre = 'Miembro'")
+    cursor.execute("SELECT u.identificacion, u.nombre, u.apellido, u.edad, u.correo, u.telefono, r.nombre FROM usuario u INNER JOIN rol r ON u.id_rol = r.id_rol")
     listado_miembros = cursor.fetchall()
     return listado_miembros
 #OBTENER EL LISTADO DE MIEMBROS
 
 #--LISTADO DE GENERO
 def lista_genero():
-    cursor.execute("SELECT * FROM genero")
+    cursor.execute("SELECT id_genero, tipo FROM genero")
     result_gender= cursor.fetchall()
     return result_gender
 #--LISTADO DE GENERO
 
 #--LISTADO PLAN TRABAJO
 def plan_trabajo_lista():
-    cursor.execute("SELECT nombre FROM plan_trabajo")
+    cursor.execute("SELECT id_plan_trabajo, nombre FROM plan_trabajo")
     result_plan_trabajo= cursor.fetchall()
     return result_plan_trabajo
 #--LISTADO PLAN TRABAJO
 
 #--LISTADO roles
 def lista_roles():
-    cursor.execute("SELECT nombre FROM rol")
+    cursor.execute("SELECT id_rol, nombre FROM rol")
     result_rol= cursor.fetchall()
     return result_rol
 #--LISTADO roles
@@ -134,5 +133,16 @@ def conteo_clases_reservadas():
 #OBTENER LA CANTIDAD DE ROLES
 
 #--AGREGAR USUARIO
-
+def add_user(identificacion, nombre, apellido, edad, correo, telefono, genero, plan_trab, rol, contrasena):
+    try:
+        cursor.execute('INSERT INTO usuario (identificacion, nombre, apellido, edad, correo, telefono, id_genero, id_plan_trabajo, id_rol, contrasena) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', 
+                (identificacion, nombre, apellido, edad, correo, telefono, genero, plan_trab, rol, contrasena))
+        #Guardar la info en la base de datos
+        connection.commit()
+        return True
+    except Exception as e:
+        #---Guardar la info en la base de datos
+        print("Informacion que se sube a la base")
+        print(identificacion, nombre, apellido, edad, correo, telefono, genero, plan_trab, rol, contrasena)
+        return False # Retorna False si no se ha procesado el formulario
 #--AGREGAR USUARIO
