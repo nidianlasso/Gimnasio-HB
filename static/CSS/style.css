@@ -19,6 +19,14 @@
 .opt_admin:hover{
     transform: scale(1.1);
 }
+
+/*OCULTAR TABLA MIENTRAS NO SE LE DA CLIC AL BOTON*/
+#miembrosTabla{
+    display: none;
+}
+/*----OCULTAR TABLA MIENTRAS NO SE LE DA CLIC AL BOTON*/
+
+
 .title_section_admin{
     color: white;
 }

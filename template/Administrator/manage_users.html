@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
         rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
         crossorigin="anonymous">
+    <script src="../../static/index.js"></script>
 </head>
 
 
@@ -40,11 +41,8 @@
                 <!-- Botón para ir a la página de estado usuario -->
                 <a style="margin-left: 10px;" href="#" class="btn btn-warning btn-block" id="EstadoUsuario">Estado de
                     Miembros</a>
-
             </div>
         </div>
-
-
         <table border="1" id="miembrosTabla">
             <thead>
               <tr>
@@ -63,48 +61,4 @@
         </div>
     </main>
 </body>
-
-<script>
-    
-    function getListUsers() {
-
-        const tablaCuerpo = document.querySelector('#miembrosTabla tbody');
-        tablaCuerpo.innerHTML = '';
-        fetch('/list-members')
-            .then(response => {if (!response.ok) {throw new Error('Error en la solicitud');}return response.json();  // Parsear la respuesta a JSON
-            })
-            .then(data => {
-                console.log(data); 
-                data.forEach(user => {
-                // Crear una fila
-                const fila = document.createElement('tr');
-
-                // Crear y agregar celdas a la fila
-                const celdaId = document.createElement('td');
-                celdaId.textContent = user[0];
-                fila.appendChild(celdaId);
-
-                const celdaNombre = document.createElement('td');
-                celdaNombre.textContent = user[1];
-                fila.appendChild(celdaNombre);
-
-                const celdaEdad = document.createElement('td');
-                celdaEdad.textContent = user[2];
-                fila.appendChild(celdaEdad);
-
-                const celdaCorreo = document.createElement('td');
-                celdaCorreo.textContent = user[3];
-                fila.appendChild(celdaCorreo);
-
-                // Agregar la fila al cuerpo de la tabla
-                tablaCuerpo.appendChild(fila);
-            });
-            })
-            .catch(error => {
-                console.error('Hubo un problema con la solicitud:', error);
-            });
-
-    } 
-</script>
-
 </html>
