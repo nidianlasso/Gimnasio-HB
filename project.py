@@ -43,12 +43,21 @@ def manage_users():
     return render_template('Administrator/manage_users.html')
 
 #VISTA LISTADO DE MIEMBROS
+# @app.route('/list-members', methods = ['POST', 'GET'])
+# @login_required_admin
+# def list_members():
+    
+#     miembros_gym = lista_miembros()
+#     return render_template('Administrator/list_members.html', list_miembros = miembros_gym)
+
+
+#API VISTA LISTADO DE MIEMBROS
 @app.route('/list-members', methods = ['POST', 'GET'])
 @login_required_admin
 def list_members():
     
     miembros_gym = lista_miembros()
-    return render_template('Administrator/list_members.html', list_miembros = miembros_gym)
+    return jsonify(miembros_gym)
 
 
 #ANADIR USUARIOS

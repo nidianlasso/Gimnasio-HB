@@ -16,13 +16,13 @@
     {% include 'Administrator/menu.html' %}
 
     <main>
-        <div class="content-container">
+        <div>
             <h3 class="edit_perfil" style="text-align: center; color: #000; padding: 3%;"> <b>GESTIÓN DE USUARIOS</b> </h3>
             <div class="form-group" style="display: inline-flex;">
 
                 <!-- Botón para ir a la lista de usuarios -->
-                <a  href="{{ url_for('list_members') }}" class="btn btn-warning btn-block"
-                    id="listadomiembro">Listado de Miembros</a>
+                <button onclick="getListUsers()" class="btn btn-warning btn-block"
+                    id="listadomiembro">Listado Usuarios</button>
 
                 <!-- Botón para ir a la página de añadir usuario -->
                 <a style="margin-left: 10px;" href="{{ url_for('add_users') }}" class="btn btn-warning btn-block" id="AñadirUsuario">Añadir
@@ -43,9 +43,68 @@
 
             </div>
         </div>
+
+
+        <table border="1" id="miembrosTabla">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Edad</th>
+                <th>Correo</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Las filas se agregarán dinámicamente aquí -->
+            </tbody>
+          </table>
+
         </div>
         </div>
     </main>
 </body>
+
+<script>
+    
+    function getListUsers() {
+
+        const tablaCuerpo = document.querySelector('#miembrosTabla tbody');
+        tablaCuerpo.innerHTML = '';
+        fetch('/list-members')
+            .then(response => {if (!response.ok) {throw new Error('Error en la solicitud');}return response.json();  // Parsear la respuesta a JSON
+            })
+            .then(data => {
+                console.log(data); 
+                data.forEach(user => {
+                // Crear una fila
+                const fila = document.createElement('tr');
+
+                // Crear y agregar celdas a la fila
+                const celdaId = document.createElement('td');
+                celdaId.textContent = user[0];
+                fila.appendChild(celdaId);
+
+                const celdaNombre = document.createElement('td');
+                celdaNombre.textContent = user[1];
+                fila.appendChild(celdaNombre);
+
+                const celdaEdad = document.createElement('td');
+                celdaEdad.textContent = user[2];
+                fila.appendChild(celdaEdad);
+
+                const celdaCorreo = document.createElement('td');
+                celdaCorreo.textContent = user[3];
+                fila.appendChild(celdaCorreo);
+
+                // Agregar la fila al cuerpo de la tabla
+                tablaCuerpo.appendChild(fila);
+            });
+            })
+            .catch(error => {
+                console.error('Hubo un problema con la solicitud:', error);
+            });
+
+    } 
+</script>
 
 </html>

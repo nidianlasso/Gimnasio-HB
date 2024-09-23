@@ -16,6 +16,9 @@
     justify-content: center;
     margin-top: 10px;
 }
+.opt_admin:hover{
+    transform: scale(1.1);
+}
 .title_section_admin{
     color: white;
 }
