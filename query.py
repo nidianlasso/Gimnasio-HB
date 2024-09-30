@@ -146,3 +146,33 @@ def add_user(identificacion, nombre, apellido, edad, correo, telefono, genero, p
         print(identificacion, nombre, apellido, edad, correo, telefono, genero, plan_trab, rol, contrasena)
         return False # Retorna False si no se ha procesado el formulario
 #--AGREGAR USUARIO
+
+#BUSQUEDA DE USUARIOS
+def search_users(nombre):
+    cursor.execute("SELECT u.identificacion, u.nombre, u.apellido, u.edad, u.correo, u.telefono, g.tipo AS genero, p.nombre AS plan_trabajo, r.nombre AS rol FROM usuario u INNER JOIN genero g ON u.id_genero = g.id_genero INNER JOIN plan_trabajo p ON u.id_plan_trabajo = p.id_plan_trabajo INNER JOIN rol r ON u.id_rol = r.id_rol WHERE LOWER(u.NOMBRE) = %s", (nombre))
+    result_busqueda = cursor.fetchall()
+    return result_busqueda
+
+#ASIGNACION DE MEMBRESIAS
+def assig_membreships(usuario, fecha_inicio, fecha_fin, membresia,  estado_membresia):
+    try:
+        cursor.execute('INSERT INTO membresia_usuario (id_usuario, fecha_inicio, fecha_fin, id_membresia, id_estado_membresia) VALUES (%s, %s, %s, %s, %s)',
+                    (usuario, fecha_inicio, fecha_fin, membresia,  estado_membresia))
+        connection.commit()
+        return True
+    except Exception as e:
+        print("informacion de asignacion de la membresia")
+        print(usuario,fecha_inicio, fecha_fin, membresia,  estado_membresia)
+        return False
+
+#LISTA DE MEMBRESIAS
+def list_membreship():
+    cursor.execute('SELECT tipo, costo FROM membresia')
+    resul_lista_membresia = cursor.fetchone()[0]
+    return resul_lista_membresia
+
+#LISTA DE MIEMBROS
+def list_user_member():
+    cursor.execute('SELECT identificacion, nombre, apellido, correo FROM usuario WHERE id_rol =5')
+    listado_miembros = cursor.fetchone()[0]
+    return listado_miembros

@@ -25,6 +25,11 @@
     display: none;
     margin: auto;
 }
+/* #busquedaUsuarios{
+    display: none;
+    margin: auto;
+} */
+
 /*----OCULTAR TABLA MIENTRAS NO SE LE DA CLIC AL BOTON*/
 
 .container-gestion{

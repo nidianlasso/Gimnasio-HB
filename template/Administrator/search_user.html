@@ -1,0 +1,33 @@
+{% include 'main.html' %}
+        <div class="content-container">
+            <div class="col-md-80 p-4">
+                <h1>Búsqueda de Usuarios</h1>
+                <br>
+                <div>
+                    <label for="busqueda">Buscar por nombre:</label>
+                    <br>
+                    <input type="text" id="busqueda_usuario" name="busqueda_usuario" required>
+                    <button type="submit" onclick="getSearchUsers()">
+                        <img src="../../static/img/buscar.png" alt="" width="20px" style="margin-top: -8%;">
+                    </button>
+                    <!-- <a href="{{ url_for('manage_users') }}" class="btn btn-primary btn-block">Volver</a> -->
+                    <table style="margin: auto; margin-top: 10px;" border="1" id="busquedaUsuarios">
+                        <thead>
+                          <tr>
+                            <th>Identificación</th>
+                            <th>Nombre</th>
+                            <th>Apellido</th>
+                            <th>Edad</th>
+                            <th>Correo</th>
+                            <th>Telefono</th>
+                            <th>Género</th>
+                            <th>Plan de trabajo</th>
+                            <th>Rol</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                      </table>
+            </div>
+        </div>
+

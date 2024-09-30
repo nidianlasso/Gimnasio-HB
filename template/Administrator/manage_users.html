@@ -1,65 +1,124 @@
-<!DOCTYPE html>
-<html lang="en">
+{% include 'main.html' %}
+{% include 'Administrator/menu.html' %}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gestion Usuarios</title>
-    <link rel="stylesheet" type="text/css" href="..\static\CSS\style.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-        rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN"
-        crossorigin="anonymous">
-    <script src="../../static/index.js"></script>
-</head>
+<h3 style="text-align: center; color: #000; margin-top: 3%;"> <b>GESTIÓN DE USUARIOS</b> </h3>
+<div class="contenedor-gestion"
+  style="display: flex; justify-content: center; justify-items: center; padding-bottom: 2%;">
+  <div class="" style="display: inline-flex; margin: auto; margin-top: 2%;">
+    <br>
+    <!-- Botón para ir a la lista de usuarios -->
+    <button style="width: 30vh; height: 10vh; margin-left: 2vh;" onclick="getListUsers()"
+      class="btn btn-warning btn-block" id="listadomiembro">Listado Usuarios</button>
+
+    <!-- Botón para mostrar el formulario de agregar usuario -->
+    <button style="width: 30vh; height: 10vh; margin-left: 2vh;" type="button" data-toggle="modal"
+      data-target="#exampleModalLong" class="btn btn-warning btn-block">Añadir
+      Usuario</a>
+
+      <!-- Botón para ir a la página de Buscar usuario -->
+      <button style="width: 30vh; height: 10vh; margin-left: 2vh;" type="button" data-toggle="modal"
+        data-target="#searchUser" class="btn btn-warning btn-block">Buscar
+        Usuario</button>
+
+      <!-- Botón para ir a la página de Editar usuario -->
+      <button style="width: 30vh; height: 10vh; margin-left: 2vh;" type="button" data-toggle="modal"
+      data-target="#membresiaAsignacion" class="btn btn-warning btn-block">Asignar Membresia</button>
+
+      <!-- Botón para ir a la página de estado usuario -->
+      <button style="width: 30vh; height: 10vh; margin-left: 2vh;" type="button" data-toggle="modal"
+        data-target="#membresiaAsignaciones" class="btn btn-warning btn-block">Buscar
+        Usuario</button>
+  </div>
+</div>
+<table border="1" id="miembrosTabla">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Nombre</th>
+      <th>Apellido</th>
+      <th>Edad</th>
+      <th>Correo</th>
+      <th>Telefono</th>
+      <th>Rol</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Las filas se agregarán dinámicamente aquí -->
+  </tbody>
+</table>
+
+{% with messages = get_flashed_messages(with_categories=True) %}
+{% if messages %}
+<div class="alert alert-dismissible fade show" role="alert">
+  {% for category, message in messages %}
+  <div class="alert alert-{{ category }}">
+    {{ message }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+<!--MODAL PARA AGREGAR USUARIOS-->
+<div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Agregar Usuario</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        {% include 'Administrator/add_users.html' %}
+      </div>
+    </div>
+  </div>
+</div>
+<!--MODAL PARA AGREGAR USUARIOS-->
+
+<!--ASIGNAR MEMBRESIA-->
+<div class="modal fade" id="membresiaAsignacion" tabindex="-1" aria-labelledby="membresiaAsignacionLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        {% include 'Administrator/assign_memb.html' %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!--ASIGNAR MEMBRESIA-->
 
 
-<body >
-    {% include 'Administrator/menu.html' %}
 
-        <h3 style="text-align: center; color: #000; margin-top: 3%;"> <b>GESTIÓN DE USUARIOS</b> </h3>
-        <div class="contenedor-gestion" style="display: flex; justify-content: center; justify-items: center; padding-bottom: 2%;">
-            <div class="" style="display: inline-flex; margin: auto; margin-top: 2%;">
+<!--MODAL PARA BUSQUEDA DE USUARIO-->
+<div class="modal fade" id="searchUser" tabindex="-1" aria-labelledby="searchUserLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        {% include 'Administrator/search_user.html' %}
+      </div>
+      <!-- <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div> -->
+    </div>
+  </div>
+</div>
+<!--MODAL PARA BUSQUEDA DE USUARIO-->
 
-                <!-- Botón para ir a la lista de usuarios -->
-                <button onclick="getListUsers()" class="btn btn-warning btn-block"
-                    id="listadomiembro">Listado Usuarios</button>
-
-                <!-- Botón para ir a la página de añadir usuario -->
-                <a style="margin-left: 10px;" href="{{ url_for('add_users') }}" class="btn btn-warning btn-block" id="AñadirUsuario">Añadir
-                    Miembro</a>
-
-                <!-- Botón para ir a la página de Buscar usuario -->
-                <a style="margin-left: 10px;" href="#" class="btn btn-warning btn-block" id="BuscarMiembro">Buscar
-                    Miembro</a>
-
-                <!-- Botón para ir a la página de Editar usuario -->
-                <a style="margin-left: 10px;" href="#" class="btn btn-warning btn-block" id="EditarMiembro">Editar
-                    Miembro</a>
-                <br>
-                <br>
-                <!-- Botón para ir a la página de estado usuario -->
-                <a style="margin-left: 10px;" href="#" class="btn btn-warning btn-block" id="EstadoUsuario">Estado de
-                    Miembros</a>
-            </div>
-        </div>
-        <table border="1" id="miembrosTabla">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Edad</th>
-                <th>Correo</th>
-                <th>Telefono</th>
-                <th>Rol</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Las filas se agregarán dinámicamente aquí -->
-            </tbody>
-          </table>
-
-        </div>
-        </div>
-</body>
-</html>
+<!--MODAL PARA BUSQUEDA DE USUARIO-->
