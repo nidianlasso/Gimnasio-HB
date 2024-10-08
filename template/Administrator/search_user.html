@@ -4,12 +4,23 @@
                 <h1>Búsqueda de Usuarios</h1>
                 <br>
                 <div>
-                    <label for="busqueda">Buscar por nombre:</label>
-                    <br>
-                    <input type="text" id="busqueda_usuario" name="busqueda_usuario" required>
-                    <button type="submit" onclick="getSearchUsers()">
-                        <img src="../../static/img/buscar.png" alt="" width="20px" style="margin-top: -8%;">
-                    </button>
+                    <div class="container">
+                      <div class="row">
+                        <div class="col-6">
+                          <label for="busqueda">Buscar por Identificación:</label>
+                          <br>
+                          <input inputmode="numeric" id="busqueda_usuario" name="busqueda_usuario" min="0" max="10" required>
+                          <button type="submit" onclick="getSearchUsers()">
+                              <img src="../../static/img/buscar.png" alt="" width="20px" style="margin-top: -8%;">
+                          </button>
+                        </div>
+                        <div class="col-6">
+                          <label for="">Asignar membresia...</label>
+                          <select name="tipo_membresia" id="tipo_membresia">
+                          </select>
+                        </div>
+                      </div>
+                    </div>
                     <!-- <a href="{{ url_for('manage_users') }}" class="btn btn-primary btn-block">Volver</a> -->
                     <table style="margin: auto; margin-top: 10px;" border="1" id="busquedaUsuarios">
                         <thead>

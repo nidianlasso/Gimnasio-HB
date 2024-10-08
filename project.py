@@ -1,10 +1,10 @@
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
-from datetime import datetime, timedelta
+from datetime import date
 from query import (validarLogin, login_required_admin, login_required_member, lista_miembros,
                     lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
                       conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship,
-                      list_user_member)
+                      guardar_membresia, status_membreship)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -50,7 +50,8 @@ def manage_users():
     planes_trabajo = plan_trabajo_lista()
     roles = lista_roles()
     membresias = list_membreship()
-    return render_template('Administrator/manage_users.html',  listaGeneros=datosGenero, planes_trabajo=planes_trabajo, roles=roles, membresias = membresias)
+    estado_membresia = status_membreship()
+    return render_template('Administrator/manage_users.html',  listaGeneros=datosGenero, planes_trabajo=planes_trabajo, roles=roles, membresias = membresias, estado_membresia = estado_membresia)
 
 #VISTA LISTADO DE MIEMBROS
 # @app.route('/list-members', methods = ['POST', 'GET'])
@@ -84,7 +85,7 @@ def add_users():
         plan_trabajo = request.form['plan_trab']
         rol = request.form['rol']
         contrasena = request.form['contrasena']
-        print(f"Identificación: {cedula}, Nombre: {nombre}, Apellido: {apellido}, Edad: {edad}, Correo: {correo}, Teléfono: {telefono}, Género: {genero}, Plan de trabajo: {plan_trabajo}, Rol: {rol}, Contraseña: {contrasena}")
+        #print(f"Identificación: {cedula}, Nombre: {nombre}, Apellido: {apellido}, Edad: {edad}, Correo: {correo}, Teléfono: {telefono}, Género: {genero}, Plan de trabajo: {plan_trabajo}, Rol: {rol}, Contraseña: {contrasena}")
         if add_user(cedula, nombre, apellido, edad, correo, telefono, genero, plan_trabajo, rol, contrasena):
             flash('Registro exitoso!', 'success')
         else:
@@ -98,27 +99,34 @@ def search_users_name():
     if request.method == 'POST':
         # nombre = request.form['nombre']
         palabra_ingresada = request.json
-        palabra_ingresada = palabra_ingresada.get('nombre')
+        palabra_ingresada = palabra_ingresada.get('identificacion')
         print(palabra_ingresada, "extraccion de datos")
         resultados = search_users(palabra_ingresada)   
         print(resultados, "estas son las busquedas")
     return jsonify(resultados)
 
-@app.route('/assig-membreship', methods=['POST','GET'])
+@app.route('/assign_membreship', methods=['POST','GET'])
 @login_required_admin        
-def assig_membreship():
+def assign_membreship():
+    asignacion = assig_membreships()
+    return jsonify(asignacion)
+
+@app.route('/save_membreship', methods=['POST'])
+def save_membreship():
     if request.method == 'POST':
-        usuario = request.form['usuario']
-        membresia = request.form['membresia']
-        fecha_inicio = request.form['fecha_inicio']
-        fecha_fin = request.form['fecha_fin']
-        estado_membresia = request.form['estado_membresia']
-        if assig_membreships(usuario,membresia,  fecha_inicio, fecha_fin, estado_membresia):
-           flash('Usuario asignado!', 'success')
+        usuario_id = request.form['usuarioId']  # Asegúrate de que este nombre sea correcto
+        tipo_membresia = request.form['tipoMembresia']
+        fecha_inicio = request.form['fechaInicio']
+        fecha_fin = request.form['fechaFin']
+        estado_membresia = request.form['estadoMembresia']
+        print("Datos a guardar:", usuario_id, tipo_membresia, fecha_inicio, fecha_fin, estado_membresia)  # Para depuración
+        if guardar_membresia(usuario_id, tipo_membresia, fecha_inicio, fecha_fin, estado_membresia):
+            flash('Registro exitoso!', 'success')
         else:
             flash('Error al registrar el usuario.', 'error')
-    miembros=list_user_member()
-    return jsonify(miembros)
+    return manage_users()
 
+
+   
 if __name__ =='__main__':
     app.run(port =4000, debug =True)

@@ -1,18 +1,67 @@
 <div>
-    <table border="1" id="miembrosTabla">
+    <h2>Tabla de Registros</h2>
+    <table border="1" id="tablaRegistros">
         <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Apellido</th>
-            <th>Edad</th>
-            <th>Correo</th>
-            <th>Telefono</th>
-            <th>Rol</th>
-          </tr>
+            <tr>
+                <th>Identificación</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Membresia</th>
+            </tr>
         </thead>
         <tbody>
-          <!-- Las filas se agregarán dinámicamente aquí -->
+            <!-- Los datos se cargarán dinámicamente aquí -->
         </tbody>
-      </table>
+    </table>
+</div>
+
+<!-- Modal para mostrar detalles de la membresía -->
+<div class="modal fade" id="detallesMembresia" tabindex="-1" aria-labelledby="detallesMembresiaLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles de la Membresía</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="asignarMembresiaForm" method="POST" action="{{ url_for('save_membreship') }}">
+                    <input type="hidden" name="usuarioId" id="usuarioId"> <!-- Campo oculto -->
+                    <fieldset>
+                        <div class="form-group">
+                            <label for="tipoMembresia">Tipo de Membresía:</label>
+                            <select class="form-select" name="tipoMembresia" id="id_membresia" required>
+                                <option value="">Seleccione...</option>
+                                {% for tipo in membresias %}
+                                <option value="{{ tipo[2] }}" data-costo="{{ tipo[1] }}">{{ tipo[0] }} - {{ tipo[1] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaInicio">Fecha Inicio:</label>
+                            <input type="date" class="form-control" name="fechaInicio" id="fechaInicio" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaFin">Fecha Fin:</label>
+                            <input type="date" class="form-control" name="fechaFin" id="fechaFin" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="estadoMembresia">Estado:</label>
+                            <select class="form-control" name="estadoMembresia" id="estadoMembresia" required>
+                                <option value="">Seleccione...</option>
+                                {% for estado in estado_membresia %}
+                                <option value="{{ estado[0] }}">{{ estado[1] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </fieldset>
+                    <button type="submit" class="btn btn-primary btn-block">Guardar</button>
+                    <a href="{{ url_for('manage_users') }}" class="btn btn-primary btn-block">Volver</a>
+                </form>
+                
+            </div>
+        </div>
+    </div>
 </div>

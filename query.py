@@ -148,31 +148,49 @@ def add_user(identificacion, nombre, apellido, edad, correo, telefono, genero, p
 #--AGREGAR USUARIO
 
 #BUSQUEDA DE USUARIOS
-def search_users(nombre):
-    cursor.execute("SELECT u.identificacion, u.nombre, u.apellido, u.edad, u.correo, u.telefono, g.tipo AS genero, p.nombre AS plan_trabajo, r.nombre AS rol FROM usuario u INNER JOIN genero g ON u.id_genero = g.id_genero INNER JOIN plan_trabajo p ON u.id_plan_trabajo = p.id_plan_trabajo INNER JOIN rol r ON u.id_rol = r.id_rol WHERE LOWER(u.NOMBRE) = %s", (nombre))
+def search_users(identificacion):
+    cursor.execute("SELECT u.identificacion, u.nombre, u.apellido, u.edad, u.correo, u.telefono, g.tipo AS genero, p.nombre AS plan_trabajo, r.nombre AS rol FROM usuario u INNER JOIN genero g ON u.id_genero = g.id_genero INNER JOIN plan_trabajo p ON u.id_plan_trabajo = p.id_plan_trabajo INNER JOIN rol r ON u.id_rol = r.id_rol WHERE u.identificacion = %s", (identificacion))
     result_busqueda = cursor.fetchall()
     return result_busqueda
 
 #ASIGNACION DE MEMBRESIAS
-def assig_membreships(usuario, fecha_inicio, fecha_fin, membresia,  estado_membresia):
+def assig_membreships():
     try:
-        cursor.execute('INSERT INTO membresia_usuario (id_usuario, fecha_inicio, fecha_fin, id_membresia, id_estado_membresia) VALUES (%s, %s, %s, %s, %s)',
-                    (usuario, fecha_inicio, fecha_fin, membresia,  estado_membresia))
-        connection.commit()
-        return True
+        cursor.execute("SELECT u.identificacion, u.nombre, u.apellido, m.costo, m.tipo, mu.fecha_inicio, mu.fecha_fin, em.nombre AS estado_membresia, u.id_usuario FROM usuario u LEFT JOIN membresia_usuario mu ON mu.id_usuario = u.id_usuario LEFT JOIN membresia m ON mu.id_membresia = m.id_membresia LEFT JOIN estado_membresia em ON mu.id_estado_membresia = em.id_estado_membresia WHERE u.id_rol= '5';")
+        campos_asignacion = cursor.fetchall()
+        return campos_asignacion
     except Exception as e:
-        print("informacion de asignacion de la membresia")
-        print(usuario,fecha_inicio, fecha_fin, membresia,  estado_membresia)
-        return False
+        print(f"Error al ejecutar la consulta: {e}")
+        return []
 
 #LISTA DE MEMBRESIAS
 def list_membreship():
-    cursor.execute('SELECT tipo, costo FROM membresia')
-    resul_lista_membresia = cursor.fetchone()[0]
+    cursor.execute('SELECT tipo, costo, id_membresia FROM membresia')
+    resul_lista_membresia = cursor.fetchall()
+    print(resul_lista_membresia, "estos son los tipos de membresias")
     return resul_lista_membresia
 
 #LISTA DE MIEMBROS
 def list_user_member():
-    cursor.execute('SELECT identificacion, nombre, apellido, correo FROM usuario WHERE id_rol =5')
+    cursor.execute('SELECT identificacion, nombre, apellido, correo, id_usuario FROM usuario WHERE id_rol =5')
     listado_miembros = cursor.fetchone()[0]
     return listado_miembros
+
+def guardar_membresia(usuario_id, tipo, fecha_inicio, fecha_fin, estado):
+    try:
+        cursor.execute(
+            'INSERT INTO membresia_usuario(id_usuario, id_membresia, fecha_inicio, fecha_fin, id_estado_membresia) VALUES (%s, %s, %s, %s, %s)', 
+            (usuario_id, tipo, fecha_inicio, fecha_fin, estado)
+        )
+        connection.commit()
+        return True
+    except Exception as e:
+        print("Error al guardar la membresía:", e)
+        print("Información que se sube a la base de datos:", usuario_id, tipo, fecha_inicio, fecha_fin, estado)
+        return False  # Retorna False si no se ha procesado el formulario
+
+#ESTADO DE LA MEMBRESIA
+def status_membreship():
+    cursor.execute("SELECT id_estado_membresia, nombre FROM estado_membresia")
+    status = cursor.fetchall()
+    return status
