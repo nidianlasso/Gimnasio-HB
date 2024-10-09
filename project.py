@@ -147,5 +147,11 @@ def update_membreship():
 
     return redirect(url_for('manage_users'))
 
+@app.route('/manage-machine')
+@login_required_admin
+def manage_machine():
+    return render_template('Administrator/manage_machine.html')
+
+
 if __name__ =='__main__':
     app.run(port =4000, debug =True)

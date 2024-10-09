@@ -1,0 +1,146 @@
+{% include 'main.html' %}
+{% include 'Administrator/menu.html' %}
+
+<h3 style="text-align: center; color: #000; margin-top: 3%;"> <b>GESTIÓN DE MÁQUINAS</b> </h3>
+<div class="contenedor-gestion"
+  style="display: flex; justify-content: center; justify-items: center; padding-bottom: 2%;">
+  <div class="" style="display: inline-flex; margin: auto; margin-top: 2%;">
+    <br>
+    <!-- Botón para ir a la lista de usuarios -->
+    <button style="width: 30vh; height: 10vh; margin-left: 2vh;" onclick="getListUsers()"
+      class="btn btn-warning btn-block" id="listadomiembro">Listado Maquinas</button>
+
+    <!-- Botón para mostrar el formulario de agregar usuario -->
+    <button style="width: 30vh; height: 10vh; margin-left: 2vh;" type="button" data-toggle="modal"
+      data-target="#exampleModalLong" class="btn btn-warning btn-block">Añadir
+      Máquina</a>
+
+      <!-- Botón para ir a la página de Buscar usuario -->
+      <button style="width: 30vh; height: 10vh; margin-left: 2vh;" type="button" data-toggle="modal"
+        data-target="#searchUser" class="btn btn-warning btn-block">Buscar
+        Máquina</button>
+
+      <!-- Botón para ir a la página de Editar usuario -->
+      <button style="width: 30vh; height: 10vh; margin-left: 2vh;" 
+        onclick="assign_membreship()" 
+        data-toggle="modal" 
+        data-target="#membresiaAsignaciones" 
+        class="btn btn-warning btn-block">Asignar Membresía
+</button>
+      <!-- Botón para ir a la página de estado usuario -->
+      <button style="width: 30vh; height: 10vh; margin-left: 2vh;" onclick="update_membreship()" data-toggle="modal"
+        data-target="#membresiaActualizacion" class="btn btn-warning btn-block">Actualizar membresia</button>
+  </div>
+</div>
+<table border="1" id="miembrosTabla">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Nombre</th>
+      <th>Apellido</th>
+      <th>Edad</th>
+      <th>Correo</th>
+      <th>Telefono</th>
+      <th>Rol</th>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- Las filas se agregarán dinámicamente aquí -->
+  </tbody>
+</table>
+
+{% with messages = get_flashed_messages(with_categories=True) %}
+{% if messages %}
+<div class="alert alert-dismissible fade show" role="alert">
+  {% for category, message in messages %}
+  <div class="alert alert-{{ category }}">
+    {{ message }}
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+<!--MODAL PARA AGREGAR USUARIOS-->
+<div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Agregar Usuario</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        {% include 'Administrator/add_users.html' %}
+      </div>
+    </div>
+  </div>
+</div>
+<!--MODAL PARA AGREGAR USUARIOS-->
+
+<!--ASIGNAR MEMBRESIA-->
+<div class="modal fade" id="membresiaAsignaciones" tabindex="-1" aria-labelledby="membresiaAsignacionesLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title">Asignar Membresía</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <!-- Aquí se incluye la tabla de asignación de membresías -->
+              {% include 'Administrator/assign_memb.html' %}
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+              <button type="button" class="btn btn-primary" onclick="guardarCambios()">Guardar cambios</button>
+          </div>
+      </div>
+  </div>
+</div><!--ASIGNAR MEMBRESIA-->
+
+<!--MODAL PARA BUSQUEDA DE USUARIO-->
+<div class="modal fade" id="membresiaActualizacion" tabindex="-1" aria-labelledby="membresiaActualizacionLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title">Asignar Membresía</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <!-- Aquí se incluye la tabla de asignación de membresías -->
+              {% include 'Administrator/update_membreship.html' %}
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+              <button type="button" class="btn btn-primary" onclick="guardarCambios()">Guardar cambios</button>
+          </div>
+      </div>
+  </div>
+</div>
+
+<!--MODAL PARA BUSQUEDA DE USUARIO-->
+<div class="modal fade" id="searchUser" tabindex="-1" aria-labelledby="searchUserLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        {% include 'Administrator/search_user.html' %}
+      </div>
+      <!-- <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div> -->
+    </div>
+  </div>
+</div>
+<!--MODAL PARA BUSQUEDA DE USUARIO-->
+

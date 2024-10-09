@@ -246,9 +246,16 @@ function update_membreship(){
                 botonMembresia.onclick = function () {
                     // Limpia los campos del modal
                     document.getElementById('tipoMembresia').value = ''; 
+                    document.getElementById('tipoMembresia').value = info_user[10];
+                    console.log(info_user[10]);
                     document.getElementById('fechaInicio').value = ''; 
-                    document.getElementById('fechaFin').value = ''; 
-                    document.getElementById('estadoMembresia').value = ''; 
+                    document.getElementById('fechaInicio').value = info_user[5]; 
+                    console.log(info_user[5]);
+                    document.getElementById('fechaFin').value = '';
+                    document.getElementById('fechaFin').value = info_user[6];
+                    console.log(info_user[6]);
+                    document.getElementById('estadoMembresia').value = '';
+                    document.getElementById('estadoMembresia').value = info_user[7]; 
                     console.log("USUARIO QUE LLEGA");
                     console.log(info_user[8]);
                     console.log(info_user[9]);
