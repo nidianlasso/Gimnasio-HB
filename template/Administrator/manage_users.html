@@ -28,9 +28,8 @@
         class="btn btn-warning btn-block">Asignar Membresía
 </button>
       <!-- Botón para ir a la página de estado usuario -->
-      <button style="width: 30vh; height: 10vh; margin-left: 2vh;" type="button" data-toggle="modal"
-        data-target="#membresiaAsignaciones" class="btn btn-warning btn-block">Buscar
-        Usuario</button>
+      <button style="width: 30vh; height: 10vh; margin-left: 2vh;" onclick="update_membreship()" data-toggle="modal"
+        data-target="#membresiaActualizacion" class="btn btn-warning btn-block">Actualizar membresia</button>
   </div>
 </div>
 <table border="1" id="miembrosTabla">
@@ -102,7 +101,27 @@
   </div>
 </div><!--ASIGNAR MEMBRESIA-->
 
-
+<!--MODAL PARA BUSQUEDA DE USUARIO-->
+<div class="modal fade" id="membresiaActualizacion" tabindex="-1" aria-labelledby="membresiaActualizacionLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title">Asignar Membresía</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <!-- Aquí se incluye la tabla de asignación de membresías -->
+              {% include 'Administrator/update_membreship.html' %}
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+              <button type="button" class="btn btn-primary" onclick="guardarCambios()">Guardar cambios</button>
+          </div>
+      </div>
+  </div>
+</div>
 
 <!--MODAL PARA BUSQUEDA DE USUARIO-->
 <div class="modal fade" id="searchUser" tabindex="-1" aria-labelledby="searchUserLabel" aria-hidden="true">
@@ -125,4 +144,3 @@
 </div>
 <!--MODAL PARA BUSQUEDA DE USUARIO-->
 
-<!--MODAL PARA BUSQUEDA DE USUARIO-->

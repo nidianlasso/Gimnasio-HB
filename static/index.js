@@ -168,7 +168,7 @@ function assign_membreship() {
                 // Crear la celda para Membresía con un botón
                 const membresiaCelda = document.createElement('td');
                 const botonMembresia = document.createElement('button');
-                botonMembresia.textContent = 'Asignar'+ info_user[8];
+                botonMembresia.textContent = 'Asignar';
                 botonMembresia.className = 'btn btn-primary';
 
                 // Añadir el evento de clic al botón "Asignar"
@@ -184,6 +184,82 @@ function assign_membreship() {
                 
                     // Abre el modal
                     $('#detallesMembresia').modal('show');
+                };
+                
+
+                // Agregar el botón a la celda y la celda a la fila
+                membresiaCelda.appendChild(botonMembresia);
+                fila.appendChild(membresiaCelda);
+
+                // Agregar la fila al cuerpo de la tabla
+                asignacionMembresia.appendChild(fila);
+            });
+        })
+        .catch(error => {
+            console.error('Hubo un problema con la solicitud:', error);
+        });
+}
+function update_membreship(){
+    const asignacionMembresia = document.getElementById('actualizacionMembresia').getElementsByTagName('tbody')[0];
+    fetch('/assign_membreship')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la solicitud');
+            }
+            return response.json(); // Parsear la respuesta a JSON
+        })
+        .then(data => {
+            console.log("Información recibida:", data);
+            // Limpiar la tabla antes de agregar nuevas filas
+            asignacionMembresia.innerHTML = '';
+
+            // Filtrar los datos para mostrar solo aquellos con información incompleta
+            const datosFiltrados = data.filter(info_user => {
+                return info_user[3] || info_user[4] || info_user[5] || info_user[6]; // costos, tipo, fechaInicio, estadoMembresia
+            });
+
+            // Agregar filas a la tabla
+            datosFiltrados.forEach(info_user => {
+                // Crear una nueva fila
+                const fila = document.createElement('tr');
+
+                // Crear y agregar celdas a la fila para las 3 primeras columnas
+                const id = document.createElement('td');
+                id.textContent = info_user[0]; // Identificación
+                fila.appendChild(id);
+
+                const nombre = document.createElement('td');
+                nombre.textContent = info_user[1]; // Nombre
+                fila.appendChild(nombre);
+
+                const apellido = document.createElement('td');
+                apellido.textContent = info_user[2]; // Apellido
+                fila.appendChild(apellido);
+
+                // Crear la celda para Membresía con un botón
+                const membresiaCelda = document.createElement('td');
+                const botonMembresia = document.createElement('button');
+                botonMembresia.textContent = 'Actualizar';
+                botonMembresia.className = 'btn btn-primary';
+
+                // Añadir el evento de clic al botón "Asignar"
+                botonMembresia.onclick = function () {
+                    // Limpia los campos del modal
+                    document.getElementById('tipoMembresia').value = ''; 
+                    document.getElementById('fechaInicio').value = ''; 
+                    document.getElementById('fechaFin').value = ''; 
+                    document.getElementById('estadoMembresia').value = ''; 
+                    console.log("USUARIO QUE LLEGA");
+                    console.log(info_user[8]);
+                    console.log(info_user[9]);
+
+                    const usuarioId = info_user[8]; 
+                    const membresiaUsuario = info_user[9];
+                    // Asumiendo que info_user[0] es el usuario_id
+                    document.getElementById('id_user_update').value = usuarioId; 
+                    document.getElementById('id_membresia_usuario').value = membresiaUsuario;
+                    // Abre el modal
+                    $('#updateMembresia').modal('show');
                 };
                 
 

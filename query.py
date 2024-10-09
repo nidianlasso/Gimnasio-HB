@@ -156,7 +156,7 @@ def search_users(identificacion):
 #ASIGNACION DE MEMBRESIAS
 def assig_membreships():
     try:
-        cursor.execute("SELECT u.identificacion, u.nombre, u.apellido, m.costo, m.tipo, mu.fecha_inicio, mu.fecha_fin, em.nombre AS estado_membresia, u.id_usuario FROM usuario u LEFT JOIN membresia_usuario mu ON mu.id_usuario = u.id_usuario LEFT JOIN membresia m ON mu.id_membresia = m.id_membresia LEFT JOIN estado_membresia em ON mu.id_estado_membresia = em.id_estado_membresia WHERE u.id_rol= '5';")
+        cursor.execute("SELECT u.identificacion, u.nombre, u.apellido, m.costo, m.tipo, mu.fecha_inicio, mu.fecha_fin, em.nombre AS estado_membresia, u.id_usuario, mu.id_membresia_usuario FROM usuario u LEFT JOIN membresia_usuario mu ON mu.id_usuario = u.id_usuario LEFT JOIN membresia m ON mu.id_membresia = m.id_membresia LEFT JOIN estado_membresia em ON mu.id_estado_membresia = em.id_estado_membresia WHERE u.id_rol= '5';")
         campos_asignacion = cursor.fetchall()
         return campos_asignacion
     except Exception as e:
@@ -194,3 +194,20 @@ def status_membreship():
     cursor.execute("SELECT id_estado_membresia, nombre FROM estado_membresia")
     status = cursor.fetchall()
     return status
+
+#ACTUALIZAR MEMBRESIA
+def actualizar_membresia( tipo, fecha_inicio, fecha_fin, estado, id_membresia_usuario):
+    try:
+        # cursor.execute('UPDATE membresia_usuario SET id_usuario=?, id_membresia=?, fecha_inicio=?, fecha_fin=?, id_estado_membresia=? WHERE id_membresia_usuario=?',
+        #     (int(id_usuario), int(tipo), fecha_inicio, fecha_fin, int(estado), int(id_membresia_usuario))
+        # )
+        cursor.execute('UPDATE membresia_usuario SET id_membresia=%s, fecha_inicio=%s, fecha_fin=%s, id_estado_membresia=%s WHERE id_membresia_usuario=%s',
+               (tipo, fecha_inicio, fecha_fin, estado, id_membresia_usuario))
+
+        connection.commit()
+        return True
+    except Exception as e:
+        print("Error al actualizar la membresía:", e)
+        print("Información que se intenta actualizar:", id_usuario, tipo, fecha_inicio, fecha_fin, estado, id_membresia_usuario)
+        return False
+

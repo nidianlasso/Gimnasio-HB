@@ -4,7 +4,7 @@ from datetime import date
 from query import (validarLogin, login_required_admin, login_required_member, lista_miembros,
                     lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
                       conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship,
-                      guardar_membresia, status_membreship)
+                      guardar_membresia, status_membreship, actualizar_membresia)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -112,6 +112,7 @@ def assign_membreship():
     return jsonify(asignacion)
 
 @app.route('/save_membreship', methods=['POST'])
+@login_required_admin
 def save_membreship():
     if request.method == 'POST':
         usuario_id = request.form['usuarioId']  # Asegúrate de que este nombre sea correcto
@@ -127,6 +128,24 @@ def save_membreship():
     return manage_users()
 
 
-   
+@app.route('/update_membreship', methods=['POST'])
+@login_required_admin
+def update_membreship():
+    if request.method == 'POST':
+        # usuario_id = request.form.get('id_user_update')
+        membresia_usuario = request.form.get('id_membresia_usuario')
+        tipo_membresia = request.form.get('tipoMembresia')
+        fecha_inicio = request.form.get('fechaInicio')
+        fecha_fin = request.form.get('fechaFin')
+        estado = request.form.get('estadoMembresia')
+        print("DATOS QUE SE VAN A ACTUALIZAR EN LA BD")
+        print(membresia_usuario, tipo_membresia, fecha_inicio, fecha_fin, estado)
+        if actualizar_membresia(tipo_membresia, fecha_inicio, fecha_fin, estado, membresia_usuario):
+            flash('Membresía actualizada exitosamente.', 'success')
+        else:
+            flash('Hubo un error al actualizar la membresía.', 'danger')
+
+    return redirect(url_for('manage_users'))
+
 if __name__ =='__main__':
     app.run(port =4000, debug =True)
