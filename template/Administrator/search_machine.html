@@ -1,0 +1,35 @@
+{% include 'main.html' %}
+        <div class="content-container">
+            <div class="col-md-80 p-4">
+                <h1>Búsqueda de Máquinas</h1>
+                <br>
+                <div>
+                    <div class="container">
+                      <div class="row">
+                        <div class="col-12">
+                          <label for="busqueda">Buscar por nombre:</label>
+                          <br>
+                          <input inputmode="text" id="busqueda_maquina" name="busqueda_maquina" required>
+                          <button type="submit" onclick="getSearchMachine()">
+                              <img src="../../static/img/buscar.png" alt="" width="20px" style="margin-top: -8%;">
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- <a href="{{ url_for('manage_users') }}" class="btn btn-primary btn-block">Volver</a> -->
+                    <table style="margin: auto; margin-top: 10px;" border="1" id="busquedaMaquinas">
+                        <thead>
+                          <tr>
+                            <th>Nombre</th>
+                            <th>Fecha de compra</th>
+                            <th>Serial</th>
+                            <th>Proveedor</th>
+                            <th>Precio</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                      </table>
+            </div>
+        </div>
+

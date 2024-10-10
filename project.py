@@ -4,7 +4,7 @@ from datetime import date
 from query import (validarLogin, login_required_admin, login_required_member, lista_miembros,
                     lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
                       conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship,
-                      guardar_membresia, status_membreship, actualizar_membresia)
+                      guardar_membresia, status_membreship, actualizar_membresia, lista_maquinas, search_machine)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -147,11 +147,29 @@ def update_membreship():
 
     return redirect(url_for('manage_users'))
 
+#GESTION DE LAS MAQUINAS
 @app.route('/manage-machine')
 @login_required_admin
 def manage_machine():
     return render_template('Administrator/manage_machine.html')
 
+@app.route('/list-machine', methods = ['POST', 'GET'])
+@login_required_admin
+def list_machine():
+    maquinas_gym = lista_maquinas()
+    return jsonify(maquinas_gym)
+
+@app.route('/search-machine', methods=['POST'])
+@login_required_admin
+def search_machine_name():
+    if request.method == 'POST':
+        # nombre = request.form['nombre']
+        palabra_ingresada = request.json
+        palabra_ingresada = palabra_ingresada.get('identificacion')
+        print(palabra_ingresada, "extraccion de datos")
+        resultados = search_machine(palabra_ingresada)   
+        print(resultados, "estas son las busquedas")
+    return jsonify(resultados)
 
 if __name__ =='__main__':
     app.run(port =4000, debug =True)

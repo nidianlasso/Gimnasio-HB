@@ -208,3 +208,16 @@ def actualizar_membresia( tipo, fecha_inicio, fecha_fin, estado, id_membresia_us
         print("Información que se intenta actualizar:", tipo, fecha_inicio, fecha_fin, estado, id_membresia_usuario)
         return False
 
+
+#OBTENER EL LISTADO DE MIEMBROS PARA GESTION
+def lista_maquinas():
+    cursor.execute("SELECT m.nombre, i.serial, i.fecha_compra, i.precio, p.nombre, i.disponibilidad FROM inventario_maquina i INNER JOIN maquina m ON i.id_maquina = m.id_maquina INNER JOIN proveedor p ON i.id_proveedor = p.id_proveedor")
+    listado_maquinas = cursor.fetchall()
+    return listado_maquinas
+#OBTENER EL LISTADO DE MIEMBROS
+
+#BUSQUEDA DE MAQUINAS
+def search_machine(nombre):
+    cursor.execute("SELECT m.nombre, i.fecha_compra, i.serial, p.nombre, i.precio FROM inventario_maquina i INNER JOIN maquina m ON i.id_maquina = m.id_maquina INNER JOIN proveedor p ON i.id_proveedor = p.id_proveedor  WHERE m.nombre = %s", (nombre,))
+    result_busqueda = cursor.fetchall()
+    return result_busqueda

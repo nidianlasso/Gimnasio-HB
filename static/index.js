@@ -282,3 +282,125 @@ function update_membreship(){
             console.error('Hubo un problema con la solicitud:', error);
         });
 }
+
+/*GESTION DE LAS MAQUINAS */
+function getListMachine() {
+    const tablaCuerpo = document.querySelector('#listaMaquinas tbody');
+    const tabla = document.getElementById('listaMaquinas');
+    tabla.style.display = 'table';
+
+    tablaCuerpo.innerHTML = '';
+    fetch('/list-machine')
+        .then(response => {
+            if (!response.ok) { throw new Error('Error en la solicitud'); } return response.json();  // Parsear la respuesta a JSON
+        })
+        .then(data => {
+            console.log(data);
+            data.forEach(user => {
+                // Crear una fila
+                const fila = document.createElement('tr');
+
+                // Crear y agregar celdas a la fila
+                const nombreMaquina = document.createElement('td');
+                nombreMaquina.textContent = user[0];
+                fila.appendChild(nombreMaquina);
+
+                const serialMaquina = document.createElement('td');
+                serialMaquina.textContent = user[1];
+                fila.appendChild(serialMaquina);
+
+                const fechaCompleta = new Date(user[2]);
+
+                // UTC SIRVE PARA MOSTRAR LA FECHA EXACTA SIN VERSE AFECTADA POR EL SERVIDOR
+                const dia = fechaCompleta.getUTCDate();
+                const mes = fechaCompleta.getUTCMonth() + 1;
+                const anio = fechaCompleta.getUTCFullYear();
+                // FORMATO DE LA FECHA
+                const fechaFormateada = `${dia}/${mes}/${anio}`;
+                const fechaCompra = document.createElement('td');
+                fechaCompra.textContent = fechaFormateada;
+                fila.appendChild(fechaCompra);
+
+                console.log(fechaCompleta);
+
+                const precioMaquina = document.createElement('td');
+                precioMaquina.textContent = user[3];
+                fila.appendChild(precioMaquina);
+
+                const proveedorMaquina = document.createElement('td');
+                proveedorMaquina.textContent = user[4];
+                fila.appendChild(proveedorMaquina);
+
+                const disponibilidadMaquina = document.createElement('td');
+                disponibilidadMaquina.textContent = user[5] === 1 ? 'Disponible' : 'No Disponible';
+                fila.appendChild(disponibilidadMaquina);
+
+                // Agregar la fila al cuerpo de la tabla
+                tablaCuerpo.appendChild(fila);
+            });
+        })
+        .catch(error => {
+            console.error('Hubo un problema con la solicitud:', error);
+        });
+}
+
+function getSearchMachine() {
+    const cuerpoTabla = document.querySelector('#busquedaMaquinas tbody');
+    const tabla = document.getElementById('busquedaMaquinas');
+    const busqueda = document.getElementById('busqueda_maquina').value;
+    tabla.style.display = 'table';
+    cuerpoTabla.innerHTML = '';
+    fetch('/search-machine', {
+        method: "POST",
+        body: JSON.stringify({ identificacion: busqueda }),
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    })
+        .then(response => {
+            if (!response.ok) { throw new Error('Error en la solicitud'); } return response.json();  // Parsear la respuesta a JSON
+        })
+        .then(data => {
+            console.log("Informacion!!!!");
+
+            console.log(data);
+            data.forEach(user => {
+                // Crear una fila
+                const fila = document.createElement('tr');
+
+                // Crear y agregar celdas a la fila
+                const nombre_maquina = document.createElement('td');
+                nombre_maquina.textContent = user[0];
+                fila.appendChild(nombre_maquina);
+
+                const fechaCompleta = new Date(user[1]);
+
+                // UTC SIRVE PARA MOSTRAR LA FECHA EXACTA SIN VERSE AFECTADA POR EL SERVIDOR
+                const dia = fechaCompleta.getUTCDate();
+                const mes = fechaCompleta.getUTCMonth() + 1;
+                const anio = fechaCompleta.getUTCFullYear();
+                const fechaFormateada = `${dia}/${mes}/${anio}`;
+                const fecha_compra = document.createElement('td');
+                fecha_compra.textContent = fechaFormateada;
+                fila.appendChild(fecha_compra);
+
+                const serial = document.createElement('td');
+                serial.textContent = user[2];
+                fila.appendChild(serial);
+
+                const proveedor = document.createElement('td');
+                proveedor.textContent = user[3];
+                fila.appendChild(proveedor);
+
+                const precio = document.createElement('td');
+                precio.textContent = user[4];
+                fila.appendChild(precio);
+
+                // Agregar la fila al cuerpo de la tabla
+                cuerpoTabla.appendChild(fila);
+            });
+        })
+        .catch(error => {
+            console.error('Hubo un problema con la solicitud:', error);
+        });
+}

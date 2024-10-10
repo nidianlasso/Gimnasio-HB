@@ -7,17 +7,12 @@
   <div class="" style="display: inline-flex; margin: auto; margin-top: 2%;">
     <br>
     <!-- Botón para ir a la lista de usuarios -->
-    <button style="width: 30vh; height: 10vh; margin-left: 2vh;" onclick="getListUsers()"
+    <button style="width: 30vh; height: 10vh; margin-left: 2vh;" onclick="getListMachine()"
       class="btn btn-warning btn-block" id="listadomiembro">Listado Maquinas</button>
-
-    <!-- Botón para mostrar el formulario de agregar usuario -->
-    <button style="width: 30vh; height: 10vh; margin-left: 2vh;" type="button" data-toggle="modal"
-      data-target="#exampleModalLong" class="btn btn-warning btn-block">Añadir
-      Máquina</a>
 
       <!-- Botón para ir a la página de Buscar usuario -->
       <button style="width: 30vh; height: 10vh; margin-left: 2vh;" type="button" data-toggle="modal"
-        data-target="#searchUser" class="btn btn-warning btn-block">Buscar
+        data-target="#searchMachine" class="btn btn-warning btn-block">Buscar
         Máquina</button>
 
       <!-- Botón para ir a la página de Editar usuario -->
@@ -32,16 +27,15 @@
         data-target="#membresiaActualizacion" class="btn btn-warning btn-block">Actualizar membresia</button>
   </div>
 </div>
-<table border="1" id="miembrosTabla">
+<table border="1" id="listaMaquinas">
   <thead>
     <tr>
-      <th>ID</th>
       <th>Nombre</th>
-      <th>Apellido</th>
-      <th>Edad</th>
-      <th>Correo</th>
-      <th>Telefono</th>
-      <th>Rol</th>
+      <th>Serial</th>
+      <th>Fecha de compra</th>
+      <th>Precio</th>
+      <th>Proveedor</th>
+      <th>Disponibilidad</th>
     </tr>
   </thead>
   <tbody>
@@ -124,7 +118,7 @@
 </div>
 
 <!--MODAL PARA BUSQUEDA DE USUARIO-->
-<div class="modal fade" id="searchUser" tabindex="-1" aria-labelledby="searchUserLabel" aria-hidden="true">
+<div class="modal fade" id="searchMachine" tabindex="-1" aria-labelledby="searchMachineLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
@@ -133,7 +127,7 @@
         </button>
       </div>
       <div class="modal-body">
-        {% include 'Administrator/search_user.html' %}
+        {% include 'Administrator/search_machine.html' %}
       </div>
       <!-- <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

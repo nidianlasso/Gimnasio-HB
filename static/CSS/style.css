@@ -25,6 +25,10 @@
     display: none;
     margin: auto;
 }
+#listaMaquinas{
+    display: none;
+    margin: auto;
+}
 /* #busquedaUsuarios{
     display: none;
     margin: auto;
