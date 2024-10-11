@@ -29,7 +29,10 @@ def validarLogin(identificacion, contrasena):
             resp = make_response(redirect(url_for('administrator')))
         elif rol == "Miembro":
             resp = make_response(redirect(url_for('profile_member')))
-        
+        elif rol == "Entrenador":
+            resp = make_response(redirect(url_for('profile_coach')))
+        elif rol == "Recepcionista":
+            resp = make_response(redirect(url_for('profile_receptionist')))
         # Devolver la respuesta con la cookie establecida
         resp.set_cookie('identificacion', identificacion)  
         return resp  
@@ -80,6 +83,50 @@ def login_required_member(f):
         else:
             return redirect(url_for('login'))
         # Si la cookie existe, proceder a la función protegida
+        return f(*args, **kwargs)
+    return decorated_function
+
+def login_required_coach(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Verificar si la cookie 'identificacion' está presente
+        identificacion = request.cookies.get('identificacion')
+        if identificacion:
+            print(f"Identificación de la cookie: {identificacion}")  # Debug: Verifica el valor de la cookie
+            # Realizar la consulta para verificar el rol del usuario
+            cursor.execute("SELECT r.nombre FROM bd_gimnasio2.usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE u.identificacion = %s AND r.nombre = 'Entrenador'", (identificacion))
+            rol_user = cursor.fetchall()
+            print(f"Rol del usuario: {rol_user}")  # Debug: Verifica los resultados de la consulta
+            if len(rol_user) == 0:  # Si no hay rol "Entrenador", redirigir al login
+                print("Usuario no autenticado. Redirigiendo al login.")
+                return redirect(url_for('login'))
+        else:
+            print("Cookie de identificación no encontrada. Redirigiendo al login.")
+            return redirect(url_for('login'))
+        
+        # Si la cookie existe y el rol es correcto, proceder a la función protegida
+        return f(*args, **kwargs)
+    return decorated_function
+
+def login_required_receptionist(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # Verificar si la cookie 'identificacion' está presente
+        identificacion = request.cookies.get('identificacion')
+        if identificacion:
+            print(f"Identificación de la cookie: {identificacion}")  # Debug: Verifica el valor de la cookie
+            # Realizar la consulta para verificar el rol del usuario
+            cursor.execute("SELECT r.nombre FROM bd_gimnasio2.usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE u.identificacion = %s AND r.nombre = 'Recepcionista'", (identificacion))
+            rol_user = cursor.fetchall()
+            print(f"Rol del usuario: {rol_user}")  # Debug: Verifica los resultados de la consulta
+            if len(rol_user) == 0:  # Si no hay rol "Entrenador", redirigir al login
+                print("Usuario no autenticado. Redirigiendo al login.")
+                return redirect(url_for('login'))
+        else:
+            print("Cookie de identificación no encontrada. Redirigiendo al login.")
+            return redirect(url_for('login'))
+        
+        # Si la cookie existe y el rol es correcto, proceder a la función protegida
         return f(*args, **kwargs)
     return decorated_function
 

@@ -1,8 +1,8 @@
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session
 from flask_mysqldb import MySQL
 from datetime import date
-from query import (validarLogin, login_required_admin, login_required_member, lista_miembros,
-                    lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
+from query import (validarLogin, login_required_admin, login_required_member,login_required_coach, login_required_receptionist,
+                    lista_miembros,lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
                       conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship,
                       guardar_membresia, status_membreship, actualizar_membresia, lista_maquinas, search_machine)
 
@@ -41,6 +41,18 @@ def administrator():
 @login_required_member
 def profile_member():
     return render_template('member/profile.html')
+
+
+#LLAMADO AL TEMPLATE ENTRENADOR
+@app.route('/profile-coach')
+@login_required_coach
+def profile_coach():
+    return render_template('coach/profile.html')
+
+@app.route('/profile-receptionist')
+@login_required_receptionist
+def profile_receptionist():
+    return render_template('receptionist/profile.html')
 
 #LLAMADO VISTA GESTION DE USUARIOS
 @app.route('/users-manage')
