@@ -404,3 +404,164 @@ function getSearchMachine() {
             console.error('Hubo un problema con la solicitud:', error);
         });
 }
+
+/*RECEPCIONISTA */
+function registrarIngreso() {
+    const cedula = document.getElementById('cedula').value;
+
+    fetch('/registrar-ingreso', {
+        method: 'POST',
+        body: JSON.stringify({ cedula: cedula }),
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { throw new Error(err.error || 'Error en la solicitud'); });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Datos recibidos:', data);
+        const resultadoIngreso = document.getElementById('resultadoIngreso');
+        resultadoIngreso.innerHTML = ''; // Limpieza del div
+
+        // Mostrar la información del usuario
+        const infoUsuario = document.createElement('div');
+        infoUsuario.innerHTML = `
+            <p>Identificación: ${data.id_usuario}</p>
+            <p>Nombre: ${data.nombre}</p>
+            <p>Apellido: ${data.apellido}</p>
+            <p>Rol: ${data.rol}</p>
+            <button id="activarBtn">Activar</button>
+        `;
+        resultadoIngreso.appendChild(infoUsuario);
+
+        // Obtener el estado actual del acceso
+        fetch(`/obtener-acceso?id_usuario=${data.id_usuario}`,{
+            method: 'GET',
+        }) // Cambia el endpoint según tu lógica
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al obtener el estado de acceso');
+                }
+                return response.json();
+            })
+            .then(accesoData => {
+                console.log('Tipo de ID de usuario:', typeof accesoData.id_usuario);
+                
+                const boton = document.getElementById('activarBtn');
+                // Cambiar el texto del botón según el estado
+                if (accesoData.tipo_acceso === 'Active') {
+                    boton.textContent = 'Desactivar';
+                } else {
+                    boton.textContent = 'Activar';
+                }
+
+                boton.addEventListener('click', () => {
+                    const fecha = new Date().toISOString(); // Fecha actual
+                    const duracion = 60; // Duración
+                    const nuevoTipoAcceso = boton.textContent === 'Desactivar' ? 'Inactive' : 'Active';
+                    
+                    // Cambiar el texto del botón
+                    boton.textContent = nuevoTipoAcceso === 'Inactive' ? 'Activar' : 'Desactivar';
+
+                    console.log(data.identificacion, 'AQUI EL ID DEL USER');
+
+                    fetch('/guardar-acceso', { // Guardar los datos
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ fecha, duracion, tipo_acceso: nuevoTipoAcceso, id_usuario: data.id_usuario })
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        }
+                        throw new Error('Error en la solicitud');
+                    })
+                    .then(data => {
+                        console.log('Acceso registrado:', data);
+                    })
+                    .catch(error => {
+                        console.error('Error al guardar el acceso:', error);
+                    });
+                });
+            })
+            .catch(error => {
+                console.error('Error al obtener el estado de acceso:', error);
+                resultadoIngreso.innerHTML = `<p style="color:red;">${error.message}</p>`;
+            });
+    })
+    .catch(error => {
+        console.error('Hubo un problema con la solicitud:', error);
+        const resultadoIngreso = document.getElementById('resultadoIngreso');
+        resultadoIngreso.innerHTML = `<p style="color:red;">${error.message}</p>`;
+    });
+}
+
+
+// function registrarIngreso() {
+//     const cedula = document.getElementById('cedula').value;
+
+//     fetch('/registrar-ingreso', {
+//         method: 'POST',
+//         body: JSON.stringify({ cedula: cedula }),
+//         headers: {
+//             'Content-Type': 'application/json'
+//         }
+//     })
+//     .then(response => {
+//         if (!response.ok) {
+//             return response.json().then(err => { throw new Error(err.error || 'Error en la solicitud'); });
+//         }
+//         return response.json();
+//     })
+//     .then(data => {
+//         console.log('Datos recibidos:', data);
+//         const resultadoIngreso = document.getElementById('resultadoIngreso');
+//         resultadoIngreso.innerHTML = ''; // Limpieza del div
+    
+//         // Mostrar la información del usuario
+//         const infoUsuario = document.createElement('div');
+//         infoUsuario.innerHTML = `
+//             <p>Identificación: ${data.id_usuario}</p>
+//             <p>Nombre: ${data.nombre}</p>
+//             <p>Apellido: ${data.apellido}</p>
+//             <p>Rol: ${data.rol}</p>
+//             <button id="activarBtn">Activar</button>
+//         `;
+//         resultadoIngreso.appendChild(infoUsuario);
+//         document.getElementById('activarBtn').addEventListener('click', () => {
+//             const fecha = new Date().toISOString(); // Fecha actual
+//             const duracion = 60; // Duración
+//             const tipo_acceso = 'Active';
+//             const identificacion = data.identificacion; // Obtener la identificación del usuario
+//             console.log(identificacion,'AQUI EL ID DEL USER')
+
+//             fetch('/guardar-acceso', {  //guardar los datos
+//                 method: 'POST',
+//                 headers: {
+//                     'Content-Type': 'application/json'
+//                 },
+//                 body: JSON.stringify({ fecha, duracion, tipo_acceso, id_usuario: data.id_usuario })
+//             })
+//             .then(response => {
+//                 if (response.ok) {
+//                     return response.json();
+//                 }
+//                 throw new Error('Error en la solicitud');
+//             })
+//             .then(data => {
+//                 console.log('Acceso registrado:', data);
+//             })
+//         });
+//     })
+//     .catch(error => {
+//         console.error('Hubo un problema con la solicitud:', error);
+//         const resultadoIngreso = document.getElementById('resultadoIngreso');
+//         resultadoIngreso.innerHTML = `<p style="color:red;">${error.message}</p>`;
+//     });
+// }

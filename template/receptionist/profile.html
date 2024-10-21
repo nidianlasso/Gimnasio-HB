@@ -1,1 +1,34 @@
-<h1>RECEPCIONISTA</h1>
+{% include 'main.html' %}
+{% include 'Administrator/menu.html' %}
+
+<h3 style="text-align: center; color: #000; margin-top: 3%;"> <b>GESTIÓN DE USUARIOS</b> </h3>
+<div class="contenedor-gestion"
+  style="display: flex; justify-content: center; justify-items: center; padding-bottom: 2%;">
+  <div class="" style="display: inline-flex; margin: auto; margin-top: 2%;">
+    <br>
+      <!-- Botón para ir a la página de Buscar usuario -->
+      <button style="width: 30vh; height: 10vh; margin-left: 2vh;" type="button" data-toggle="modal"
+        data-target="#searchUser" class="btn btn-warning btn-block">Buscar
+        Usuario</button>
+
+<!--MODAL PARA BUSQUEDA DE USUARIO-->
+<div class="modal fade" id="searchUser" tabindex="-1" aria-labelledby="searchUserLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        {% include 'receptionist/register_access.html' %}
+      </div>
+      <!-- <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div> -->
+    </div>
+  </div>
+</div>
+<!--MODAL PARA BUSQUEDA DE USUARIO-->
+

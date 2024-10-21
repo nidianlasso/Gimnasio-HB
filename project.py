@@ -1,10 +1,11 @@
-from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session
+from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 from flask_mysqldb import MySQL
-from datetime import date
+from datetime import datetime
 from query import (validarLogin, login_required_admin, login_required_member,login_required_coach, login_required_receptionist,
                     lista_miembros,lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
                       conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship,
-                      guardar_membresia, status_membreship, actualizar_membresia, lista_maquinas, search_machine)
+                      guardar_membresia, status_membreship, actualizar_membresia, lista_maquinas, search_machine, access_users,
+                      guardar_acceso, obtener_tipo_acceso)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -49,10 +50,13 @@ def profile_member():
 def profile_coach():
     return render_template('coach/profile.html')
 
-@app.route('/profile-receptionist')
+@app.route('/profile-receptionist', methods=['GET', 'POST'])
 @login_required_receptionist
 def profile_receptionist():
-    return render_template('receptionist/profile.html')
+    return render_template('receptionist/profile.html')  # Asegúrate de que resultados tenga un valor
+
+
+
 
 #LLAMADO VISTA GESTION DE USUARIOS
 @app.route('/users-manage')
@@ -182,6 +186,80 @@ def search_machine_name():
         resultados = search_machine(palabra_ingresada)   
         print(resultados, "estas son las busquedas")
     return jsonify(resultados)
+
+@app.route('/registrar-ingreso', methods=['POST'])
+def registrar_ingreso():
+    cedula = request.json.get('cedula')
+    resultado = access_users(cedula)
+
+    if resultado:
+        usuario = resultado[0]  # Obtener la primera tupla
+        id_usuario = usuario[0]  # Esto es el id del usuario
+        # Retorna la información del usuario y pero también espera la información del acceso
+        return jsonify({
+            'id_usuario': id_usuario,
+            'nombre': usuario[1],
+            'apellido': usuario[2],
+            'rol': usuario[3]
+        }), 200
+    else:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+
+@app.route('/guardar-acceso', methods=['POST'])
+def guardar_acceso_route():
+    data = request.json
+    fecha = data.get('fecha')
+    duracion = data.get('duracion')
+    tipo_acceso = data.get('tipo_acceso')
+    id_usuario = data.get('id_usuario')
+
+    if guardar_acceso(fecha, duracion, tipo_acceso, id_usuario):
+        return jsonify({'message': 'Acceso registrado exitosamente'}), 201
+    else:
+        return jsonify({'error': 'Error al registrar el acceso'}), 500
+
+@app.route('/obtener-acceso', methods=['GET'])
+def obtener_acceso():
+    id_usuario_str = request.args.get('id_usuario')
+    
+    if not id_usuario_str:
+        return jsonify({'error': 'ID de usuario es requerido'}), 400
+    
+    try:
+        id_usuario = int(id_usuario_str)  # Intenta convertir a entero
+    except ValueError:
+        return jsonify({'error': 'ID de usuario debe ser un número válido'}), 400
+
+    # Continúa con la lógica para obtener acceso
+    acceso = obtener_tipo_acceso(id_usuario)
+    
+    if acceso is None:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
+
+    return jsonify({'tipo_acceso': acceso}), 200
+
+
+
+
+# @app.route('/guardar-acceso', methods=['POST'])
+# def guardar_acceso_route():
+#     try:
+#         data = request.json
+#         fecha = data.get('fecha')
+#         duracion = data.get('duracion')
+#         tipo_acceso = data.get('tipo_acceso')
+#         id_usuario = data.get('id_usuario')
+
+#         if guardar_acceso(fecha, duracion, tipo_acceso, id_usuario):
+#             return jsonify({'mensaje': 'Acceso guardado exitosamente'}), 200
+#         else:
+#             return jsonify({'error': 'Error al guardar el acceso'}), 500
+
+#     except Exception as e:
+#         return jsonify({'error': str(e)}), 500  # Captura cualquier otro error
+
+
+
 
 if __name__ =='__main__':
     app.run(port =4000, debug =True)

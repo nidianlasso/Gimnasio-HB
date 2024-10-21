@@ -1,0 +1,33 @@
+{% include 'main.html' %}
+<div class="content-container">
+    <div class="col-md-80 p-4">
+        <h1>Registro de Ingreso al Gimnasio</h1>
+        <br>
+        <div>
+            <label for="cedula">Ingrese su cédula:</label>
+            <input type="text" id="cedula" name="cedula" required>
+            <button type="button" onclick="registrarIngreso()">
+                <img src="../../static/img/buscar.png" alt="Buscar" width="20px">
+            </button>
+        </div>
+
+        <div>
+            <h2>Datos del Usuario</h2>
+            <div id="resultadoIngreso" style="margin-top: 10px;"></div> <!-- Para mostrar la información del usuario -->
+        </div>
+        
+        <div id="formContainer" style="display: none; margin-top: 20px;"> <!-- Contenedor para el formulario de acceso -->
+            <!-- <h3>Registrar Acceso</h3>
+            <label for="fecha">Fecha:</label>
+            <input type="datetime-local" id="fecha" required>
+            <br><br>
+            <label for="tipo_acceso">Tipo de Acceso:</label>
+            <select id="tipo_acceso" required>
+                <option value="Entrada">Entrada</option>
+                <option value="Salida">Salida</option>
+            </select>
+            <br><br>
+            <button id="guardarAccesoBtn">Guardar Acceso</button> -->
+        </div>
+    </div>
+</div>

@@ -2,7 +2,7 @@ from flask_mysqldb import MySQL
 import pymysql
 from functools import wraps
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
-import datetime
+from datetime import datetime
 
 app = Flask(__name__, static_folder='static', template_folder='template')
 # Configura la conexión a la base de datos MySQL
@@ -268,3 +268,63 @@ def search_machine(nombre):
     cursor.execute("SELECT m.nombre, i.fecha_compra, i.serial, p.nombre, i.precio FROM inventario_maquina i INNER JOIN maquina m ON i.id_maquina = m.id_maquina INNER JOIN proveedor p ON i.id_proveedor = p.id_proveedor  WHERE m.nombre = %s", (nombre,))
     result_busqueda = cursor.fetchall()
     return result_busqueda
+
+def access_users(identificacion):
+    cursor.execute("""
+        SELECT u.id_usuario, u.nombre, u.apellido, r.nombre AS rol
+        FROM usuario u
+        INNER JOIN rol r ON u.id_rol = r.id_rol
+        WHERE u.identificacion = %s
+    """, (identificacion,))
+    resultado = cursor.fetchall()
+    return resultado
+
+def guardar_acceso(fecha, duracion, tipo_acceso, id_usuario): 
+    try:
+        fecha_dt = datetime.strptime(fecha[:-1], '%Y-%m-%dT%H:%M:%S.%f')
+        fecha_str = fecha_dt.strftime('%Y-%m-%d %H:%M:%S')
+        duracion_str = str(duracion)
+        with connection.cursor() as cursor:
+            cursor.execute(
+                'INSERT INTO acceso (fecha, duracion, tipo_acceso, id_usuario) VALUES (%s, %s, %s, %s)',
+                (fecha_str, duracion_str, tipo_acceso, id_usuario)
+            )
+            connection.commit()
+        return True
+    except Exception as e:
+        print("Error al guardar el acceso:", e)
+        print("Datos a registrar en el acceso:", fecha, duracion_str, tipo_acceso, id_usuario)
+        return False
+    
+def obtener_tipo_acceso(id_usuario):
+    """Consulta la base de datos para obtener el tipo de acceso del usuario."""
+    try:
+        # Verificar si el usuario existe en la tabla usuarios
+        cursor.execute(
+            "SELECT * FROM usuario WHERE id_usuario = %s",
+            (id_usuario,)
+        )
+        resultado_usuario =cursor.fetchone()
+
+
+        if resultado_usuario is None:
+            print(f'El usuario ID: {id_usuario} no existe en la tabla usuarios')
+            return None
+
+        # Ahora verifica el acceso
+        cursor.execute(
+            "SELECT a.tipo_acceso FROM acceso a WHERE a.id_usuario = %s",
+            (id_usuario,)
+        )
+
+        resultado_acceso = cursor.fetchone()
+
+        if resultado_acceso is None:
+            print(f'No se encontró acceso para el usuario ID: {id_usuario}')
+            return None
+
+        print(resultado_acceso, "ESTE ES EL TIPO DE ACCESO QUE TIENE")
+        return resultado_acceso[0]
+
+    except Exception as e:
+        raise Exception(f'Error en la consulta: {str(e)}')
