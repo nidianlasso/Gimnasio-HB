@@ -397,3 +397,30 @@ def obtener_tipo_acceso(id_usuario):
     
     except Exception as e:
         raise Exception(f'Error en la consulta: {str(e)}')
+
+def cambiar_estado_acceso(id_usuario):
+    try:
+        # Obtener el acceso activo actual
+        cursor.execute("SELECT * FROM acceso WHERE id_usuario = %s AND tipo_acceso = 'Active'", (id_usuario,))
+        acceso_actual = cursor.fetchone()
+
+        if acceso_actual is None:
+            return {'error': f"No se encontró acceso activo para el usuario ID: {id_usuario}."}
+
+        # Calcular la duración
+        fecha_inicio = acceso_actual['fecha']
+        fecha_fin = datetime.now()
+        duracion_seconds = int((fecha_fin - fecha_inicio).total_seconds())
+
+        # Actualizar el acceso a Inactive
+        cursor.execute(
+            "UPDATE acceso SET tipo_acceso = 'Inactive', duracion_seconds = %s WHERE id_usuario = %s AND tipo_acceso = 'Active'",
+            (duracion_seconds, id_usuario)
+        )
+        connection.commit()
+
+        return {'message': 'Estado de acceso cambiado a Inactive exitosamente.', 'duracion': duracion_seconds}
+
+    except Exception as e:
+        return {'error': f'Error al cambiar el estado del acceso: {str(e)}'}
+

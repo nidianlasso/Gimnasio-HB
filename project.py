@@ -5,7 +5,7 @@ from query import (validarLogin, login_required_admin, login_required_member,log
                     lista_miembros,lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
                       conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship,
                       guardar_membresia, status_membreship, actualizar_membresia, lista_maquinas, search_machine, access_users,
-                      guardar_acceso, obtener_tipo_acceso)
+                      guardar_acceso, obtener_tipo_acceso, cambiar_estado_acceso)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -239,7 +239,17 @@ def obtener_acceso():
     return jsonify({'tipo_acceso': acceso}), 200
 
 
+@app.route('/cambiar-estado-acceso', methods=['POST'])
+def route_cambiar_estado_acceso():
+    data = request.json
+    id_usuario = data.get('id_usuario')
 
+    resultado = cambiar_estado_acceso(id_usuario)
+
+    if 'error' in resultado:
+        return jsonify(resultado), 404
+
+    return jsonify(resultado), 200
 
 # @app.route('/guardar-acceso', methods=['POST'])
 # def guardar_acceso_route():
