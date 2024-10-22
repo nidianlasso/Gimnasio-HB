@@ -279,52 +279,121 @@ def access_users(identificacion):
     resultado = cursor.fetchall()
     return resultado
 
-def guardar_acceso(fecha, duracion, tipo_acceso, id_usuario): 
+
+# def guardar_acceso(fecha, duracion, tipo_acceso, id_usuario): 
+#     try:
+#         # Verificar si el usuario existe
+#         cursor.execute("SELECT * FROM usuario WHERE id_usuario = %s", (id_usuario,))
+#         resultado_usuario = cursor.fetchone()
+
+#         if resultado_usuario is None:
+#             print(f"Usuario con ID {id_usuario} no encontrado.")
+#             return False  # O puedes optar por crear el usuario aquí si lo deseas
+
+#         # Formatear la fecha
+#         fecha_dt = datetime.strptime(fecha[:-1], '%Y-%m-%dT%H:%M:%S.%f')
+#         fecha_str = fecha_dt.strftime('%Y-%m-%d %H:%M:%S')
+        
+#         # Asegúrate de definir duracion_str aquí
+#         duracion_str = str(duracion)  # Cambia esto si tienes otra lógica para duración
+        
+#         with connection.cursor() as cursor:
+#             cursor.execute(
+#                 'INSERT INTO acceso (fecha, duracion, tipo_acceso, id_usuario) VALUES (%s, %s, %s, %s)',
+#                 (fecha_str, duracion_str, tipo_acceso, id_usuario)
+#             )
+#             connection.commit()
+        
+#         return True
+#     except Exception as e:
+#         print("Error al guardar el acceso:", e)
+#         print("Datos a registrar en el acceso:", fecha, duracion_str, tipo_acceso, id_usuario)
+#         return False
+
+# def guardar_acceso(fecha, duracion, tipo_acceso, id_usuario):
+#     try:
+#         # Verificar si el usuario existe
+#         cursor.execute("SELECT * FROM usuario WHERE id_usuario = %s", (id_usuario,))
+#         resultado_usuario = cursor.fetchone()
+
+#         if resultado_usuario is None:
+#             print(f"Usuario con ID {id_usuario} no encontrado.")
+#             return False  # O puedes optar por crear el usuario aquí si lo deseas
+
+#         # Aquí puedes registrar el acceso
+#         cursor.execute(
+#             "INSERT INTO acceso (fecha, duracion, tipo_acceso, id_usuario) VALUES (%s, %s, %s, %s)",
+#             (fecha, duracion, tipo_acceso, id_usuario)
+#         )
+#         connection.commit()  # Asegúrate de que esto esté habilitado en tu conexión
+
+#         print("Acceso registrado:", fecha, duracion, tipo_acceso, id_usuario)
+#         return True
+#     except Exception as e:
+#         print("Error al guardar el acceso:", e)
+#         print("Datos a registrar en el acceso:", fecha, duracion, tipo_acceso, id_usuario)
+#         return False
+
+def guardar_acceso(fecha, duracion, tipo_acceso, id_usuario):
     try:
+        print("Intentando guardar acceso...")
+        cursor.execute("SELECT * FROM usuario WHERE id_usuario = %s", (id_usuario,))
+        resultado_usuario = cursor.fetchone()
+
+        if resultado_usuario is None:
+            print(f"Usuario con ID {id_usuario} no encontrado.")
+            return False
+        
+        # Formatear la fecha
         fecha_dt = datetime.strptime(fecha[:-1], '%Y-%m-%dT%H:%M:%S.%f')
         fecha_str = fecha_dt.strftime('%Y-%m-%d %H:%M:%S')
-        duracion_str = str(duracion)
-        with connection.cursor() as cursor:
-            cursor.execute(
-                'INSERT INTO acceso (fecha, duracion, tipo_acceso, id_usuario) VALUES (%s, %s, %s, %s)',
-                (fecha_str, duracion_str, tipo_acceso, id_usuario)
-            )
-            connection.commit()
+                
+        # Asegúrate de definir duracion_str aquí
+        duracion_str = str(duracion)  # Cambia esto si tienes otra lógica para duración
+        
+
+        print("Usuario encontrado, guardando acceso...")
+        cursor.execute('INSERT INTO acceso (fecha, duracion, tipo_acceso, id_usuario) VALUES (%s, %s, %s, %s)',
+                (fecha_str, duracion_str, tipo_acceso, id_usuario))
+        connection.commit()
+        print("Acceso guardado exitosamente.")
         return True
     except Exception as e:
         print("Error al guardar el acceso:", e)
-        print("Datos a registrar en el acceso:", fecha, duracion_str, tipo_acceso, id_usuario)
         return False
-    
+
 def obtener_tipo_acceso(id_usuario):
-    """Consulta la base de datos para obtener el tipo de acceso del usuario."""
     try:
-        # Verificar si el usuario existe en la tabla usuarios
-        cursor.execute(
-            "SELECT * FROM usuario WHERE id_usuario = %s",
-            (id_usuario,)
-        )
-        resultado_usuario =cursor.fetchone()
-
-
+        # Verificar si el usuario existe en la base de datos
+        cursor.execute("SELECT * FROM usuario WHERE id_usuario = %s", (id_usuario,))
+        resultado_usuario = cursor.fetchone()
+        
         if resultado_usuario is None:
             print(f'El usuario ID: {id_usuario} no existe en la tabla usuarios')
             return None
-
-        # Ahora verifica el acceso
-        cursor.execute(
-            "SELECT a.tipo_acceso FROM acceso a WHERE a.id_usuario = %s",
-            (id_usuario,)
-        )
-
+        
+        # Verificar el tipo de acceso del usuario
+        cursor.execute("SELECT a.tipo_acceso FROM acceso a WHERE a.id_usuario = %s", (id_usuario,))
         resultado_acceso = cursor.fetchone()
-
+        
         if resultado_acceso is None:
-            print(f'No se encontró acceso para el usuario ID: {id_usuario}')
-            return None
+            print(f'No se encontró acceso para el usuario ID: {id_usuario}. Creando acceso por defecto.')
+            # Crear un acceso por defecto
+            fecha = datetime.now().isoformat()  # Fecha actual
+            duracion = 60  # Duración predeterminada
+            tipo_acceso = 'Inactive'  # Tipo de acceso inicial
 
+            # Intentar guardar el nuevo acceso
+            if not guardar_acceso(fecha, duracion, tipo_acceso, id_usuario):
+                print("Error al crear el acceso.")
+                return None
+            
+            # Después de crear el acceso, devolvemos el tipo de acceso
+            return tipo_acceso
+        
+        # Si el acceso existe, imprimimos el tipo actual
         print(resultado_acceso, "ESTE ES EL TIPO DE ACCESO QUE TIENE")
         return resultado_acceso[0]
-
+    
     except Exception as e:
         raise Exception(f'Error en la consulta: {str(e)}')
