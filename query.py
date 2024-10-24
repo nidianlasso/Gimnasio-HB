@@ -334,29 +334,30 @@ def access_users(identificacion):
 #         print("Datos a registrar en el acceso:", fecha, duracion, tipo_acceso, id_usuario)
 #         return False
 
+
 def guardar_acceso(fecha, duracion, tipo_acceso, id_usuario):
     try:
         print("Intentando guardar acceso...")
-        cursor.execute("SELECT * FROM usuario WHERE id_usuario = %s", (id_usuario,))
-        resultado_usuario = cursor.fetchone()
+        cursor.execute("SELECT * FROM acceso WHERE id_usuario = %s AND tipo_acceso = 'Active'", (id_usuario,))
+        resultado_acceso = cursor.fetchone()
 
-        if resultado_usuario is None:
-            print(f"Usuario con ID {id_usuario} no encontrado.")
-            return False
-        
-        # Formatear la fecha
-        fecha_dt = datetime.strptime(fecha[:-1], '%Y-%m-%dT%H:%M:%S.%f')
+        # Asegúrate de convertir la fecha a un formato correcto
+        fecha_dt = datetime.strptime(fecha[:-1], '%Y-%m-%dT%H:%M:%S.%f')  # Elimina la 'Z'
         fecha_str = fecha_dt.strftime('%Y-%m-%d %H:%M:%S')
-                
-        # Asegúrate de definir duracion_str aquí
-        duracion_str = str(duracion)  # Cambia esto si tienes otra lógica para duración
-        
 
-        print("Usuario encontrado, guardando acceso...")
-        cursor.execute('INSERT INTO acceso (fecha, duracion, tipo_acceso, id_usuario) VALUES (%s, %s, %s, %s)',
-                (fecha_str, duracion_str, tipo_acceso, id_usuario))
+        if resultado_acceso is None:
+            # Si no hay acceso activo, insertar un nuevo acceso
+            print("No hay acceso activo, creando uno nuevo...")
+            cursor.execute('INSERT INTO acceso (fecha, duracion, tipo_acceso, id_usuario) VALUES (%s, %s, %s, %s)',
+                           (fecha_str, duracion, tipo_acceso, id_usuario))
+        else:
+            # Si hay acceso activo, actualizarlo
+            print("Actualizando acceso existente...")
+            cursor.execute('UPDATE acceso SET fecha = %s, duracion = %s, tipo_acceso = %s WHERE id_usuario = %s AND tipo_acceso = %s',
+                           (fecha_str, duracion, tipo_acceso, id_usuario, 'Active'))
+
         connection.commit()
-        print("Acceso guardado exitosamente.")
+        print("Acceso guardado/actualizado exitosamente.")
         return True
     except Exception as e:
         print("Error al guardar el acceso:", e)
@@ -364,7 +365,6 @@ def guardar_acceso(fecha, duracion, tipo_acceso, id_usuario):
 
 def obtener_tipo_acceso(id_usuario):
     try:
-        # Verificar si el usuario existe en la base de datos
         cursor.execute("SELECT * FROM usuario WHERE id_usuario = %s", (id_usuario,))
         resultado_usuario = cursor.fetchone()
         
@@ -372,35 +372,27 @@ def obtener_tipo_acceso(id_usuario):
             print(f'El usuario ID: {id_usuario} no existe en la tabla usuarios')
             return None
         
-        # Verificar el tipo de acceso del usuario
         cursor.execute("SELECT a.tipo_acceso FROM acceso a WHERE a.id_usuario = %s", (id_usuario,))
         resultado_acceso = cursor.fetchone()
         
         if resultado_acceso is None:
             print(f'No se encontró acceso para el usuario ID: {id_usuario}. Creando acceso por defecto.')
-            # Crear un acceso por defecto
-            fecha = datetime.now().isoformat()  # Fecha actual
-            duracion = 60  # Duración predeterminada
-            tipo_acceso = 'Inactive'  # Tipo de acceso inicial
-
-            # Intentar guardar el nuevo acceso
+            fecha = datetime.now().isoformat()
+            duracion = 60
+            tipo_acceso = 'Inactive'
+            
             if not guardar_acceso(fecha, duracion, tipo_acceso, id_usuario):
                 print("Error al crear el acceso.")
                 return None
             
-            # Después de crear el acceso, devolvemos el tipo de acceso
-            return tipo_acceso
-        
-        # Si el acceso existe, imprimimos el tipo actual
-        print(resultado_acceso, "ESTE ES EL TIPO DE ACCESO QUE TIENE")
-        return resultado_acceso[0]
-    
+            return {'tipo_acceso': tipo_acceso}  # Devolver un objeto
+
+        return {'tipo_acceso': resultado_acceso[0]}  # Asegúrate de devolver un objeto
     except Exception as e:
         raise Exception(f'Error en la consulta: {str(e)}')
 
 def cambiar_estado_acceso(id_usuario):
     try:
-        # Obtener el acceso activo actual
         cursor.execute("SELECT * FROM acceso WHERE id_usuario = %s AND tipo_acceso = 'Active'", (id_usuario,))
         acceso_actual = cursor.fetchone()
 
@@ -414,7 +406,7 @@ def cambiar_estado_acceso(id_usuario):
 
         # Actualizar el acceso a Inactive
         cursor.execute(
-            "UPDATE acceso SET tipo_acceso = 'Inactive', duracion_seconds = %s WHERE id_usuario = %s AND tipo_acceso = 'Active'",
+            "UPDATE acceso SET tipo_acceso = 'Inactive', duracion = %s WHERE id_usuario = %s AND tipo_acceso = 'Active'",
             (duracion_seconds, id_usuario)
         )
         connection.commit()
@@ -424,3 +416,10 @@ def cambiar_estado_acceso(id_usuario):
     except Exception as e:
         return {'error': f'Error al cambiar el estado del acceso: {str(e)}'}
 
+#ASIGNAR ENTRENADOR
+def asignar_entrenador():
+    cursor.execute("SELECT u.identificacion, u.nombre, u.apellido, a.id_acceso, a.tipo_acceso, a.fecha, r.nombre AS nombre_rol, u.id_usuario, pt.nombre FROM acceso a INNER JOIN usuario u ON a.id_usuario = u.id_usuario INNER JOIN rol r ON u.id_rol = r.id_rol INNER JOIN plan_trabajo pt ON pt.id_plan_trabajo = u.id_plan_trabajo  WHERE r.nombre IN ('Miembro', 'Entrenador') AND a.tipo_acceso = 'Active' AND DATE(a.fecha) = CURDATE();")
+    resultado = cursor.fetchall()
+    print('ESTE ES EL RESULTADO DE LA CONSULTA')
+    print(resultado)
+    return resultado

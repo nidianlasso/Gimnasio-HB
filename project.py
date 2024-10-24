@@ -5,7 +5,7 @@ from query import (validarLogin, login_required_admin, login_required_member,log
                     lista_miembros,lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
                       conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship,
                       guardar_membresia, status_membreship, actualizar_membresia, lista_maquinas, search_machine, access_users,
-                      guardar_acceso, obtener_tipo_acceso, cambiar_estado_acceso)
+                      guardar_acceso, obtener_tipo_acceso, cambiar_estado_acceso, asignar_entrenador)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -187,6 +187,7 @@ def search_machine_name():
         print(resultados, "estas son las busquedas")
     return jsonify(resultados)
 
+#REGISTRAR LOS ACCESOS
 @app.route('/registrar-ingreso', methods=['POST'])
 def registrar_ingreso():
     cedula = request.json.get('cedula')
@@ -251,24 +252,28 @@ def route_cambiar_estado_acceso():
 
     return jsonify(resultado), 200
 
-# @app.route('/guardar-acceso', methods=['POST'])
-# def guardar_acceso_route():
-#     try:
-#         data = request.json
-#         fecha = data.get('fecha')
-#         duracion = data.get('duracion')
-#         tipo_acceso = data.get('tipo_acceso')
-#         id_usuario = data.get('id_usuario')
+#ASIGNAR ENTRENADOR
+@app.route('/assign-coach', methods=['POST', 'GET'])
+def assign_coach_route():
+    asignacion = asignar_entrenador()
+    print("datos para asignar entrenador")
+    print(asignacion)
+    return jsonify(asignacion)
 
-#         if guardar_acceso(fecha, duracion, tipo_acceso, id_usuario):
-#             return jsonify({'mensaje': 'Acceso guardado exitosamente'}), 200
+# @app.route('/save-assign-coach', methods=['POST'])
+# def save_assign_coach():
+#     if request.method == 'POST':
+#         usuario_id = request.form['usuarioId']  # Asegúrate de que este nombre sea correcto
+#         tipo_membresia = request.form['tipoMembresia']
+#         fecha_inicio = request.form['fechaInicio']
+#         fecha_fin = request.form['fechaFin']
+#         estado_membresia = request.form['estadoMembresia']
+#         print("Datos a guardar:", usuario_id, tipo_membresia, fecha_inicio, fecha_fin, estado_membresia)  # Para depuración
+#         if guardar_membresia(usuario_id, tipo_membresia, fecha_inicio, fecha_fin, estado_membresia):
+#             flash('Registro exitoso!', 'success')
 #         else:
-#             return jsonify({'error': 'Error al guardar el acceso'}), 500
-
-#     except Exception as e:
-#         return jsonify({'error': str(e)}), 500  # Captura cualquier otro error
-
-
+#             flash('Error al registrar el usuario.', 'error')
+#     return manage_users()
 
 
 if __name__ =='__main__':

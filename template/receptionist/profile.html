@@ -1,17 +1,23 @@
 {% include 'main.html' %}
 {% include 'Administrator/menu.html' %}
 
-<h3 style="text-align: center; color: #000; margin-top: 3%;"> <b>GESTIÓN DE USUARIOS</b> </h3>
+<!-- <h3 style="text-align: center; color: #000; margin-top: 3%;"> <b>GESTIÓN DE USUARIOS</b> </h3> -->
 <div class="contenedor-gestion"
   style="display: flex; justify-content: center; justify-items: center; padding-bottom: 2%;">
   <div class="" style="display: inline-flex; margin: auto; margin-top: 2%;">
     <br>
       <!-- Botón para ir a la página de Buscar usuario -->
-      <button style="width: 30vh; height: 10vh; margin-left: 2vh;" type="button" data-toggle="modal"
-        data-target="#searchUser" class="btn btn-warning btn-block">Buscar
-        Usuario</button>
+      <button style="width: 40vh; height: 30vh; margin-left: 2vh;" type="button" data-toggle="modal"
+        data-target="#searchUser" class="btn btn-warning btn-block">Registro de
+      Accesos</button>
 
-<!--MODAL PARA BUSQUEDA DE USUARIO-->
+      <button style="width: 40vh; height: 30vh; margin-left: 2vh;" 
+        onclick="assign_coach()" 
+        data-toggle="modal" 
+        data-target="#asignacionEntrenador" 
+        class="btn btn-warning btn-block">Asignación de Instructores</button>
+
+<!--MODAL PARA MANEJO DE ACCESOS-->
 <div class="modal fade" id="searchUser" tabindex="-1" aria-labelledby="searchUserLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
@@ -32,3 +38,23 @@
 </div>
 <!--MODAL PARA BUSQUEDA DE USUARIO-->
 
+<div class="modal fade" id="asignacionEntrenador" tabindex="-1" aria-labelledby="asignacionEntrenadorLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title">Asignar Entrenador</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+              </button>
+          </div>
+          <div class="modal-body">
+              <!-- Aquí se incluye la tabla de asignación de membresías -->
+              {% include 'receptionist/assign_coach.html' %}
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+              <button type="button" class="btn btn-primary" onclick="guardarCambios()">Guardar cambios</button>
+          </div>
+      </div>
+  </div>
+</div>
