@@ -1,11 +1,11 @@
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 from flask_mysqldb import MySQL
 from datetime import datetime
-from query import (validarLogin, login_required_admin, login_required_member,login_required_coach, login_required_receptionist,
+from query import (validarLogin, check_credentials, login_required_admin, login_required_member,login_required_coach, login_required_receptionist,
                     lista_miembros,lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
                       conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship,
                       guardar_membresia, status_membreship, actualizar_membresia, lista_maquinas, search_machine, access_users,
-                      guardar_acceso, obtener_tipo_acceso, cambiar_estado_acceso, asignar_entrenador)
+                      guardar_acceso, obtener_tipo_acceso, cambiar_estado_acceso, asignar_entrenador, obtener_plan_trabajo, obtener_membrehip_user)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -36,27 +36,6 @@ def administrator():
     listado_entrenadores = cant_entrenadores()
     conteo_clases = conteo_clases_reservadas()
     return render_template('Administrator/administrator.html', lista_miembros = listado_miembros, cant_entrenadores = listado_entrenadores, conteo_reserva = conteo_clases)
-
-#LLAMADO AL TEMPLATE MIEMBRO
-@app.route('/profile-member')
-@login_required_member
-def profile_member():
-    return render_template('member/profile.html')
-
-
-#LLAMADO AL TEMPLATE ENTRENADOR
-@app.route('/profile-coach')
-@login_required_coach
-def profile_coach():
-    return render_template('coach/profile.html')
-
-@app.route('/profile-receptionist', methods=['GET', 'POST'])
-@login_required_receptionist
-def profile_receptionist():
-    return render_template('receptionist/profile.html')  # Asegúrate de que resultados tenga un valor
-
-
-
 
 #LLAMADO VISTA GESTION DE USUARIOS
 @app.route('/users-manage')
@@ -187,6 +166,48 @@ def search_machine_name():
         print(resultados, "estas son las busquedas")
     return jsonify(resultados)
 
+
+#LLAMADO AL TEMPLATE MIEMBRO
+@app.route('/profile-member')
+@login_required_member  # Asegúrate de que este decorador no afecta la sesión
+def profile_member():
+    identificacion = session.get('identificacion')  # Recupera la identificación
+    print(f"Identificación obtenida de la sesión: {identificacion}")
+    if not identificacion:
+        return redirect(url_for('login'))  # Redirige si no hay identificación
+
+    plan_trabajo = obtener_plan_trabajo(identificacion)
+    membresia_asignada = obtener_membrehip_user(identificacion)
+    return render_template('member/profile.html', plan_trabajo=plan_trabajo, membresia = membresia_asignada)
+
+#TEMPLETE PRINCIPAL DEL MIEMBRO
+@app.route('/inicio')
+def index_member():
+    identificacion = session.get('identificacion')
+    return render_template('member/index.html')
+
+#RESERVAR MÁQUINAS
+@app.route('/machine-reservation')
+def machine_reservation():
+    identificacion = session.get('identificacion')
+    return render_template('member/machine_reservation.html')
+
+
+#LLAMADO AL TEMPLATE ENTRENADOR
+@app.route('/profile-coach')
+@login_required_coach
+def profile_coach():
+    return render_template('coach/profile.html')
+
+@app.route('/profile-receptionist', methods=['GET', 'POST'])
+@login_required_receptionist
+def profile_receptionist():
+    return render_template('receptionist/profile.html')  # Asegúrate de que resultados tenga un valor
+
+
+
+
+
 #REGISTRAR LOS ACCESOS
 @app.route('/registrar-ingreso', methods=['POST'])
 def registrar_ingreso():
@@ -260,20 +281,9 @@ def assign_coach_route():
     print(asignacion)
     return jsonify(asignacion)
 
-# @app.route('/save-assign-coach', methods=['POST'])
-# def save_assign_coach():
-#     if request.method == 'POST':
-#         usuario_id = request.form['usuarioId']  # Asegúrate de que este nombre sea correcto
-#         tipo_membresia = request.form['tipoMembresia']
-#         fecha_inicio = request.form['fechaInicio']
-#         fecha_fin = request.form['fechaFin']
-#         estado_membresia = request.form['estadoMembresia']
-#         print("Datos a guardar:", usuario_id, tipo_membresia, fecha_inicio, fecha_fin, estado_membresia)  # Para depuración
-#         if guardar_membresia(usuario_id, tipo_membresia, fecha_inicio, fecha_fin, estado_membresia):
-#             flash('Registro exitoso!', 'success')
-#         else:
-#             flash('Error al registrar el usuario.', 'error')
-#     return manage_users()
+#MOSTRAR PLAN DE TRABAJO DEL MIEMBRO
+
+
 
 
 if __name__ =='__main__':

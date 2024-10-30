@@ -21,14 +21,17 @@ from flask import render_template, redirect, url_for, request, make_response
 def validarLogin(identificacion, contrasena):
     info_user = check_credentials(identificacion, contrasena)
     if info_user:
-        rol = info_user[0]  # Obtener el rol del usuario
+        rol, user_identificacion = info_user
+        session['identificacion'] = user_identificacion
         resp = make_response()  # Crear la respuesta base
 
         # Redirigir según el rol del usuario
         if rol == "Administrador":
             resp = make_response(redirect(url_for('administrator')))
         elif rol == "Miembro":
-            resp = make_response(redirect(url_for('profile_member')))
+            plan_trabajo = obtener_plan_trabajo(user_identificacion)
+            resp = make_response(redirect(url_for('index_member')))
+            resp.set_cookie('plan_trabajo', plan_trabajo)
         elif rol == "Entrenador":
             resp = make_response(redirect(url_for('profile_coach')))
         elif rol == "Recepcionista":
@@ -43,7 +46,7 @@ def validarLogin(identificacion, contrasena):
 
 # Función para verificar las credenciales en la base de datos
 def check_credentials(identificacion, contrasena):
-    cursor.execute("SELECT r.nombre FROM bd_gimnasio2.usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE identificacion = %s AND contrasena = %s", (identificacion, contrasena))
+    cursor.execute("SELECT r.nombre, u.identificacion FROM bd_gimnasio2.usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE identificacion = %s AND contrasena = %s", (identificacion, contrasena))
     info_user = cursor.fetchone()
     print("Resultado de la consulta para el login del usuario:")
     print(info_user)  # Verificación del resultado de la consulta para depurar
@@ -423,3 +426,18 @@ def asignar_entrenador():
     print('ESTE ES EL RESULTADO DE LA CONSULTA')
     print(resultado)
     return resultado
+
+#MIEMBRO
+#OBTENER PLAN DE TRABAJO DEL MIEMBRO
+def obtener_plan_trabajo(identificacion):
+    cursor.execute(
+        "SELECT p.nombre FROM usuario u INNER JOIN plan_trabajo p ON u.id_plan_trabajo = p.id_plan_trabajo WHERE u.identificacion = %s", 
+        (identificacion,))
+    plan = cursor.fetchone()
+    return plan[0] if plan else None  # Retorna el plan o None si no exise
+
+def obtener_membrehip_user(identificacion):
+    cursor.execute("SELECT m.tipo, e.nombre FROM membresia_usuario mu INNER JOIN membresia m ON mu.id_membresia = m.id_membresia INNER JOIN estado_membresia e ON mu.id_estado_membresia = e.id_estado_membresia INNER JOIN usuario u ON mu.id_usuario = u.id_usuario WHERE u.identificacion = %s",
+                   (identificacion,))
+    membresia_usuario = cursor.fetchone()
+    return membresia_usuario
