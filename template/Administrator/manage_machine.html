@@ -19,12 +19,11 @@
       <button style="width: 30vh; height: 10vh; margin-left: 2vh;" 
         onclick="assign_membreship()" 
         data-toggle="modal" 
-        data-target="#membresiaAsignaciones" 
-        class="btn btn-warning btn-block">Asignar Membresía
-</button>
+        data-target="#maquinasDisponibles" 
+        class="btn btn-warning btn-block">Disponibilidad</button>
       <!-- Botón para ir a la página de estado usuario -->
       <button style="width: 30vh; height: 10vh; margin-left: 2vh;" onclick="update_membreship()" data-toggle="modal"
-        data-target="#membresiaActualizacion" class="btn btn-warning btn-block">Actualizar membresia</button>
+        data-target="#membresiaActualizacion" class="btn btn-warning btn-block">Revisión Maquinaria</button>
   </div>
 </div>
 <table border="1" id="listaMaquinas">
@@ -74,18 +73,18 @@
 <!--MODAL PARA AGREGAR USUARIOS-->
 
 <!--ASIGNAR MEMBRESIA-->
-<div class="modal fade" id="membresiaAsignaciones" tabindex="-1" aria-labelledby="membresiaAsignacionesLabel" aria-hidden="true">
+<div class="modal fade" id="maquinasDisponibles" tabindex="-1" aria-labelledby="maquinasDisponiblesLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
       <div class="modal-content">
           <div class="modal-header">
-              <h5 class="modal-title">Asignar Membresía</h5>
+              <h5 class="modal-title">Agendamiento de máquinas</h5>
               <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <span aria-hidden="true">&times;</span>
               </button>
           </div>
           <div class="modal-body">
               <!-- Aquí se incluye la tabla de asignación de membresías -->
-              {% include 'Administrator/assign_memb.html' %}
+              {% include 'Administrator/available_machine.html' %}
           </div>
           <div class="modal-footer">
               <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>

@@ -272,6 +272,15 @@ def search_machine(nombre):
     result_busqueda = cursor.fetchall()
     return result_busqueda
 
+#OBTENER LA INFORMACION DE LAS MAQUINAS EN LOS HORARIOS DISPONIBLES Y AGENDADOS
+def info_machine():
+    cursor.execute('''SELECT rm.fecha, rm.hora_inicio, rm.hora_fin, u.nombre, u.apellido, m.nombre FROM reserva_maquina rm INNER JOIN membresia_usuario mu ON rm.id_membresia_usuario = mu.id_membresia_usuario INNER JOIN usuario u ON mu.id_usuario = u.id_usuario INNER JOIN inventario_maquina im ON im.id_inventario_maquina = rm.id_inventario_maquina INNER JOIN maquina m ON m.id_maquina = im.id_maquina ORDER BY rm.fecha, rm.hora_inicio;''')
+    result_busqueda = cursor.fetchall()
+    print("Usuario con maquina reservada:", result_busqueda)  # Depuración
+    return result_busqueda
+
+
+#CREAR EL ACCESO DE LOS USUARIOS QUE INGRESAN O SALEN DEL GIMNASIO
 def access_users(identificacion):
     cursor.execute("""
         SELECT u.id_usuario, u.nombre, u.apellido, r.nombre AS rol
@@ -281,62 +290,6 @@ def access_users(identificacion):
     """, (identificacion,))
     resultado = cursor.fetchall()
     return resultado
-
-
-# def guardar_acceso(fecha, duracion, tipo_acceso, id_usuario): 
-#     try:
-#         # Verificar si el usuario existe
-#         cursor.execute("SELECT * FROM usuario WHERE id_usuario = %s", (id_usuario,))
-#         resultado_usuario = cursor.fetchone()
-
-#         if resultado_usuario is None:
-#             print(f"Usuario con ID {id_usuario} no encontrado.")
-#             return False  # O puedes optar por crear el usuario aquí si lo deseas
-
-#         # Formatear la fecha
-#         fecha_dt = datetime.strptime(fecha[:-1], '%Y-%m-%dT%H:%M:%S.%f')
-#         fecha_str = fecha_dt.strftime('%Y-%m-%d %H:%M:%S')
-        
-#         # Asegúrate de definir duracion_str aquí
-#         duracion_str = str(duracion)  # Cambia esto si tienes otra lógica para duración
-        
-#         with connection.cursor() as cursor:
-#             cursor.execute(
-#                 'INSERT INTO acceso (fecha, duracion, tipo_acceso, id_usuario) VALUES (%s, %s, %s, %s)',
-#                 (fecha_str, duracion_str, tipo_acceso, id_usuario)
-#             )
-#             connection.commit()
-        
-#         return True
-#     except Exception as e:
-#         print("Error al guardar el acceso:", e)
-#         print("Datos a registrar en el acceso:", fecha, duracion_str, tipo_acceso, id_usuario)
-#         return False
-
-# def guardar_acceso(fecha, duracion, tipo_acceso, id_usuario):
-#     try:
-#         # Verificar si el usuario existe
-#         cursor.execute("SELECT * FROM usuario WHERE id_usuario = %s", (id_usuario,))
-#         resultado_usuario = cursor.fetchone()
-
-#         if resultado_usuario is None:
-#             print(f"Usuario con ID {id_usuario} no encontrado.")
-#             return False  # O puedes optar por crear el usuario aquí si lo deseas
-
-#         # Aquí puedes registrar el acceso
-#         cursor.execute(
-#             "INSERT INTO acceso (fecha, duracion, tipo_acceso, id_usuario) VALUES (%s, %s, %s, %s)",
-#             (fecha, duracion, tipo_acceso, id_usuario)
-#         )
-#         connection.commit()  # Asegúrate de que esto esté habilitado en tu conexión
-
-#         print("Acceso registrado:", fecha, duracion, tipo_acceso, id_usuario)
-#         return True
-#     except Exception as e:
-#         print("Error al guardar el acceso:", e)
-#         print("Datos a registrar en el acceso:", fecha, duracion, tipo_acceso, id_usuario)
-#         return False
-
 
 def guardar_acceso(fecha, duracion, tipo_acceso, id_usuario):
     try:
@@ -441,3 +394,74 @@ def obtener_membrehip_user(identificacion):
                    (identificacion,))
     membresia_usuario = cursor.fetchone()
     return membresia_usuario
+
+def assig_machine():
+    try:
+        cursor.execute("SELECT u.identificacion, u.nombre, u.apellido, m.costo, m.tipo, mu.fecha_inicio, mu.fecha_fin, em.nombre AS estado_membresia, u.id_usuario, mu.id_membresia_usuario, m.id_membresia FROM usuario u LEFT JOIN membresia_usuario mu ON mu.id_usuario = u.id_usuario LEFT JOIN membresia m ON mu.id_membresia = m.id_membresia LEFT JOIN estado_membresia em ON mu.id_estado_membresia = em.id_estado_membresia WHERE u.id_rol= '5';")
+        campos_asignacion = cursor.fetchall()
+        return campos_asignacion
+    except Exception as e:
+        print(f"Error al ejecutar la consulta: {e}")
+        return []
+
+def status_membreship_member(identificacion):
+    cursor.execute("SELECT u.nombre, u.apellido, em.nombre FROM membresia_usuario mu INNER JOIN usuario u ON mu.id_usuario = u.id_usuario INNER JOIN estado_membresia em ON mu.id_estado_membresia = em.id_estado_membresia WHERE u.identificacion = %s", 
+        (identificacion,))
+    estado_membresia = cursor.fetchone()
+    return estado_membresia
+
+# def count_reservation_machine(id_maquina, hora_inicio, hora_fin, fecha):
+#     cursor.execute("SELECT COUNT(*) FROM reservas WHERE id_inventario_maquina = %s AND fecha = %s AND ( (hora_inicio >= %s AND hora_fin <=%s) );", 
+#         (id_maquina, fecha, hora_inicio, hora_fin, hora_inicio, hora_fin))
+#     count = cursor.fetchone()[0]
+#     return count
+
+# #CREAR RESERVA DE LA MAQUINA
+# def insert_reservation(id_membresia_usuario, id_maquina, fecha, hora_inicio, hora_fin):
+#     try: cursor.execute("INSERT INTO reserva (fecha, hora_inicio, hora_fin, id_membresia_usuario, id_inventario_maquina) VALUES (%s, %s, %s, %s, %s)",
+#         (fecha, hora_inicio, hora_fin, id_membresia_usuario, id_maquina))
+#     except Exception as e:
+#         print(f"ERROR AL CREAR LA RESERVA {e}")
+#         return []
+
+# # Lógica para procesar la reserva
+# def process_reservation(id_membresia_usuario, id_maquina, fecha, hora_inicio, hora_fin):
+#     # Contar conflictos de horarios
+#     conflictos = count_reservation_machine(id_maquina, hora_inicio, hora_fin, fecha)
+#     if conflictos > 0:
+#         return {"success": False, "message": "La máquina no está disponible en el rango seleccionado."}
+
+#     # Insertar la reserva si no hay conflictos
+#     insert_reservation(id_membresia_usuario, id_maquina, fecha, hora_inicio, hora_fin)
+#     return {"success": True, "message": "Reserva registrada exitosamente."}
+
+# def handle_sql_queries(machine_id, date, start_time, end_time, membership_id):
+#     # Comprobar si hay conflicto de reservas
+#     cursor.execute = ("""SELECT * FROM reserva
+#     WHERE id_inventario_maquina = %s AND fecha = %s 
+#     AND ((%s BETWEEN hora_inicio AND hora_fin) OR (%s BETWEEN hora_inicio AND hora_fin));
+#     """,(machine_id, date, start_time, end_time))
+#     conflict = cursor.fetchone()
+
+#     if conflict:
+#         return {"success": False, "message": "La máquina ya está reservada en este horario."}
+
+#     # Insertar nueva reserva
+#     cursor.execute = ( """
+#     INSERT INTO reserva (fecha, hora_inicio, hora_fin, id_membresia_usuario, id_inventario_maquina)
+#     VALUES (%s, %s, %s, %s, %s);
+#     """
+#     (date, start_time, end_time, membership_id, machine_id))
+#     connection.commit()
+#     return {"success": True, "message": "Reserva realizada con éxito."}
+
+
+
+# Función para guardar la clase en la base de datos
+def save_class_to_db(nombre, fecha_inicio, fecha_fin):
+    try:
+        cursor.execute('INSERT INTO clase (nombre, fecha_inicio, fecha_fin) VALUES (%s, %s, %s)', (nombre, fecha_inicio, fecha_fin))
+        connection.commit()
+        return {'success': True, 'message': 'Clase guardada exitosamente'}
+    except pymysql.MySQLError as e:
+        return {'success': False, 'message': f'Error al guardar en la base de datos: {e}'}

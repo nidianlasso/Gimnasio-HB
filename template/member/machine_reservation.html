@@ -1,18 +1,24 @@
-{% include 'main.html' %}
+<!-- {% include 'main.html' %}
 {% include 'member/menu.html' %}
 
-<table border="1" id="Reserva_maquinas">
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Serial</th>
-        <th>Fecha de compra</th>
-        <th>Precio</th>
-        <th>Proveedor</th>
-        <th>Disponibilidad</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Las filas se agregarán dinámicamente aquí -->
-    </tbody>
-  </table>
+<h1>Reservar Máquina</h1>
+<form id="reservation-form" method="POST" action="{{ url_for('machine_reservation') }}">
+    <label for="machine">Seleccionar Máquina:</label>
+    <select id="machine" name="machine">
+        {% for lista in lista_maquinas %}
+        <option value="{{lista[0]}}">{{lista[5]}}</option>
+        {% endfor %}
+    </select>
+
+    <label for="date">Fecha:</label>
+    <input type="date" id="date" name="date" required>
+
+    <label for="start-time">Hora de inicio:</label>
+    <input type="time" id="start-time" name="start_time" required>
+
+    <button type="submit">Reservar</button>
+</form>
+
+<div id="response-message" style="margin-top:20px; color:green;"></div>
+
+</div> -->

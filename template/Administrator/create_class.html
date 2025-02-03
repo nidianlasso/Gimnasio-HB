@@ -1,0 +1,18 @@
+{% include 'main.html' %}
+    {% include 'Administrator/menu.html' %}
+    <form id="create-class-form" method="POST" action="/create-class">
+        <label for="class-name">Nombre de la clase:</label>
+        <input type="text" id="class-name" name="nombre" required>
+        <br>
+    
+        <label for="start-date">Fecha Inicio:</label>
+        <input type="date" id="start-date" name="fecha_inicio" required>
+        <br>
+    
+        <label for="end-date">Hora:</label>
+        <input type="date" id="start-hour" name="fecha_fin" required>
+        <br>
+    
+        <button type="submit">Crear Clase</button>
+    </form>
+    

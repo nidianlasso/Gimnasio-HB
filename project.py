@@ -5,7 +5,8 @@ from query import (validarLogin, check_credentials, login_required_admin, login_
                     lista_miembros,lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
                       conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship,
                       guardar_membresia, status_membreship, actualizar_membresia, lista_maquinas, search_machine, access_users,
-                      guardar_acceso, obtener_tipo_acceso, cambiar_estado_acceso, asignar_entrenador, obtener_plan_trabajo, obtener_membrehip_user)
+                      guardar_acceso, obtener_tipo_acceso, cambiar_estado_acceso, asignar_entrenador, obtener_plan_trabajo, obtener_membrehip_user,
+                      info_machine, save_class_to_db)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -166,6 +167,11 @@ def search_machine_name():
         print(resultados, "estas son las busquedas")
     return jsonify(resultados)
 
+#LISTADO DE LAS MAQUINAS CON DISPONIBILIDAD
+@app.route('/available-machines', methods=['GET'])
+# @login_required_admin
+def available_machines_page():
+    return render_template('Administrator/available_machine.html')
 
 #LLAMADO AL TEMPLATE MIEMBRO
 @app.route('/profile-member')
@@ -175,7 +181,7 @@ def profile_member():
     print(f"Identificación obtenida de la sesión: {identificacion}")
     if not identificacion:
         return redirect(url_for('login'))  # Redirige si no hay identificación
-
+    
     plan_trabajo = obtener_plan_trabajo(identificacion)
     membresia_asignada = obtener_membrehip_user(identificacion)
     return render_template('member/profile.html', plan_trabajo=plan_trabajo, membresia = membresia_asignada)
@@ -187,11 +193,48 @@ def index_member():
     return render_template('member/index.html')
 
 #RESERVAR MÁQUINAS
-@app.route('/machine-reservation')
-def machine_reservation():
-    identificacion = session.get('identificacion')
-    return render_template('member/machine_reservation.html')
+@app.route('/machine-reservation', methods=['GET'])
+def show_machine_reservation_form():
+    lista_maquinas = info_machine()  # Función para cargar las máquinas disponibles
+    return render_template('member/machine_reservation.html', lista_maquinas=lista_maquinas)
 
+# Realizar reserva de máquina
+
+# @app.route('/machine-reservation', methods=['POST'])
+
+# def machine_reservation():
+#     if request.content_type != 'application/json':
+#         return jsonify({"message": "El Content-Type debe ser application/json", "success": False}), 415
+
+#     # Depuración para revisar los datos de la solicitud
+#     try:
+#         print("Encabezados:", request.headers)  # Ver los encabezados enviados en la solicitud
+#         print("Datos crudos:", request.data)  # Ver los datos crudos del body
+#         print("JSON procesado:", request.get_json())  # Intentar obtener el JSON de forma explícita
+
+#         # Si llega el JSON correctamente, trata los valores
+#         data = request.get_json()
+#         print("Datos JSON procesados:", data)
+#     except Exception as e:
+#         print("Error al procesar JSON:", e)  # Imprimir error si la conversión falla
+#         return jsonify({"message": "Error al procesar el JSON", "success": False}), 400
+
+#     # Valida los campos que se requieren
+#     machine = data.get('machine')
+#     date = data.get('date')
+#     start_time = data.get('start_time')
+
+#     if not all([machine, date, start_time]):
+#         return jsonify({"message": "Faltan datos en la solicitud.", "success": False}), 400
+
+#     # Procesar la reserva
+#     end_time = (datetime.strptime(start_time, "%H:%M") + timedelta(minutes=15)).strftime("%H:%M")
+#     # Procesar base de datos, hacer queries, etc.
+
+#     return jsonify({
+#         "message": "Reserva realizada correctamente",
+#         "success": True
+#     }), 201
 
 #LLAMADO AL TEMPLATE ENTRENADOR
 @app.route('/profile-coach')
@@ -206,7 +249,7 @@ def profile_receptionist():
 
 
 
-
+    
 
 #REGISTRAR LOS ACCESOS
 @app.route('/registrar-ingreso', methods=['POST'])
@@ -283,6 +326,30 @@ def assign_coach_route():
 
 #MOSTRAR PLAN DE TRABAJO DEL MIEMBRO
 
+
+#CREACION DE LAS CLASES
+@app.route('/create-class', methods=['GET'])
+def show_create_class_form():
+    return render_template('Administrator/create_class.html')
+
+# Ruta para procesar la creación de la clase
+@app.route('/create-class', methods=['POST'])
+def create_class():
+    # Obtén los datos del formulario directamente
+    nombre = request.form.get('nombre')
+    fecha_inicio = request.form.get('fecha_inicio')
+    fecha_fin = request.form.get('fecha_fin')
+
+    print(nombre, fecha_inicio, fecha_fin)
+    if not all([nombre, fecha_inicio, fecha_fin]):
+        return jsonify({'success': False, 'message': 'Todos los campos son obligatorios.'}), 400
+
+    result = save_class_to_db(nombre, fecha_inicio, fecha_fin)
+
+    if result['success']:
+        return jsonify(result), 201
+    else:
+        return jsonify(result), 500
 
 
 
