@@ -1,24 +1,41 @@
-<!-- {% include 'main.html' %}
+{% include 'main.html' %}
 {% include 'member/menu.html' %}
 
-<h1>Reservar Máquina</h1>
-<form id="reservation-form" method="POST" action="{{ url_for('machine_reservation') }}">
-    <label for="machine">Seleccionar Máquina:</label>
-    <select id="machine" name="machine">
-        {% for lista in lista_maquinas %}
-        <option value="{{lista[0]}}">{{lista[5]}}</option>
-        {% endfor %}
-    </select>
 
-    <label for="date">Fecha:</label>
-    <input type="date" id="date" name="date" required>
+                <form class="formulario_reserva" id="reserva-form">
+                    <label for="fecha">Fecha:</label>
+                    <input type="date" id="fecha" required>
+        
+                    <label for="hora">Hora:</label>
+                    <input type="time" id="hora" required>
+        
+                    <label for="maquina">Máquina:</label>
+                    <select id="maquina" required>
+                        <!-- Opciones llenadas dinámicamente con JS -->
+                    </select>
+        
+                    <button type="submit">Reservar</button>
+                </form>
+            </div>
+            <div class="col-lg-6">
+                <h2>Reservas Actuales</h2>
+                <table class="tabla_reservas_maquina" id="reservas-table">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Hora</th>
+                            <th>Máquina</th>
+                            <th>Acción</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Reservas llenadas con JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
 
-    <label for="start-time">Hora de inicio:</label>
-    <input type="time" id="start-time" name="start_time" required>
+       
 
-    <button type="submit">Reservar</button>
-</form>
-
-<div id="response-message" style="margin-top:20px; color:green;"></div>
-
-</div> -->
+    <!-- <script src="{{ url_for('static', filename='script.js') }}"></script> -->
+  

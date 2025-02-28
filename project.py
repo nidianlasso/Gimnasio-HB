@@ -338,16 +338,16 @@ def create_class():
     # Obtén los datos del formulario directamente
     nombre = request.form.get('nombre')
     fecha_inicio = request.form.get('fecha_inicio')
-    fecha_fin = request.form.get('fecha_fin')
-
-    print(nombre, fecha_inicio, fecha_fin)
-    if not all([nombre, fecha_inicio, fecha_fin]):
+    hora = request.form.get('hora')
+    duration = request.form.get('duration')
+    print(nombre, fecha_inicio, hora, duration)
+    if not all([nombre, fecha_inicio, hora, duration]):
         return jsonify({'success': False, 'message': 'Todos los campos son obligatorios.'}), 400
 
-    result = save_class_to_db(nombre, fecha_inicio, fecha_fin)
+    result = save_class_to_db(nombre, fecha_inicio, hora, duration)
 
     if result['success']:
-        return jsonify(result), 201
+        return render_template('Administrator/create_class.html')
     else:
         return jsonify(result), 500
 

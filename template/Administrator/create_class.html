@@ -1,18 +1,46 @@
 {% include 'main.html' %}
     {% include 'Administrator/menu.html' %}
-    <form id="create-class-form" method="POST" action="/create-class">
-        <label for="class-name">Nombre de la clase:</label>
-        <input type="text" id="class-name" name="nombre" required>
-        <br>
-    
-        <label for="start-date">Fecha Inicio:</label>
-        <input type="date" id="start-date" name="fecha_inicio" required>
-        <br>
-    
-        <label for="end-date">Hora:</label>
-        <input type="date" id="start-hour" name="fecha_fin" required>
-        <br>
-    
-        <button type="submit">Crear Clase</button>
-    </form>
-    
+
+
+    <div class="col-md-12 p-5 text-white" style="
+    background-image: url('/static/img/clase_grupal.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+">
+    <div class="container p-4 rounded" style="background: rgba(0, 0, 0, 0.7); max-width: 400px;">
+        <h1 class="mb-4">Crear Clase</h1>
+        <form id="create-class-form" method="POST" action="/create-class">
+            <div class="mb-2">
+                <label for="class-name" class="form-label">Nombre de la clase:</label>
+                <input type="text" id="class-name" name="nombre" class="form-control" required>
+            </div>
+
+            <div class="mb-2">
+                <label for="start-date" class="form-label">Fecha Inicio:</label>
+                <input type="date" id="start-date" name="fecha_inicio" class="form-control" required>
+            </div>
+
+            <div class="mb-2">
+                <label for="hora" class="form-label">Hora:</label>
+                <input type="time" id="hora" name="hora" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="duration" class="form-label">Duración (Horas):</label>
+                <input type="number" id="duration" name="duration" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Crear Clase</button>
+        </form>
+    </div>
+</div>
+
+
+   

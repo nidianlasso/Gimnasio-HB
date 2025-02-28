@@ -457,11 +457,21 @@ def status_membreship_member(identificacion):
 
 
 
-# Función para guardar la clase en la base de datos
-def save_class_to_db(nombre, fecha_inicio, fecha_fin):
+# Función para guardar la clase en la base de datos ADMINISTRADOR
+def save_class_to_db(nombre, fecha_inicio, hora, duration):
     try:
-        cursor.execute('INSERT INTO clase (nombre, fecha_inicio, fecha_fin) VALUES (%s, %s, %s)', (nombre, fecha_inicio, fecha_fin))
+        cursor.execute('INSERT INTO clase (nombre, fecha_inicio, hora, duracion) VALUES (%s, %s, %s, %s)', (nombre, fecha_inicio, hora, duration))
         connection.commit()
         return {'success': True, 'message': 'Clase guardada exitosamente'}
     except pymysql.MySQLError as e:
         return {'success': False, 'message': f'Error al guardar en la base de datos: {e}'}
+
+#Reserva de clase usuario
+def reservation_class():
+    return True
+
+#Obtener maquinas
+def get_maquinas():
+    cursor.execute("SELECT id_maquina, nombre FROM maquina")
+    maquinas = [{'id': row[0], 'nombre': row[1]} for row in cursor.fetchall()]
+    return jsonify(maquinas)

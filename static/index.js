@@ -725,118 +725,86 @@ function assign_membreship() {
         });
 }
 
-// function agendamiento_maquinas() {
-//     const tablaCuerpo = document.querySelector('#tabla_agendamiento tbody');
-//     const tabla = document.getElementById('tabla_agendamiento');
-//     tabla.style.display = 'table';
+function inicializarReservas() {
+    const form = document.getElementById("reserva-form");
+    const maquinaSelect = document.getElementById("maquina");
+    const reservasTable = document.getElementById("reservas-table").querySelector("tbody");
 
-//     tablaCuerpo.innerHTML = ''; // Limpiar la tabla antes de agregar nuevos datos
+    // Cargar máquinas disponibles
+    function cargarMaquinas() {
+        fetch("/api/maquinas")
+            .then(response => response.json())
+            .then(data => {
+                maquinaSelect.innerHTML = ""; // Limpiar opciones previas
+                data.forEach(maquina => {
+                    const option = document.createElement("option");
+                    option.value = maquina.id;
+                    option.textContent = maquina.nombre;
+                    maquinaSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error("Error al cargar máquinas:", error));
+    }
 
-//     // Realizamos la solicitud AJAX para obtener los datos
-//     fetch('/available-machines')
-//         .then(response => {
-//             if (!response.ok) { 
-//                 throw new Error('Error en la solicitud'); 
-//             }
-//             return response.json();  // Parsear la respuesta a JSON
-//         })
-//         .then(data => {
-//             console.log(data);  // Mostrar los datos en consola para depuración
+    // Cargar reservas actuales
+    function cargarReservas() {
+        fetch("/api/reservas")
+            .then(response => response.json())
+            .then(data => {
+                reservasTable.innerHTML = "";
+                data.forEach(reserva => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+                        <td>${reserva.fecha}</td>
+                        <td>${reserva.hora}</td>
+                        <td>${reserva.maquina}</td>
+                        <td><button onclick="cancelarReserva(${reserva.id})">Cancelar</button></td>
+                    `;
+                    reservasTable.appendChild(row);
+                });
+            })
+            .catch(error => console.error("Error al cargar reservas:", error));
+    }
 
-//             // Recorremos los datos y agregamos las filas a la tabla
-//             data.forEach(user => {
-//                 const fila = document.createElement('tr');
+    // Enviar una nueva reserva
+    function enviarReserva(event) {
+        event.preventDefault();
+        const fecha = document.getElementById("fecha").value;
+        const hora = document.getElementById("hora").value;
+        const maquina = document.getElementById("maquina").value;
 
-//                 // Crear y agregar las celdas a la fila
+        fetch("/api/reservar", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ fecha, hora, maquina })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            cargarReservas(); // Refrescar la tabla
+        })
+        .catch(error => console.error("Error al reservar:", error));
+    }
 
-//                 // Para la fecha
-//                 const fechaCompleta = new Date(user[0]);  // user[0] es la fecha
-//                 const dia = fechaCompleta.getUTCDate();
-//                 const mes = fechaCompleta.getUTCMonth() + 1;  // Los meses son 0-indexados, así que sumamos 1
-//                 const anio = fechaCompleta.getUTCFullYear();
-//                 const fechaFormateada = `${dia}/${mes}/${anio}`;  // Formatear la fecha como dd/mm/yyyy
-//                 const fecha = document.createElement('td');
-//                 fecha.textContent = fechaFormateada;
-//                 fila.appendChild(fecha);
+    // Cancelar reserva
+    function cancelarReserva(id) {
+        fetch(`/api/cancelar/${id}`, { method: "DELETE" })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.message);
+                cargarReservas(); // Refrescar la tabla después de cancelar
+            })
+            .catch(error => console.error("Error al cancelar la reserva:", error));
+    }
 
-//                 // Hora de inicio
-//                 const hora_inicio = document.createElement('td');
-//                 hora_inicio.textContent = user[1];  // user[1] es la hora_inicio
-//                 fila.appendChild(hora_inicio);
+    // Asignar funciones a eventos
+    form.addEventListener("submit", enviarReserva);
+    window.cancelarReserva = cancelarReserva; // Hacer accesible la función en el ámbito global
 
-//                 // Hora de fin
-//                 const hora_fin = document.createElement('td');
-//                 hora_fin.textContent = user[2];  // user[2] es la hora_fin
-//                 fila.appendChild(hora_fin);
+    // Cargar datos al iniciar
+    cargarMaquinas();
+    cargarReservas();
+}
 
-//                 // Nombre
-//                 const nombre = document.createElement('td');
-//                 nombre.textContent = user[3];  // user[3] es el nombre
-//                 fila.appendChild(nombre);
-
-//                 // Apellido
-//                 const apellido = document.createElement('td');
-//                 apellido.textContent = user[4];  // user[4] es el apellido
-//                 fila.appendChild(apellido);
-
-//                 // Agregar la fila al cuerpo de la tabla
-//                 tablaCuerpo.appendChild(fila);
-//             });
-//         })
-//         .catch(error => {
-//             console.error('Hubo un problema con la solicitud:', error);
-//         });
-// }
-
-// async function submitReservationForm(event) {
-//     event.preventDefault();
-
-//     // Obtener los valores del formulario
-//     const machine = document.getElementById('machine').value.trim();
-//     const date = document.getElementById('date').value.trim();
-//     const startTime = document.getElementById('start-time').value.trim();
-
-//     // Validar los datos antes de enviar
-//     if (!machine || !date || !startTime) {
-//         alert('Por favor, completa todos los campos.');
-//         return;
-//     }
-
-//     // Crear el objeto de la reserva
-//     const reservation = {
-//         machine,
-//         date,
-//         start_time: startTime
-//     };
-
-//     // Enviar la solicitud al servidor
-//     try {
-//         const response = await fetch('http://127.0.0.1:4000/machine-reservation', {
-//             method: 'POST',
-//             headers: {
-//                 'Content-Type': 'application/json', // Asegúrate de esto
-//                 'Accept': 'application/json' // Opcional pero recomendado
-//             },
-//             body: JSON.stringify(reservation) // Convierte el objeto a JSON
-//         });
-
-//         if (!response.ok) {
-//             throw new Error(`HTTP error! status: ${response.status}`);
-//         }
-
-//         const result = await response.json();
-//         alert(result.message || 'Reserva exitosa.');
-//     } catch (error) {
-//         console.error('Error al realizar la solicitud:', error);
-//         alert('No se pudo completar la reserva.');
-//     }
-// }
-
-// // Asignar la función al formulario
-// document
-//     .getElementById('reservation-form')
-//     .addEventListener('submit', submitReservationForm);
-
-
-
-// Función para manejar el envío del formulario
+// Ejecutar la función cuando el DOM esté listo
+document.addEventListener("DOMContentLoaded", inicializarReservas);
