@@ -808,3 +808,85 @@ function inicializarReservas() {
 
 // Ejecutar la función cuando el DOM esté listo
 document.addEventListener("DOMContentLoaded", inicializarReservas);
+
+
+// Enviar maquina a revision
+function enviarRevision(){
+    const asignacionMembresia = document.getElementById('actualizacionMembresia').getElementsByTagName('tbody')[0];
+    fetch('/assign_membreship')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la solicitud');
+            }
+            return response.json(); // Parsear la respuesta a JSON
+        })
+        .then(data => {
+            console.log("Información recibida:", data);
+            // Limpiar la tabla antes de agregar nuevas filas
+            asignacionMembresia.innerHTML = '';
+
+            // Filtrar los datos para mostrar solo aquellos con información incompleta
+            const datosFiltrados = data.filter(info_machine => {
+                return info_machine[3] || info_machine[4] || info_machine[5] || info_machine[6]; // costos, tipo, fechaInicio, estadoMembresia
+            });
+
+            // Agregar filas a la tabla
+            datosFiltrados.forEach(info_machine => {
+                // Crear una nueva fila
+                const fila = document.createElement('tr');
+
+                // Crear y agregar celdas a la fila para las 3 primeras columnas
+                const id = document.createElement('td');
+                id.textContent = info_machine[0]; // Maquina nombre
+                fila.appendChild(id);
+
+                const nombre = document.createElement('td');
+                nombre.textContent = info_machine[1]; // Serial
+                fila.appendChild(nombre);
+
+                // Crear la celda para Membresía con un botón
+                const membresiaCelda = document.createElement('td');
+                const botonMembresia = document.createElement('button');
+                botonMembresia.textContent = 'Actualizar';
+                botonMembresia.className = 'btn btn-primary';
+
+                // Añadir el evento de clic al botón "Asignar"
+                botonMembresia.onclick = function () {
+                    // Limpia los campos del modal
+                    document.getElementById('tipoMembresia').value = ''; 
+                    document.getElementById('tipoMembresia').value = info_machine[10];
+                    console.log(info_machine[10]);
+                    document.getElementById('fechaInicio').value = ''; 
+                    document.getElementById('fechaInicio').value = info_machine[5]; 
+                    console.log(info_machine[5]);
+                    document.getElementById('fechaFin').value = '';
+                    document.getElementById('fechaFin').value = info_machine[6];
+                    console.log(info_machine[6]);
+                    document.getElementById('estadoMembresia').value = '';
+                    document.getElementById('estadoMembresia').value = info_machine[7]; 
+                    console.log("USUARIO QUE LLEGA");
+                    console.log(info_machine[8]);
+                    console.log(info_machine[9]);
+
+                    const usuarioId = info_machine[8]; 
+                    const membresiaUsuario = info_machine[9];
+                    // Asumiendo que info_machine[0] es el usuario_id
+                    document.getElementById('id_user_update').value = usuarioId; 
+                    document.getElementById('id_membresia_usuario').value = membresiaUsuario;
+                    // Abre el modal
+                    $('#updateMembresia').modal('show');
+                };
+                
+
+                // Agregar el botón a la celda y la celda a la fila
+                membresiaCelda.appendChild(botonMembresia);
+                fila.appendChild(membresiaCelda);
+
+                // Agregar la fila al cuerpo de la tabla
+                asignacionMembresia.appendChild(fila);
+            });
+        })
+        .catch(error => {
+            console.error('Hubo un problema con la solicitud:', error);
+        });
+}

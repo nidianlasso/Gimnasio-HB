@@ -1,41 +1,71 @@
 {% include 'main.html' %}
 {% include 'member/menu.html' %}
 
+<!-- Tabla para Actualización -->
+<div>
+    <h2>Tabla de Actualización</h2>
+    <table border="1" id="actualizacionMembresia">
+        <thead>
+            <tr>
+                <th>Máquina</th>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>Membresía</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Los datos se cargarán dinámicamente aquí -->
+        </tbody>
+    </table>
+</div>
 
-                <form class="formulario_reserva" id="reserva-form">
-                    <label for="fecha">Fecha:</label>
-                    <input type="date" id="fecha" required>
-        
-                    <label for="hora">Hora:</label>
-                    <input type="time" id="hora" required>
-        
-                    <label for="maquina">Máquina:</label>
-                    <select id="maquina" required>
-                        <!-- Opciones llenadas dinámicamente con JS -->
-                    </select>
-        
-                    <button type="submit">Reservar</button>
+<!-- Modal para mostrar detalles de la membresía -->
+<div class="modal fade" id="updateMembresia" tabindex="-1" aria-labelledby="updateMembresiaLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalles de la Revision</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="asignarMembresiaForm" method="POST" action="{{ url_for('update_membreship') }}">
+                    <input type="hidden" name="id_user_update" id="id_user_update"> <!-- Campo oculto para usuarioId -->
+                    <input type="hidden" name="id_membresia_usuario" id="id_membresia_usuario"> <!-- Campo oculto para id_membresia_usuario -->
+                    <fieldset>
+                        <div class="form-group">
+                            <label for="tipoMembresia">Tipo de Membresía:</label>
+                            <select class="form-select" name="tipoMembresia" id="tipoMembresia" required>
+                                <option value="">Seleccione...</option>
+                                {% for tipo in membresias %}
+                                <option value="{{ tipo[2] }}" data-costo="{{ tipo[1] }}">{{ tipo[0] }} - {{ tipo[1] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaInicio">Fecha Inicio:</label>
+                            <input type="date" class="form-control" name="fechaInicio" id="fechaInicio" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaFin">Fecha Fin:</label>
+                            <input type="date" class="form-control" name="fechaFin" id="fechaFin" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="estadoMembresia">Estado:</label>
+                            <select class="form-control" name="estadoMembresia" id="estadoMembresia" required>
+                                <option value="">Seleccione...</option>
+                                {% for estado in estado_membresia %}
+                                <option value="{{ estado[0] }}">{{ estado[1] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </fieldset>
+                    <button type="submit" class="btn btn-primary btn-block">Guardar</button>
+                    <a href="{{ url_for('manage_users') }}" class="btn btn-secondary btn-block">Volver</a>
                 </form>
             </div>
-            <div class="col-lg-6">
-                <h2>Reservas Actuales</h2>
-                <table class="tabla_reservas_maquina" id="reservas-table">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Hora</th>
-                            <th>Máquina</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Reservas llenadas con JS -->
-                    </tbody>
-                </table>
-            </div>
         </div>
-
-       
-
-    <!-- <script src="{{ url_for('static', filename='script.js') }}"></script> -->
-  
+    </div>
+</div>

@@ -173,6 +173,12 @@ def search_machine_name():
 def available_machines_page():
     return render_template('Administrator/available_machine.html')
 
+# ENVIAR MAQUINA A REVISION
+@app.route('/review-machines', methods=['GET'])
+def review_machines():
+    asignacion = lista_maquinas()
+    return jsonify(asignacion)
+
 #LLAMADO AL TEMPLATE MIEMBRO
 @app.route('/profile-member')
 @login_required_member  # Asegúrate de que este decorador no afecta la sesión
