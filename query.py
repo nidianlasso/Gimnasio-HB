@@ -475,3 +475,18 @@ def get_maquinas():
     cursor.execute("SELECT id_maquina, nombre FROM maquina")
     maquinas = [{'id': row[0], 'nombre': row[1]} for row in cursor.fetchall()]
     return jsonify(maquinas)
+
+#Obtener las reservas de las maquinas
+def obtener_reservas_maquinas():
+    cursor.execute('''
+        SELECT rm.fecha, rm.hora_inicio, rm.hora_fin, u.nombre, u.apellido, m.nombre 
+        FROM reserva_maquina rm 
+        INNER JOIN membresia_usuario mu ON rm.id_membresia_usuario = mu.id_membresia_usuario 
+        INNER JOIN usuario u ON mu.id_usuario = u.id_usuario 
+        INNER JOIN inventario_maquina im ON im.id_inventario_maquina = rm.id_inventario_maquina 
+        INNER JOIN maquina m ON m.id_maquina = im.id_maquina 
+        ORDER BY rm.fecha, rm.hora_inicio;
+    ''')
+    resultado = cursor.fetchall()
+    print("Reservas encontradas:", resultado)
+    return resultado

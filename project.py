@@ -6,7 +6,7 @@ from query import (validarLogin, check_credentials, login_required_admin, login_
                       conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship,
                       guardar_membresia, status_membreship, actualizar_membresia, lista_maquinas, search_machine, access_users,
                       guardar_acceso, obtener_tipo_acceso, cambiar_estado_acceso, asignar_entrenador, obtener_plan_trabajo, obtener_membrehip_user,
-                      info_machine, save_class_to_db)
+                      info_machine, save_class_to_db, obtener_reservas_maquinas)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -168,10 +168,26 @@ def search_machine_name():
     return jsonify(resultados)
 
 #LISTADO DE LAS MAQUINAS CON DISPONIBILIDAD
-@app.route('/available-machines', methods=['GET'])
-# @login_required_admin
+@app.route('/available_machines_page', methods=['GET'])
 def available_machines_page():
-    return render_template('Administrator/available_machine.html')
+    try:
+        datos = obtener_reservas_maquinas()
+
+        # Formatear datos a JSON
+        resultado = []
+        for fila in datos:
+            resultado.append({
+                'fecha': fila[0].strftime('%Y-%m-%d'),  # o str(fila[0]) si es string
+                'hora_inicio': str(fila[1]),
+                'hora_fin': str(fila[2]),
+                'nombre': fila[3],
+                'apellido': fila[4],
+                'maquina': fila[5]
+            })
+        return jsonify(resultado)
+    except Exception as e:
+        print("Error en /available_machines_page:", e)
+        return jsonify({'error': 'Error interno del servidor'}), 500
 
 # ENVIAR MAQUINA A REVISION
 @app.route('/review-machines', methods=['GET'])

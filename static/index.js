@@ -344,6 +344,60 @@ function getListMachine() {
         });
 }
 
+//Disponibilidad de maquinas administrador
+$('#maquinasDisponibles').on('show.bs.modal', function () {
+    available_machines_page();  // Esta es la función que cargará los datos
+});
+
+function available_machines_page(){
+    const visualizacionMaquinasDisponibilidad = document.getElementById('visualizacionDisponibilidad').getElementsByTagName('tbody')[0];
+    fetch('/available_machines_page')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Error en la solicitud');
+            }
+            return response.json();
+        })
+        .then(data => {
+            visualizacionMaquinasDisponibilidad.innerHTML = '';  // Limpiar tabla antes de insertar nueva data
+            data.forEach(user => {
+                const fila = document.createElement('tr');
+
+                const fecha = document.createElement('td');
+                const horaInicio = document.createElement('td');
+                const horaFin = document.createElement('td');
+                const nombreUsuario = document.createElement('td');
+                const apellidoUsuario = document.createElement('td');
+                const nombreMaquina = document.createElement('td');
+
+                const fechaCompleta = new Date(user.fecha);
+                const dia = fechaCompleta.getUTCDate();
+                const mes = fechaCompleta.getUTCMonth() + 1;
+                const anio = fechaCompleta.getUTCFullYear();
+                const fechaFormateada = `${dia}/${mes}/${anio}`;
+                fecha.textContent = fechaFormateada;
+                horaInicio.textContent = user.hora_inicio;
+                horaFin.textContent = user.hora_fin;
+                nombreUsuario.textContent = user.nombre;
+                apellidoUsuario.textContent = user.apellido;
+                nombreMaquina.textContent = user.maquina;
+
+                fila.appendChild(fecha);
+                fila.appendChild(horaInicio);
+                fila.appendChild(horaFin);
+                fila.appendChild(nombreUsuario);
+                fila.appendChild(apellidoUsuario);
+                fila.appendChild(nombreMaquina);
+
+                visualizacionMaquinasDisponibilidad.appendChild(fila);
+            });
+        })
+        .catch(error => {
+            console.error('Hubo un problema con la solicitud:', error);
+        });
+}
+
+
 function getSearchMachine() {
     const cuerpoTabla = document.querySelector('#busquedaMaquinas tbody');
     const tabla = document.getElementById('busquedaMaquinas');
@@ -725,168 +779,3 @@ function assign_membreship() {
         });
 }
 
-function inicializarReservas() {
-    const form = document.getElementById("reserva-form");
-    const maquinaSelect = document.getElementById("maquina");
-    const reservasTable = document.getElementById("reservas-table").querySelector("tbody");
-
-    // Cargar máquinas disponibles
-    function cargarMaquinas() {
-        fetch("/api/maquinas")
-            .then(response => response.json())
-            .then(data => {
-                maquinaSelect.innerHTML = ""; // Limpiar opciones previas
-                data.forEach(maquina => {
-                    const option = document.createElement("option");
-                    option.value = maquina.id;
-                    option.textContent = maquina.nombre;
-                    maquinaSelect.appendChild(option);
-                });
-            })
-            .catch(error => console.error("Error al cargar máquinas:", error));
-    }
-
-    // Cargar reservas actuales
-    function cargarReservas() {
-        fetch("/api/reservas")
-            .then(response => response.json())
-            .then(data => {
-                reservasTable.innerHTML = "";
-                data.forEach(reserva => {
-                    const row = document.createElement("tr");
-                    row.innerHTML = `
-                        <td>${reserva.fecha}</td>
-                        <td>${reserva.hora}</td>
-                        <td>${reserva.maquina}</td>
-                        <td><button onclick="cancelarReserva(${reserva.id})">Cancelar</button></td>
-                    `;
-                    reservasTable.appendChild(row);
-                });
-            })
-            .catch(error => console.error("Error al cargar reservas:", error));
-    }
-
-    // Enviar una nueva reserva
-    function enviarReserva(event) {
-        event.preventDefault();
-        const fecha = document.getElementById("fecha").value;
-        const hora = document.getElementById("hora").value;
-        const maquina = document.getElementById("maquina").value;
-
-        fetch("/api/reservar", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ fecha, hora, maquina })
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert(data.message);
-            cargarReservas(); // Refrescar la tabla
-        })
-        .catch(error => console.error("Error al reservar:", error));
-    }
-
-    // Cancelar reserva
-    function cancelarReserva(id) {
-        fetch(`/api/cancelar/${id}`, { method: "DELETE" })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                cargarReservas(); // Refrescar la tabla después de cancelar
-            })
-            .catch(error => console.error("Error al cancelar la reserva:", error));
-    }
-
-    // Asignar funciones a eventos
-    form.addEventListener("submit", enviarReserva);
-    window.cancelarReserva = cancelarReserva; // Hacer accesible la función en el ámbito global
-
-    // Cargar datos al iniciar
-    cargarMaquinas();
-    cargarReservas();
-}
-
-// Ejecutar la función cuando el DOM esté listo
-document.addEventListener("DOMContentLoaded", inicializarReservas);
-
-
-// Enviar maquina a revision
-function enviarRevision(){
-    const asignacionMembresia = document.getElementById('actualizacionMembresia').getElementsByTagName('tbody')[0];
-    fetch('/assign_membreship')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error en la solicitud');
-            }
-            return response.json(); // Parsear la respuesta a JSON
-        })
-        .then(data => {
-            console.log("Información recibida:", data);
-            // Limpiar la tabla antes de agregar nuevas filas
-            asignacionMembresia.innerHTML = '';
-
-            // Filtrar los datos para mostrar solo aquellos con información incompleta
-            const datosFiltrados = data.filter(info_machine => {
-                return info_machine[3] || info_machine[4] || info_machine[5] || info_machine[6]; // costos, tipo, fechaInicio, estadoMembresia
-            });
-
-            // Agregar filas a la tabla
-            datosFiltrados.forEach(info_machine => {
-                // Crear una nueva fila
-                const fila = document.createElement('tr');
-
-                // Crear y agregar celdas a la fila para las 3 primeras columnas
-                const id = document.createElement('td');
-                id.textContent = info_machine[0]; // Maquina nombre
-                fila.appendChild(id);
-
-                const nombre = document.createElement('td');
-                nombre.textContent = info_machine[1]; // Serial
-                fila.appendChild(nombre);
-
-                // Crear la celda para Membresía con un botón
-                const membresiaCelda = document.createElement('td');
-                const botonMembresia = document.createElement('button');
-                botonMembresia.textContent = 'Actualizar';
-                botonMembresia.className = 'btn btn-primary';
-
-                // Añadir el evento de clic al botón "Asignar"
-                botonMembresia.onclick = function () {
-                    // Limpia los campos del modal
-                    document.getElementById('tipoMembresia').value = ''; 
-                    document.getElementById('tipoMembresia').value = info_machine[10];
-                    console.log(info_machine[10]);
-                    document.getElementById('fechaInicio').value = ''; 
-                    document.getElementById('fechaInicio').value = info_machine[5]; 
-                    console.log(info_machine[5]);
-                    document.getElementById('fechaFin').value = '';
-                    document.getElementById('fechaFin').value = info_machine[6];
-                    console.log(info_machine[6]);
-                    document.getElementById('estadoMembresia').value = '';
-                    document.getElementById('estadoMembresia').value = info_machine[7]; 
-                    console.log("USUARIO QUE LLEGA");
-                    console.log(info_machine[8]);
-                    console.log(info_machine[9]);
-
-                    const usuarioId = info_machine[8]; 
-                    const membresiaUsuario = info_machine[9];
-                    // Asumiendo que info_machine[0] es el usuario_id
-                    document.getElementById('id_user_update').value = usuarioId; 
-                    document.getElementById('id_membresia_usuario').value = membresiaUsuario;
-                    // Abre el modal
-                    $('#updateMembresia').modal('show');
-                };
-                
-
-                // Agregar el botón a la celda y la celda a la fila
-                membresiaCelda.appendChild(botonMembresia);
-                fila.appendChild(membresiaCelda);
-
-                // Agregar la fila al cuerpo de la tabla
-                asignacionMembresia.appendChild(fila);
-            });
-        })
-        .catch(error => {
-            console.error('Hubo un problema con la solicitud:', error);
-        });
-}
