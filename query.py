@@ -476,17 +476,50 @@ def get_maquinas():
     maquinas = [{'id': row[0], 'nombre': row[1]} for row in cursor.fetchall()]
     return jsonify(maquinas)
 
-#Obtener las reservas de las maquinas
+#Obtener las reservas de las maquinas de hoy
 def obtener_reservas_maquinas():
     cursor.execute('''
-        SELECT rm.fecha, rm.hora_inicio, rm.hora_fin, u.nombre, u.apellido, m.nombre 
-        FROM reserva_maquina rm 
-        INNER JOIN membresia_usuario mu ON rm.id_membresia_usuario = mu.id_membresia_usuario 
-        INNER JOIN usuario u ON mu.id_usuario = u.id_usuario 
-        INNER JOIN inventario_maquina im ON im.id_inventario_maquina = rm.id_inventario_maquina 
-        INNER JOIN maquina m ON m.id_maquina = im.id_maquina 
-        ORDER BY rm.fecha, rm.hora_inicio;
+        SELECT rm.fecha, rm.hora_inicio, rm.hora_fin, u.nombre, u.apellido, m.nombre AS nombre_maquina
+        FROM maquina m 
+        JOIN inventario_maquina im ON m.id_maquina = im.id_maquina
+        JOIN reserva_maquina rm ON im.id_inventario_maquina = rm.id_inventario_maquina
+        JOIN membresia_usuario mu ON rm.id_membresia_usuario = mu.id_membresia_usuario
+        JOIN usuario u ON mu.id_usuario = u.id_usuario 
+        WHERE rm.fecha = CURDATE()
+        ORDER BY rm.hora_inicio;
     ''')
-    resultado = cursor.fetchall()
-    print("Reservas encontradas:", resultado)
-    return resultado
+    resultados = cursor.fetchall()
+    return [
+        {
+            "nombre_maquina": fila[5],
+            "nombre": fila[3],
+            "apellido": fila[4],
+            "fecha": fila[0].isoformat(),  # o str(fila[0])
+            "hora_inicio": str(fila[1]),
+            "hora_fin": str(fila[2]),
+            "disponibilidad": "Reservada"
+        }
+        for fila in resultados
+    ]
+
+
+#Obtiene las maquinas que no tienen reserva
+def obtener_maquinas_disponibles():
+    cursor.execute('''
+        SELECT m.nombre AS nombre_maquina 
+        FROM maquina m
+        LEFT JOIN inventario_maquina im ON m.id_maquina = im.id_maquina
+        LEFT JOIN reserva_maquina rm 
+            ON im.id_inventario_maquina = rm.id_inventario_maquina 
+            AND rm.fecha = CURDATE()
+        WHERE rm.id_reserva IS NULL 
+        ORDER BY m.nombre;
+    ''')
+    
+    resultados = cursor.fetchall()
+
+    return [
+        {"nombre_maquina": fila[0], "disponibilidad": "Disponible"}
+        for fila in resultados
+    ]
+

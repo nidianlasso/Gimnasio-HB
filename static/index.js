@@ -349,53 +349,107 @@ $('#maquinasDisponibles').on('show.bs.modal', function () {
     available_machines_page();  // Esta es la función que cargará los datos
 });
 
-function available_machines_page(){
-    const visualizacionMaquinasDisponibilidad = document.getElementById('visualizacionDisponibilidad').getElementsByTagName('tbody')[0];
-    fetch('/available_machines_page')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error en la solicitud');
-            }
-            return response.json();
+// function available_machines_page(){
+//     const visualizacionMaquinasDisponibilidad = document.getElementById('visualizacionDisponibilidad').getElementsByTagName('tbody')[0];
+//     fetch('/available_machines_page')
+//         .then(response => {
+//             if (!response.ok) {
+//                 throw new Error('Error en la solicitud');
+//             }
+//             return response.json();
+//         })
+//         .then(data => {
+//             console.log("Datos recibidos:", data);
+//             visualizacionMaquinasDisponibilidad.innerHTML = '';
+//             data.forEach(user => {
+//                 const fila = document.createElement('tr');
+
+//                 const fecha = document.createElement('td');
+//                 const horaInicio = document.createElement('td');
+//                 const horaFin = document.createElement('td');
+//                 const nombreUsuario = document.createElement('td');
+//                 const apellidoUsuario = document.createElement('td');
+//                 const nombreMaquina = document.createElement('td');
+//                 const disponibilidad = document.createElement('td');
+
+//                 console.log("Aqui llega el nombre de la maquina")
+//                 console.log(nombreMaquina);
+
+//                 const fechaCompleta = new Date(user.fecha);
+//                 const dia = fechaCompleta.getUTCDate();
+//                 const mes = fechaCompleta.getUTCMonth() + 1;
+//                 const anio = fechaCompleta.getUTCFullYear();
+//                 const fechaFormateada = `${dia}/${mes}/${anio}`;
+//                 fecha.textContent = fechaFormateada;
+//                 horaInicio.textContent = user.hora_inicio;
+//                 horaFin.textContent = user.hora_fin;
+//                 nombreUsuario.textContent = user.nombre;
+//                 apellidoUsuario.textContent = user.apellido;
+//                 nombreMaquina.textContent = user.nombre_maquina;
+//                 disponibilidad.textContent = user.disponibilidad;
+
+//                 fila.appendChild(fecha);
+//                 fila.appendChild(horaInicio);
+//                 fila.appendChild(horaFin);
+//                 fila.appendChild(nombreUsuario);
+//                 fila.appendChild(apellidoUsuario);
+//                 fila.appendChild(nombreMaquina);
+//                 fila.appendChild(disponibilidad);
+
+//                 visualizacionMaquinasDisponibilidad.appendChild(fila);
+//             });
+//         })
+//         .catch(error => {
+//             console.error('Hubo un problema con la solicitud:', error);
+//         });
+// }
+
+function cargarMaquinas(tipo) {
+    fetch(`/maquinas?tipo=${tipo}`)
+        .then(res => {
+            if (!res.ok) throw new Error('No se pudo cargar');
+            return res.json();
         })
         .then(data => {
-            visualizacionMaquinasDisponibilidad.innerHTML = '';  // Limpiar tabla antes de insertar nueva data
-            data.forEach(user => {
+            const tbody = document.getElementById('tablaMaquinas');
+            tbody.innerHTML = '';
+
+            // Mostrar/ocultar columnas según tipo
+            document.querySelectorAll('.colReservadas').forEach(col => {
+                col.style.display = tipo === 'reservadas' ? '' : 'none';
+            });
+
+            data.forEach(item => {
                 const fila = document.createElement('tr');
 
-                const fecha = document.createElement('td');
-                const horaInicio = document.createElement('td');
-                const horaFin = document.createElement('td');
-                const nombreUsuario = document.createElement('td');
-                const apellidoUsuario = document.createElement('td');
-                const nombreMaquina = document.createElement('td');
+                // Máquina (siempre)
+                fila.innerHTML += `<td>${item.nombre_maquina}</td>`;
 
-                const fechaCompleta = new Date(user.fecha);
-                const dia = fechaCompleta.getUTCDate();
-                const mes = fechaCompleta.getUTCMonth() + 1;
-                const anio = fechaCompleta.getUTCFullYear();
-                const fechaFormateada = `${dia}/${mes}/${anio}`;
-                fecha.textContent = fechaFormateada;
-                horaInicio.textContent = user.hora_inicio;
-                horaFin.textContent = user.hora_fin;
-                nombreUsuario.textContent = user.nombre;
-                apellidoUsuario.textContent = user.apellido;
-                nombreMaquina.textContent = user.maquina;
+                if (tipo === 'reservadas') {
+                    fila.innerHTML += `<td>${item.nombre}</td>`;
+                    fila.innerHTML += `<td>${item.apellido}</td>`;
+                    fila.innerHTML += `<td>${formatearFecha(item.fecha)}</td>`;
+                    fila.innerHTML += `<td>${item.hora_inicio}</td>`;
+                    fila.innerHTML += `<td>${item.hora_fin}</td>`;
+                } else {
+                    // Ocultamos las columnas adicionales con colspan para alinear
+                    fila.innerHTML += `<td class="colReservadas" style="display:none"></td>`.repeat(5);
+                }
 
-                fila.appendChild(fecha);
-                fila.appendChild(horaInicio);
-                fila.appendChild(horaFin);
-                fila.appendChild(nombreUsuario);
-                fila.appendChild(apellidoUsuario);
-                fila.appendChild(nombreMaquina);
-
-                visualizacionMaquinasDisponibilidad.appendChild(fila);
+                fila.innerHTML += `<td>${item.disponibilidad}</td>`;
+                tbody.appendChild(fila);
             });
         })
-        .catch(error => {
-            console.error('Hubo un problema con la solicitud:', error);
-        });
+        .catch(err => console.error('Error:', err));
 }
+
+        function formatearFecha(fechaStr) {
+            const fecha = new Date(fechaStr);
+            const dia = fecha.getDate().toString().padStart(2, '0');
+            const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+            const anio = fecha.getFullYear();
+            return `${dia}/${mes}/${anio}`;
+        }
 
 
 function getSearchMachine() {
@@ -460,7 +514,7 @@ function getSearchMachine() {
 }
 
 /*RECEPCIONISTA */
-const duracion_defecto = 60; // Duración por defecto en segundos
+const duracion_defecto = 60; 
 
 function segundosAHHMMSS(segundos) {
     if (isNaN(segundos) || segundos < 0) {
@@ -473,8 +527,8 @@ function segundosAHHMMSS(segundos) {
 
     return `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
 }
-let inicio; // Declaración global
-let isActive = false; // Flag para controlar el estado
+let inicio; 
+let isActive = false;
 
 function registrarIngreso() {
     const cedula = document.getElementById('cedula').value;

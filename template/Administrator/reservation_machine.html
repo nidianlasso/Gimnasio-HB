@@ -1,0 +1,26 @@
+<div class="modal-body">
+
+  <!-- Botones para filtrar -->
+  <div class="mb-3 d-flex gap-2">
+    <button class="btn btn-primary" onclick="cargarMaquinas('reservadas')">Reservadas Hoy</button>
+    <button class="btn btn-success" onclick="cargarMaquinas('disponibles')">Disponibles</button>
+  </div>
+
+  <!-- Tabla -->
+  <table class="table table-bordered">
+  <thead>
+    <tr>
+      <th>Máquina</th>
+      <th class="colReservadas">Nombre</th>
+      <th class="colReservadas">Apellido</th>
+      <th class="colReservadas">Fecha</th>
+      <th class="colReservadas">Inicio</th>
+      <th class="colReservadas">Fin</th>
+      <th>Disponibilidad</th>
+    </tr>
+  </thead>
+  <tbody id="tablaMaquinas"></tbody>
+</table>
+
+
+</div>
