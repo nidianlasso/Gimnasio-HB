@@ -361,18 +361,18 @@ function cargarMaquinas(tipo) {
             const tabla = document.getElementById('tablaPrincipal');
             const calendarioContainer = document.getElementById('contenedorCalendario');
 
-            // Siempre limpia todo antes
-            tbody.innerHTML = '';
-            thead.innerHTML = '';
-            calendarioContainer.innerHTML = '';
+            // Limpia solo si existen
+            if (tbody) tbody.innerHTML = '';
+            if (thead) thead.innerHTML = '';
+            if (calendarioContainer) calendarioContainer.innerHTML = '';
 
             // Mostrar u ocultar contenedores según el tipo
             if (tipo === 'disponibilidad_horaria') {
-                tabla.style.display = 'none';
-                calendarioContainer.style.display = 'block';
+                if (tabla) tabla.style.display = 'none';
+                if (calendarioContainer) calendarioContainer.style.display = 'block';
             } else {
-                tabla.style.display = 'table';
-                calendarioContainer.style.display = 'none';
+                if (tabla) tabla.style.display = 'table';
+                if (calendarioContainer) calendarioContainer.style.display = 'none';
             }
 
             // Tabla: máquinas reservadas
@@ -419,41 +419,132 @@ function cargarMaquinas(tipo) {
 
             // Calendario: disponibilidad horaria
             else if (tipo === 'disponibilidad_horaria') {
-                data.forEach(maquina => {
-                    const fila = document.createElement('div');
-                    fila.className = 'maquina-grid';
+    data.forEach(maquina => {
+    const fila = document.createElement('div');
+    fila.className = 'maquina-grid';
 
-                    const nombre = document.createElement('div');
-                    nombre.className = 'nombre-maquina';
-                    nombre.textContent = maquina.nombre_maquina;
-                    fila.appendChild(nombre);
+    const nombre = document.createElement('div');
+    nombre.className = 'nombre-maquina';
+    nombre.textContent = maquina.nombre_maquina;
+    fila.appendChild(nombre);
 
-                    const bloques = Object.values(maquina.bloques).flat();
+    const bloques = Object.values(maquina.bloques).flat();
 
-                    bloques.forEach(b => {
-                        const bloque = document.createElement('div');
-                        bloque.className = `bloque ${b.estado}`;
-                        bloque.title = `${b.hora} - ${sumar15(b.hora)}`;
-                        fila.appendChild(bloque);
-                    });
+    bloques.forEach(b => {
+        const bloque = document.createElement('div');
+        bloque.className = `bloque ${b.estado}`;
+        bloque.title = `${b.hora} - ${sumar15(b.hora)}`;
 
-                    calendarioContainer.appendChild(fila);
-                });
-            }
+        if (b.estado === 'disponible') {
+            bloque.style.cursor = 'pointer';
+
+            // ✅ Este bloque sí captura bien el id_maquina desde el scope externo
+            bloque.addEventListener('click', () => {
+                console.log('Click detectado en:', maquina.id_maquina, b.hora);  // 👈 Verifica esto
+                reservarBloque(maquina.id_maquina, b.hora);  // 👈 aquí ya no debe dar error
+            });
+        }
+
+        fila.appendChild(bloque);
+    });
+
+    calendarioContainer.appendChild(fila);
+});
+
+}
         })
         .catch(err => {
             console.error('Error:', err);
         });
 }
 
+//***************************************************** */
+function reservarBloque(id_maquina, hora_inicio) {
+    console.log('Reservando máquina:', id_maquina, 'a las', hora_inicio);
 
-// 👉 Suma 15 minutos para los tooltips
+    fetch('/reservar-bloque', {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+        id_maquina: id_maquina,
+        hora: hora_inicio  // 👈 debe coincidir con esto
+    })
+})
+
+    .then(res => res.json())
+    .then(data => {
+    if (data.success) {
+        alert(data.message);
+        cargarMaquinas('disponibilidad_horaria');
+    } else {
+        alert('Error: ' + (data.message || data.mensaje || 'Algo salió mal'));
+    }
+})
+    .catch(err => {
+        console.error('Error en la solicitud:', err);
+    });
+}
+
+
+
+
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const select = document.getElementById('maquina');
+
+    // Cargar máquinas disponibles
+    fetch('/api/maquinas_disponibles')
+        .then(res => res.json())
+        .then(data => {
+            data.forEach(maquina => {
+                const opt = document.createElement('option');
+                opt.value = maquina.id;
+                opt.textContent = maquina.nombre;
+                select.appendChild(opt);
+            });
+        });
+
+    // Enviar reserva
+    document.getElementById('formReservaMaquina').addEventListener('submit', e => {
+        e.preventDefault();
+
+        const data = {
+            id_inventario_maquina: select.value,
+            hora_inicio: document.getElementById('hora_inicio').value,
+            hora_fin: document.getElementById('hora_fin').value
+        };
+
+        fetch('/reservar_maquina', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+            .then(res => res.json())
+            .then(res => {
+                document.getElementById('mensaje').textContent = res.mensaje || res.error;
+            });
+    });
+});
+
+//*******************************************************/
+
+// Utilidad para sumar 15 minutos
 function sumar15(horaStr) {
     const [h, m] = horaStr.split(':').map(Number);
-    const nueva = new Date();
-    nueva.setHours(h, m + 15);
-    return nueva.toTimeString().slice(0, 5);
+    const fecha = new Date();
+    fecha.setHours(h, m + 15);
+    return fecha.toTimeString().slice(0, 5);
 }
+
+// function sumar15(horaStr) {
+//   const [h, m] = horaStr.split(':').map(Number);
+//   const date = new Date(0, 0, 0, h, m + 15);
+//   return date.toTimeString().slice(0, 5);
+// }
 
 function formatearFecha(fechaStr) {
     const [anio, mes, dia] = fechaStr.split('-');
@@ -842,3 +933,26 @@ function assign_membreship() {
         });
 }
 
+//FUNCION PARA HACER LA RESERVA DE LA MAQUINA
+function realizarReserva(data) {
+    fetch('/reservar_maquina', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+        .then(res => res.json())
+        .then(respuesta => {
+            if (respuesta.error) {
+                alert("Error: " + respuesta.error);
+            } else {
+                alert(respuesta.mensaje);
+                cargarMaquinas('disponibilidad_horaria'); // Recargar calendario
+            }
+        })
+        .catch(err => {
+            console.error('Error al reservar:', err);
+            alert('Hubo un error al hacer la reserva.');
+        });
+}

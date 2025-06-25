@@ -3,10 +3,12 @@ from flask_mysqldb import MySQL
 from datetime import datetime, timedelta
 from query import (validarLogin, check_credentials, login_required_admin, login_required_member,login_required_coach, login_required_receptionist,
                     lista_miembros,lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
-                      conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship,
-                      guardar_membresia, status_membreship, actualizar_membresia, lista_maquinas, search_machine, access_users,
-                      guardar_acceso, obtener_tipo_acceso, cambiar_estado_acceso, asignar_entrenador, obtener_plan_trabajo, obtener_membrehip_user,
-                      info_machine, save_class_to_db, obtener_reservas_maquinas, obtener_maquinas_disponibles, consultar_reservas_de_hoy, cant_maquinas)
+                    conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship,
+                    guardar_membresia, status_membreship, actualizar_membresia, lista_maquinas, search_machine, access_users,
+                    guardar_acceso, obtener_tipo_acceso, cambiar_estado_acceso, asignar_entrenador, obtener_plan_trabajo, obtener_membrehip_user,
+                    save_class_to_db, obtener_reservas_maquinas, obtener_maquinas_disponibles, consultar_reservas_de_hoy, cant_maquinas,
+                    cant_proveedores, cant_empleados, obtener_maquinas_disponibles_para_reserva, existe_reserva_en_bloque, registrar_reserva,
+                    obtener_id_membresia_usuario)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -37,7 +39,9 @@ def administrator():
     listado_entrenadores = cant_entrenadores()
     conteo_clases = conteo_clases_reservadas()
     conteo_maquinas = cant_maquinas()
-    return render_template('Administrator/administrator.html', lista_miembros = listado_miembros, cant_entrenadores = listado_entrenadores, conteo_reserva = conteo_clases, conteo_maquinas =conteo_maquinas)
+    conteo_proveedores = cant_proveedores()
+    conteo_empleados = cant_empleados()
+    return render_template('Administrator/administrator.html', lista_miembros = listado_miembros, cant_entrenadores = listado_entrenadores, conteo_reserva = conteo_clases, conteo_maquinas =conteo_maquinas, conteo_proveedores=conteo_proveedores, cant_empleados=conteo_empleados)
 
 #LLAMADO VISTA GESTION DE USUARIOS
 @app.route('/users-manage')
@@ -182,7 +186,6 @@ def available_machines_page():
         return jsonify({'error': 'Tipo inválido'}), 400
 
 
-
 def obtener_bloques_disponibles():
     datos = consultar_reservas_de_hoy()  # (id_maquina, nombre_maquina, hora_reservada)
 
@@ -191,8 +194,6 @@ def obtener_bloques_disponibles():
         id_maquina = fila[0]
         nombre_maquina = fila[1]
         hora_reservada = fila[2]
-        print("nombre de la maquina")
-        print(nombre_maquina)
 
         if id_maquina not in maquinas:
             maquinas[id_maquina] = {
@@ -201,7 +202,6 @@ def obtener_bloques_disponibles():
             }
 
         if hora_reservada:
-            # Asegurarse de que el valor sea tipo datetime.time
             if isinstance(hora_reservada, timedelta):
                 total_minutes = int(hora_reservada.total_seconds() // 60)
                 hora_str = f"{total_minutes // 60:02}:{total_minutes % 60:02}"
@@ -214,7 +214,7 @@ def obtener_bloques_disponibles():
 
     resultado = []
 
-    for maquina in maquinas.values():
+    for id_maquina, datos_maquina in maquinas.items():
         bloques_por_hora = {}
 
         for i in range(16):  # 06:00 a 21:45
@@ -225,18 +225,93 @@ def obtener_bloques_disponibles():
             for j in range(4):  # 4 bloques de 15 min
                 bloque_inicio = hora_inicio_bloque + timedelta(minutes=15 * j)
                 bloque_str = bloque_inicio.strftime('%H:%M')
-                estado = "reservado" if bloque_str in maquina["reservadas"] else "disponible"
+                estado = "reservado" if bloque_str in datos_maquina["reservadas"] else "disponible"
                 bloques_por_hora[hora_key].append({
                     "hora": bloque_str,
                     "estado": estado
                 })
 
         resultado.append({
-            "nombre_maquina": maquina["nombre_maquina"],
+            "id_maquina": id_maquina,  # ✅ Ahora sí se envía al frontend
+            "nombre_maquina": datos_maquina["nombre_maquina"],
             "bloques": bloques_por_hora
         })
 
     return resultado
+#**************************RESERVAS DEL USUARIO MAQUINA***********************************************
+@app.route('/machine-reservation', methods=['GET'])
+def show_machine_reservation_form():
+    if 'rol' not in session:
+        return redirect('/login')
+    return render_template('member/machine_reservation.html', rol=f"perfil-{session['rol']}")
+
+@app.route('/member/disponibilidad', methods=['GET'])
+def disponibilidad_para_miembros():
+    return jsonify(obtener_bloques_disponibles())  # Esto ya lo tienes funcionando
+
+
+@app.route('/reservar-bloque', methods=['POST'])
+def reservar_bloque():
+    if 'id_usuario' not in session or session.get('rol') != 'Miembro':
+        return jsonify({'mensaje': 'Acceso no autorizado'}), 403
+
+    datos = request.get_json()
+    id_inventario_maquina = datos.get('id_maquina')  # nombre correcto
+    hora_inicio = datos.get('hora')
+    id_usuario = session['id_usuario']
+
+    id_membresia_usuario = obtener_id_membresia_usuario(id_usuario)
+    if not id_membresia_usuario:
+        return jsonify({'success': False, 'message': 'No se encontró membresía asociada al usuario'}), 404
+
+    try:
+        hora_inicio_dt = datetime.strptime(hora_inicio, "%H:%M")
+    except ValueError:
+        return jsonify({'mensaje': 'Hora inválida'}), 400
+
+    hora_fin_dt = hora_inicio_dt + timedelta(minutes=15)
+    hora_fin_str = hora_fin_dt.strftime('%H:%M')
+
+    if existe_reserva_en_bloque(id_inventario_maquina, hora_inicio):
+        return jsonify({'mensaje': 'Este bloque ya está reservado'}), 409
+
+    resultado = registrar_reserva(id_membresia_usuario, id_inventario_maquina, hora_inicio, hora_fin_str)
+    return jsonify(resultado), 201 if resultado['success'] else 500
+
+#*************************************************************************
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # ENVIAR MAQUINA A REVISION
@@ -244,6 +319,7 @@ def obtener_bloques_disponibles():
 def review_machines():
     asignacion = lista_maquinas()
     return jsonify(asignacion)
+#ENVIO DE MAQUINA A REVISION
 
 #LLAMADO AL TEMPLATE MIEMBRO
 @app.route('/profile-member')
@@ -264,13 +340,20 @@ def index_member():
     identificacion = session.get('identificacion')
     return render_template('member/index.html')
 
-#RESERVAR MÁQUINAS
-@app.route('/machine-reservation', methods=['GET'])
-def show_machine_reservation_form():
-    lista_maquinas = info_machine()  # Función para cargar las máquinas disponibles
-    return render_template('member/machine_reservation.html', lista_maquinas=lista_maquinas)
+#RESERVAR MÁQUINAS ***********************************************************
+# 1. Controlador que retorna las máquinas disponibles en JSON
+@app.route('/api/maquinas_disponibles', methods=['GET'])
+def api_maquinas_disponibles():
+    maquinas = obtener_maquinas_disponibles_para_reserva()
+    resultado = [{"id": m[0], "nombre": m[1]} for m in maquinas]
+    return jsonify(resultado)
 
-# Realizar reserva de máquina
+
+# *************************************************************************
+
+
+
+
 
 # @app.route('/machine-reservation', methods=['POST'])
 

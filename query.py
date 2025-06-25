@@ -2,7 +2,7 @@ from flask_mysqldb import MySQL
 import pymysql
 from functools import wraps
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
-from datetime import datetime
+from datetime import datetime, date
 
 app = Flask(__name__, static_folder='static', template_folder='template')
 # Configura la conexión a la base de datos MySQL
@@ -22,35 +22,37 @@ def validarLogin(identificacion, contrasena):
     info_user = check_credentials(identificacion, contrasena)
     if info_user:
         rol, user_identificacion = info_user
-        session['identificacion'] = user_identificacion
-        resp = make_response()  # Crear la respuesta base
 
-        # Redirigir según el rol del usuario
+        session['id_usuario'] = user_identificacion   # ✅ necesario para reservar
+        session['rol'] = rol.lower()                  # ✅ aseguramos comparación
+
+        resp = make_response()
+
         if rol == "Administrador":
-            resp = make_response(redirect(url_for('administrator')))
+            resp = redirect(url_for('administrator'))
         elif rol == "Miembro":
             plan_trabajo = obtener_plan_trabajo(user_identificacion)
-            resp = make_response(redirect(url_for('index_member')))
+            resp = redirect(url_for('index_member'))
             resp.set_cookie('plan_trabajo', plan_trabajo)
         elif rol == "Entrenador":
-            resp = make_response(redirect(url_for('profile_coach')))
+            resp = redirect(url_for('profile_coach'))
         elif rol == "Recepcionista":
-            resp = make_response(redirect(url_for('profile_receptionist')))
-        # Devolver la respuesta con la cookie establecida
-        resp.set_cookie('identificacion', identificacion)  
-        return resp  
+            resp = redirect(url_for('profile_receptionist'))
 
-    # Si las credenciales son incorrectas, mostrar error
+        resp.set_cookie('identificacion', identificacion)
+        return resp
+
     error = "Credenciales incorrectas. Intente de nuevo."
     return render_template('login.html', error=error)
 
 # Función para verificar las credenciales en la base de datos
 def check_credentials(identificacion, contrasena):
-    cursor.execute("SELECT r.nombre, u.identificacion FROM bd_gimnasio2.usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE identificacion = %s AND contrasena = %s", (identificacion, contrasena))
+    cursor.execute("""SELECT LOWER(r.nombre), u.identificacion, u.id_usuario FROM bd_gimnasio2.usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE u.identificacion = %s AND u.contrasena = %s """, (identificacion, contrasena))
     info_user = cursor.fetchone()
     print("Resultado de la consulta para el login del usuario:")
-    print(info_user)  # Verificación del resultado de la consulta para depurar
-    return info_user
+    print(info_user)
+    return info_user  # Ahora incluye rol, identificacion, id_usuario
+
 
 #--GUARDAR LA COKKIE
 def login_required_admin(f):
@@ -176,7 +178,7 @@ def cant_entrenadores():
     return resul_lista_entrenador
 
 def conteo_clases_reservadas():
-    cursor.execute("SELECT COUNT(*) AS listado_entrenadores FROM reserva_clase")
+    cursor.execute("SELECT COUNT(*) AS listado_clases FROM clase")
     result_lista_reservas = cursor.fetchone()[0]
     return result_lista_reservas
 
@@ -544,3 +546,79 @@ def consultar_reservas_de_hoy():
     ''')
     return cursor.fetchall()
 
+#Obtener cantidad de instructores
+def cant_proveedores():
+    cursor.execute("SELECT COUNT(*) AS listado_proveedores FROM proveedor")
+    resul_lista_proveedor = cursor.fetchone()[0]
+    return resul_lista_proveedor
+
+#Obtener cantidad de empleados
+def cant_empleados():
+    cursor.execute("SELECT COUNT(*) AS listado_empleados FROM usuario WHERE id_rol <>5")
+    result_lista_empleados = cursor.fetchone()[0]
+    return result_lista_empleados
+
+
+
+
+
+
+#RESERVAS DE MAQUINAS
+def obtener_maquinas_disponibles_para_reserva():
+    cursor.execute('''
+        SELECT im.id_inventario_maquina, m.nombre
+        FROM maquina m
+        JOIN inventario_maquina im ON m.id_maquina = im.id_maquina
+        LEFT JOIN reserva_maquina rm ON im.id_inventario_maquina = rm.id_inventario_maquina
+            AND rm.fecha = CURDATE()
+        WHERE rm.id_reserva IS NULL
+    ''')
+    return cursor.fetchall()
+
+
+def verificar_reserva(id_maquina, hora):
+    cursor.execute("""
+        SELECT COUNT(*) FROM reserva_maquina
+        WHERE id_maquina = %s AND hora_inicio = %s AND fecha = CURDATE()
+    """, (id_maquina, hora))
+    resultado = cursor.fetchone()
+    return resultado[0] > 0
+
+def registrar_reserva(id_membresia_usuario, id_inventario_maquina, hora_inicio, hora_fin):
+    try:
+        print("Intentando insertar:")
+        print("Membresía usuario:", id_membresia_usuario)
+        print("Máquina (inventario):", id_inventario_maquina)
+        print("Hora inicio:", hora_inicio)
+        print("Hora fin:", hora_fin)
+
+        cursor.execute("""
+            INSERT INTO reserva_maquina (id_membresia_usuario, id_inventario_maquina, fecha, hora_inicio, hora_fin)
+            VALUES (%s, %s, CURDATE(), %s, %s)
+        """, (id_membresia_usuario, id_inventario_maquina, hora_inicio, hora_fin))
+        
+        connection.commit()
+        print("Reserva insertada correctamente.")
+        
+        return {'success': True, 'message': '¡Reserva registrada con éxito!'}
+    
+    except pymysql.MySQLError as e:
+        print("Error en MySQL:", e)
+        return {'success': False, 'message': f'Error al guardar en la base de datos: {e}'}
+
+
+    
+def existe_reserva_en_bloque(id_maquina, hora_inicio):
+    cursor.execute("""
+        SELECT * FROM reserva_maquina
+        WHERE id_inventario_maquina = %s AND hora_inicio = %s AND fecha = CURDATE()
+    """, (id_maquina, hora_inicio))
+    return cursor.fetchone() is not None
+
+#Obtener membresia del usuario
+def obtener_id_membresia_usuario(id_usuario):
+    cursor.execute("""
+        SELECT id_membresia_usuario FROM membresia_usuario WHERE id_usuario = %s
+    """, (id_usuario,))
+    resultado = cursor.fetchone()
+    return resultado[0] if resultado else None
