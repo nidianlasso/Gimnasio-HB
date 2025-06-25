@@ -470,6 +470,12 @@ def save_class_to_db(nombre, fecha_inicio, hora, duration):
 def reservation_class():
     return True
 
+#Conteo de maquinas inventariadas
+def cant_maquinas():
+    cursor.execute("SELECT COUNT(*) AS listado_maquinas FROM inventario_maquina")
+    resul_lista_maquinas = cursor.fetchone()[0]
+    return resul_lista_maquinas
+
 #Obtener maquinas
 def get_maquinas():
     cursor.execute("SELECT id_maquina, nombre FROM maquina")
@@ -494,7 +500,7 @@ def obtener_reservas_maquinas():
             "nombre_maquina": fila[5],
             "nombre": fila[3],
             "apellido": fila[4],
-            "fecha": fila[0].isoformat(),  # o str(fila[0])
+            "fecha": str(fila[0]),  # ✅ aquí el cambio
             "hora_inicio": str(fila[1]),
             "hora_fin": str(fila[2]),
             "disponibilidad": "Reservada"
@@ -503,23 +509,38 @@ def obtener_reservas_maquinas():
     ]
 
 
+
 #Obtiene las maquinas que no tienen reserva
 def obtener_maquinas_disponibles():
     cursor.execute('''
-        SELECT m.nombre AS nombre_maquina 
+        SELECT m.nombre AS nombre_maquina, COUNT(rm.id_reserva) AS reservas
         FROM maquina m
         LEFT JOIN inventario_maquina im ON m.id_maquina = im.id_maquina
         LEFT JOIN reserva_maquina rm 
             ON im.id_inventario_maquina = rm.id_inventario_maquina 
             AND rm.fecha = CURDATE()
-        WHERE rm.id_reserva IS NULL 
+        GROUP BY m.id_maquina
         ORDER BY m.nombre;
     ''')
-    
     resultados = cursor.fetchall()
-
     return [
-        {"nombre_maquina": fila[0], "disponibilidad": "Disponible"}
+        {
+            "nombre_maquina": fila[0],
+            "reservas_hoy": fila[1],
+            "total_turnos": 40,
+            "disponibilidad": "Disponible" if fila[1] < 40 else "No disponible"
+        }
         for fila in resultados
     ]
+
+#reservas que hay hoy
+def consultar_reservas_de_hoy():
+    cursor.execute('''
+        SELECT m.id_maquina, m.nombre, rm.hora_inicio
+        FROM maquina m
+        LEFT JOIN inventario_maquina im ON m.id_maquina = im.id_maquina
+        LEFT JOIN reserva_maquina rm ON im.id_inventario_maquina = rm.id_inventario_maquina
+            AND rm.fecha = CURDATE()
+    ''')
+    return cursor.fetchall()
 

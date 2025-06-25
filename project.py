@@ -1,12 +1,12 @@
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 from flask_mysqldb import MySQL
-from datetime import datetime
+from datetime import datetime, timedelta
 from query import (validarLogin, check_credentials, login_required_admin, login_required_member,login_required_coach, login_required_receptionist,
                     lista_miembros,lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
                       conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship,
                       guardar_membresia, status_membreship, actualizar_membresia, lista_maquinas, search_machine, access_users,
                       guardar_acceso, obtener_tipo_acceso, cambiar_estado_acceso, asignar_entrenador, obtener_plan_trabajo, obtener_membrehip_user,
-                      info_machine, save_class_to_db, obtener_reservas_maquinas, obtener_maquinas_disponibles)
+                      info_machine, save_class_to_db, obtener_reservas_maquinas, obtener_maquinas_disponibles, consultar_reservas_de_hoy, cant_maquinas)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -36,7 +36,8 @@ def administrator():
     listado_miembros = cant_miembros()
     listado_entrenadores = cant_entrenadores()
     conteo_clases = conteo_clases_reservadas()
-    return render_template('Administrator/administrator.html', lista_miembros = listado_miembros, cant_entrenadores = listado_entrenadores, conteo_reserva = conteo_clases)
+    conteo_maquinas = cant_maquinas()
+    return render_template('Administrator/administrator.html', lista_miembros = listado_miembros, cant_entrenadores = listado_entrenadores, conteo_reserva = conteo_clases, conteo_maquinas =conteo_maquinas)
 
 #LLAMADO VISTA GESTION DE USUARIOS
 @app.route('/users-manage')
@@ -175,8 +176,67 @@ def available_machines_page():
         return jsonify(obtener_reservas_maquinas())
     elif tipo == 'disponibles':
         return jsonify(obtener_maquinas_disponibles())
+    elif tipo == 'disponibilidad_horaria':
+        return jsonify(obtener_bloques_disponibles())
     else:
         return jsonify({'error': 'Tipo inválido'}), 400
+
+
+
+def obtener_bloques_disponibles():
+    datos = consultar_reservas_de_hoy()  # (id_maquina, nombre_maquina, hora_reservada)
+
+    maquinas = {}
+    for fila in datos:
+        id_maquina = fila[0]
+        nombre_maquina = fila[1]
+        hora_reservada = fila[2]
+        print("nombre de la maquina")
+        print(nombre_maquina)
+
+        if id_maquina not in maquinas:
+            maquinas[id_maquina] = {
+                "nombre_maquina": nombre_maquina,
+                "reservadas": set()
+            }
+
+        if hora_reservada:
+            # Asegurarse de que el valor sea tipo datetime.time
+            if isinstance(hora_reservada, timedelta):
+                total_minutes = int(hora_reservada.total_seconds() // 60)
+                hora_str = f"{total_minutes // 60:02}:{total_minutes % 60:02}"
+            elif isinstance(hora_reservada, datetime):
+                hora_str = hora_reservada.strftime('%H:%M')
+            else:
+                hora_str = hora_reservada.strftime('%H:%M')
+
+            maquinas[id_maquina]["reservadas"].add(hora_str)
+
+    resultado = []
+
+    for maquina in maquinas.values():
+        bloques_por_hora = {}
+
+        for i in range(16):  # 06:00 a 21:45
+            hora_inicio_bloque = datetime.strptime("06:00", "%H:%M") + timedelta(hours=i)
+            hora_key = hora_inicio_bloque.strftime('%H:%M')
+            bloques_por_hora[hora_key] = []
+
+            for j in range(4):  # 4 bloques de 15 min
+                bloque_inicio = hora_inicio_bloque + timedelta(minutes=15 * j)
+                bloque_str = bloque_inicio.strftime('%H:%M')
+                estado = "reservado" if bloque_str in maquina["reservadas"] else "disponible"
+                bloques_por_hora[hora_key].append({
+                    "hora": bloque_str,
+                    "estado": estado
+                })
+
+        resultado.append({
+            "nombre_maquina": maquina["nombre_maquina"],
+            "bloques": bloques_por_hora
+        })
+
+    return resultado
 
 
 # ENVIAR MAQUINA A REVISION
@@ -303,11 +363,10 @@ def obtener_acceso():
         return jsonify({'error': 'ID de usuario es requerido'}), 400
     
     try:
-        id_usuario = int(id_usuario_str)  # Intenta convertir a entero
+        id_usuario = int(id_usuario_str) 
     except ValueError:
         return jsonify({'error': 'ID de usuario debe ser un número válido'}), 400
 
-    # Continúa con la lógica para obtener acceso
     acceso = obtener_tipo_acceso(id_usuario)
     
     if acceso is None:

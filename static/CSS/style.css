@@ -1,3 +1,64 @@
+.disponibilidad-horaria{
+    background: #F7F30F;
+    border-radius:5px;
+    width: 200px;
+    height: 70px;
+    border: none
+}
+.reservadas{
+    background: green;
+    width: 200px;
+    height: 70px;
+    border: none;
+    border-radius:5px;
+}
+.disponibilidad-horaria:hover{
+    background: #F2C010;
+    color: #ffff;
+}
+.reservadas:hover{
+    background: #8CA303;
+    color: #ffff;
+}
+.calendario-grid-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 20px;
+}
+
+/* Cada fila por máquina */
+.maquina-grid {
+  display: grid;
+  grid-template-columns: 120px repeat(64, 1fr); /* 1 columna fija + 64 bloques */
+  gap: 2px;
+  align-items: center;
+  overflow-x: auto;
+}
+
+.bloque {
+  height: 25px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.bloque.disponible {
+  background-color: #d4edda;
+}
+
+.bloque.reservado {
+  background-color: #f8d7da;
+}
+
+.nombre-maquina {
+  font-weight: bold;
+  padding-right: 8px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+
 .formformulario_reserva {
     margin-bottom: 20px;
 }

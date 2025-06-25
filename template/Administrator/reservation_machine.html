@@ -1,26 +1,19 @@
 <div class="modal-body">
-
-  <!-- Botones para filtrar -->
-  <div class="mb-3 d-flex gap-2">
-    <button class="btn btn-primary" onclick="cargarMaquinas('reservadas')">Reservadas Hoy</button>
-    <button class="btn btn-success" onclick="cargarMaquinas('disponibles')">Disponibles</button>
+  <!-- Botones para cambiar tipo -->
+  <div class="mb-3">
+    <button class="reservadas" onclick="cargarMaquinas('reservadas')">Reservas De <br> Hoy</button>
+    <!-- <button onclick="cargarMaquinas('disponibles')">Ver Disponibles</button> -->
+    <button class="disponibilidad-horaria" onclick="cargarMaquinas('disponibilidad_horaria')">Disponibilidad <br> Horaria</button>
   </div>
 
-  <!-- Tabla -->
-  <table class="table table-bordered">
-  <thead>
-    <tr>
-      <th>Máquina</th>
-      <th class="colReservadas">Nombre</th>
-      <th class="colReservadas">Apellido</th>
-      <th class="colReservadas">Fecha</th>
-      <th class="colReservadas">Inicio</th>
-      <th class="colReservadas">Fin</th>
-      <th>Disponibilidad</th>
-    </tr>
-  </thead>
-  <tbody id="tablaMaquinas"></tbody>
-</table>
+  <!-- Contenedor tabla (para reservadas y disponibles) -->
+  <div id="contenedorTabla">
+    <table id="tablaPrincipal">
+      <thead id="tablaEncabezado"></thead>
+      <tbody id="tablaMaquinas"></tbody>
+    </table>
+  </div>
 
-
+  <!-- Contenedor calendario tipo bloques -->
+  <div id="contenedorCalendario" class="calendario-grid-container" style="display: none; font-size: 12px; text-align: justify;"></div>
 </div>
