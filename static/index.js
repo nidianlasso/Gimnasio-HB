@@ -474,12 +474,12 @@ function reservarBloque(id_maquina, hora_inicio) {
 })
 
     .then(res => res.json())
-    .then(data => {
+.then(data => {
     if (data.success) {
         alert(data.message);
         cargarMaquinas('disponibilidad_horaria');
     } else {
-        alert('Error: ' + (data.message || data.mensaje || 'Algo salió mal'));
+        alert('Error: ' + data.message);
     }
 })
     .catch(err => {

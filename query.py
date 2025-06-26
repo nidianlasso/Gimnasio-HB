@@ -2,7 +2,7 @@ from flask_mysqldb import MySQL
 import pymysql
 from functools import wraps
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 
 app = Flask(__name__, static_folder='static', template_folder='template')
 # Configura la conexión a la base de datos MySQL
@@ -15,43 +15,61 @@ def obtenerUsuarios():
     cursor.close()  # Asegúrate de cerrar el cursor
     return rows
 
-from flask import render_template, redirect, url_for, request, make_response
 
 # Función para validar el login del usuario
 def validarLogin(identificacion, contrasena):
     info_user = check_credentials(identificacion, contrasena)
+    
     if info_user:
-        rol, user_identificacion = info_user
+        # Desempaquetar diccionario
+        rol = info_user['rol']
+        user_identificacion = info_user['identificacion']
+        id_usuario = info_user['id_usuario']
 
-        session['id_usuario'] = user_identificacion   # ✅ necesario para reservar
-        session['rol'] = rol.lower()                  # ✅ aseguramos comparación
+        session['id_usuario'] = id_usuario
+        session['identificacion'] = user_identificacion
+        session['rol'] = rol.lower()
 
         resp = make_response()
 
-        if rol == "Administrador":
+        if rol.lower() == "administrador":
             resp = redirect(url_for('administrator'))
-        elif rol == "Miembro":
+        elif rol.lower() == "miembro":
             plan_trabajo = obtener_plan_trabajo(user_identificacion)
             resp = redirect(url_for('index_member'))
             resp.set_cookie('plan_trabajo', plan_trabajo)
-        elif rol == "Entrenador":
+        elif rol.lower() == "entrenador":
             resp = redirect(url_for('profile_coach'))
-        elif rol == "Recepcionista":
+        elif rol.lower() == "recepcionista":
             resp = redirect(url_for('profile_receptionist'))
 
-        resp.set_cookie('identificacion', identificacion)
+        resp.set_cookie('identificacion', str(user_identificacion))
         return resp
 
     error = "Credenciales incorrectas. Intente de nuevo."
     return render_template('login.html', error=error)
 
+
+
 # Función para verificar las credenciales en la base de datos
 def check_credentials(identificacion, contrasena):
-    cursor.execute("""SELECT LOWER(r.nombre), u.identificacion, u.id_usuario FROM bd_gimnasio2.usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE u.identificacion = %s AND u.contrasena = %s """, (identificacion, contrasena))
-    info_user = cursor.fetchone()
-    print("Resultado de la consulta para el login del usuario:")
-    print(info_user)
-    return info_user  # Ahora incluye rol, identificacion, id_usuario
+    cursor.execute("""
+        SELECT LOWER(r.nombre) AS rol, u.identificacion, u.id_usuario
+        FROM usuario u
+        JOIN rol r ON u.id_rol = r.id_rol
+        WHERE u.identificacion = %s AND u.contrasena = %s
+    """, (identificacion, contrasena))
+
+    row = cursor.fetchone()
+    if row:
+        return {
+            'rol': row[0],
+            'identificacion': row[1],
+            'id_usuario': row[2]
+        }
+    return None
+
+
 
 
 #--GUARDAR LA COKKIE
@@ -609,16 +627,61 @@ def registrar_reserva(id_membresia_usuario, id_inventario_maquina, hora_inicio, 
 
     
 def existe_reserva_en_bloque(id_maquina, hora_inicio):
+    if len(hora_inicio) == 5:
+        hora_inicio += ":00"
+
+    print(f"[Verificación reserva existente] Máquina: {id_maquina}, Hora: {hora_inicio}")
+
     cursor.execute("""
-        SELECT * FROM reserva_maquina
-        WHERE id_inventario_maquina = %s AND hora_inicio = %s AND fecha = CURDATE()
+        SELECT 1 FROM reserva_maquina
+        WHERE id_inventario_maquina = %s
+          AND hora_inicio = %s
+          AND fecha = CURDATE()
     """, (id_maquina, hora_inicio))
+
     return cursor.fetchone() is not None
 
+
+
+
+
+
+
+
 #Obtener membresia del usuario
-def obtener_id_membresia_usuario(id_usuario):
-    cursor.execute("""
-        SELECT id_membresia_usuario FROM membresia_usuario WHERE id_usuario = %s
-    """, (id_usuario,))
+def obtener_id_membresia_usuario(identificacion):
+    cursor.execute('''
+        SELECT mu.id_membresia_usuario
+        FROM usuario u
+        JOIN membresia_usuario mu ON u.id_usuario = mu.id_usuario
+        WHERE u.identificacion = %s AND mu.id_estado_membresia = 1
+        ORDER BY mu.fecha_inicio DESC
+        LIMIT 1
+    ''', (identificacion,))
     resultado = cursor.fetchone()
-    return resultado[0] if resultado else None
+    if resultado:
+        return resultado[0]  # ID de membresía usuario
+    return None
+
+
+#Verificar que no tenga una reserva de la maquina seguida
+def consultar_bloques_contiguos(id_membresia_usuario, hora_inicio):
+    # Asegurarse de que la hora tenga el formato correcto "HH:MM:SS"
+    try:
+        hora_actual = datetime.strptime(hora_inicio, "%H:%M:%S")
+    except ValueError:
+        # Si viene en formato "HH:MM", lo convertimos a "HH:MM:00"
+        hora_actual = datetime.strptime(hora_inicio[:5], "%H:%M")
+
+    hora_anterior = (hora_actual - timedelta(minutes=15)).strftime("%H:%M:%S")
+    hora_siguiente = (hora_actual + timedelta(minutes=15)).strftime("%H:%M:%S")
+
+    cursor.execute("""
+        SELECT * FROM reserva_maquina
+        WHERE id_membresia_usuario = %s AND hora_inicio IN (%s, %s) AND fecha = CURDATE()
+    """, (id_membresia_usuario, hora_anterior, hora_siguiente))
+
+    return cursor.fetchone()
+
+
+

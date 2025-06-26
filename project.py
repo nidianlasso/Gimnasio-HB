@@ -8,7 +8,7 @@ from query import (validarLogin, check_credentials, login_required_admin, login_
                     guardar_acceso, obtener_tipo_acceso, cambiar_estado_acceso, asignar_entrenador, obtener_plan_trabajo, obtener_membrehip_user,
                     save_class_to_db, obtener_reservas_maquinas, obtener_maquinas_disponibles, consultar_reservas_de_hoy, cant_maquinas,
                     cant_proveedores, cant_empleados, obtener_maquinas_disponibles_para_reserva, existe_reserva_en_bloque, registrar_reserva,
-                    obtener_id_membresia_usuario)
+                    obtener_id_membresia_usuario, consultar_bloques_contiguos)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -16,20 +16,21 @@ app = Flask(__name__, static_folder='static', template_folder='template')
 app.secret_key = '20202578145'
 #--KEY SECRET
 
-@app.route('/login', methods = ['POST', 'GET'])
+@app.route('/login', methods=['GET', 'POST'])
 def login(): 
-    #se envia el templete de donde se van a obtener las cookies
     resp = make_response(render_template('login.html'))
-    #se manipula la cookie que llega y se elimina
-    resp.set_cookie('identificacion', '', max_age=0)   
-    error = None
+    resp.set_cookie('identificacion', '', max_age=0)
+
     if request.method == "POST":
         identificacion = request.form['identificacion']
         contrasena = request.form['contrasena']
-        print(identificacion, contrasena)
-        #LLAMADO A LA FUNCION VALIDARLOGIN
+        print(">>> Intento de login:", identificacion, contrasena)
+
         return validarLogin(identificacion, contrasena)
+
     return resp
+
+
 
 #LLAMADO AL TEMPLATE ADMINISTRADOR
 @app.route('/administrator')
@@ -252,31 +253,59 @@ def disponibilidad_para_miembros():
 
 @app.route('/reservar-bloque', methods=['POST'])
 def reservar_bloque():
-    if 'id_usuario' not in session or session.get('rol') != 'Miembro':
-        return jsonify({'mensaje': 'Acceso no autorizado'}), 403
+    print(">>> INICIO de reservar_bloque")
+    print("ROL en sesión:", session.get('rol'))
+
+
+    if 'id_usuario' not in session or session.get('rol') != 'miembro':
+        return jsonify({'success': False, 'message': 'Acceso no autorizado'}), 403
 
     datos = request.get_json()
-    id_inventario_maquina = datos.get('id_maquina')  # nombre correcto
-    hora_inicio = datos.get('hora')
-    id_usuario = session['id_usuario']
+    print(">>> Paso 2: JSON recibido:", datos)
 
-    id_membresia_usuario = obtener_id_membresia_usuario(id_usuario)
+    id_inventario_maquina = datos.get('id_maquina')
+    hora_inicio = datos.get('hora')
+
+    if not id_inventario_maquina or not hora_inicio:
+        return jsonify({'success': False, 'message': 'Datos incompletos'}), 400
+
+    # Asegurar formato completo HH:MM:SS
+    if len(hora_inicio) == 5:
+        hora_inicio += ":00"
+    print(">>> Hora formateada:", hora_inicio)
+
+    identificacion = session['identificacion']
+    id_membresia_usuario = obtener_id_membresia_usuario(identificacion)
+    print(">>> ID membresía usuario:", id_membresia_usuario)
+
     if not id_membresia_usuario:
-        return jsonify({'success': False, 'message': 'No se encontró membresía asociada al usuario'}), 404
+        return jsonify({'success': False, 'message': 'No se encontró membresía activa asociada al usuario'}), 404
 
     try:
-        hora_inicio_dt = datetime.strptime(hora_inicio, "%H:%M")
+        hora_inicio_dt = datetime.strptime(hora_inicio, "%H:%M:%S")
     except ValueError:
-        return jsonify({'mensaje': 'Hora inválida'}), 400
+        return jsonify({'success': False, 'message': 'Formato de hora inválido'}), 400
 
     hora_fin_dt = hora_inicio_dt + timedelta(minutes=15)
-    hora_fin_str = hora_fin_dt.strftime('%H:%M')
+    hora_fin_str = hora_fin_dt.strftime('%H:%M:%S')
 
+    # Validar si el bloque ya está reservado
     if existe_reserva_en_bloque(id_inventario_maquina, hora_inicio):
-        return jsonify({'mensaje': 'Este bloque ya está reservado'}), 409
+        print(">>> BLOQUE YA RESERVADO")
+        return jsonify({'success': False, 'message': 'Este bloque ya está reservado'}), 409
 
+    # Validar reserva contigua
+    if existe_reserva_contigua(id_membresia_usuario, hora_inicio):
+        return jsonify({'success': False, 'message': 'No puedes reservar bloques seguidos'}), 409
+
+    # Registrar reserva
     resultado = registrar_reserva(id_membresia_usuario, id_inventario_maquina, hora_inicio, hora_fin_str)
     return jsonify(resultado), 201 if resultado['success'] else 500
+
+
+def existe_reserva_contigua(id_membresia_usuario, hora_inicio):
+    resultado = consultar_bloques_contiguos(id_membresia_usuario, hora_inicio)
+    return resultado is not None
 
 #*************************************************************************
 
