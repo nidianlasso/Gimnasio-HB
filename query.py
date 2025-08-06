@@ -486,6 +486,21 @@ def save_class_to_db(nombre, fecha_inicio, hora, duration):
     except pymysql.MySQLError as e:
         return {'success': False, 'message': f'Error al guardar en la base de datos: {e}'}
 
+#FUNCION PARA ELIMINAR CLASES
+def list_class():
+    cursor.execute('SELECT * FROM clase')
+    resul_list_class = cursor.fetchall()
+    return resul_list_class
+
+def delete_class(id_clase):
+    try:
+        cursor.execute('DELETE FROM clase WHERE id_clase = %s', (id_clase,))
+        connection.commit()
+        return {'success': True, 'message': 'Clase eliminada exitosamente'}
+    except pymysql.MySQLError as e:
+        return {'success': False, 'message': f'Error al modificar la base de datos: {e}'}
+
+
 #Reserva de clase usuario
 def reservation_class():
     return True
@@ -682,6 +697,7 @@ def consultar_bloques_contiguos(id_membresia_usuario, hora_inicio):
     """, (id_membresia_usuario, hora_anterior, hora_siguiente))
 
     return cursor.fetchone()
+
 
 
 

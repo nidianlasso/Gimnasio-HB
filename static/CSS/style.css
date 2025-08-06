@@ -1,61 +1,66 @@
-.disponibilidad-horaria{
+.disponibilidad-horaria {
     background: #F7F30F;
-    border-radius:5px;
+    border-radius: 5px;
     width: 200px;
     height: 70px;
     border: none
 }
-.reservadas{
+
+.reservadas {
     background: green;
     width: 200px;
     height: 70px;
     border: none;
-    border-radius:5px;
+    border-radius: 5px;
 }
-.disponibilidad-horaria:hover{
+
+.disponibilidad-horaria:hover {
     background: #F2C010;
     color: #ffff;
 }
-.reservadas:hover{
+
+.reservadas:hover {
     background: #8CA303;
     color: #ffff;
 }
+
 .calendario-grid-container {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    margin-top: 20px;
 }
 
 /* Cada fila por máquina */
 .maquina-grid {
-  display: grid;
-  grid-template-columns: 120px repeat(64, 1fr); /* 1 columna fija + 64 bloques */
-  gap: 2px;
-  align-items: center;
-  overflow-x: auto;
+    display: grid;
+    grid-template-columns: 120px repeat(64, 1fr);
+    /* 1 columna fija + 64 bloques */
+    gap: 2px;
+    align-items: center;
+    overflow-x: auto;
 }
 
 .bloque {
-  height: 25px;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: 0.2s;
+    height: 25px;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: 0.2s;
 }
 
 .bloque.disponible {
-  background-color: #d4edda;
+    background-color: #d4edda;
 }
 
 .bloque.reservado {
-  background-color: #f8d7da;
+    background-color: #f8d7da;
 }
 
 .nombre-maquina {
-  font-weight: bold;
-  padding-right: 8px;
-  text-align: right;
-  white-space: nowrap;
+    font-weight: bold;
+    padding-right: 8px;
+    text-align: right;
+    white-space: nowrap;
 }
 
 
@@ -69,24 +74,27 @@
     margin-top: 20px;
 }
 
-th, td {
+th,
+td {
     border: 1px solid black;
     padding: 10px;
     text-align: center;
 }
 
 
-.contenedor_opciones{
+.contenedor_opciones {
     width: 100%;
     align-items: center;
     margin-top: 5%;
     text-align: center;
 }
-.contenedor_opciones .row{
+
+.contenedor_opciones .row {
     margin: 0px;
 }
-.opt_admin{
-    width: 70%; 
+
+.opt_admin {
+    width: 70%;
     margin: auto;
     height: 29vh;
     padding: 20px;
@@ -94,21 +102,24 @@ th, td {
     justify-content: center;
     margin-top: 10px;
 }
-.opt_admin:hover{
+
+.opt_admin:hover {
     transform: scale(1.1);
     border: 1px solid #000;
-    
+
 }
 
 /*OCULTAR TABLA MIENTRAS NO SE LE DA CLIC AL BOTON*/
-#miembrosTabla{
+#miembrosTabla {
     display: none;
     margin: auto;
 }
-#listaMaquinas{
+
+#listaMaquinas {
     display: none;
     margin: auto;
 }
+
 /* #busquedaUsuarios{
     display: none;
     margin: auto;
@@ -116,7 +127,7 @@ th, td {
 
 /*----OCULTAR TABLA MIENTRAS NO SE LE DA CLIC AL BOTON*/
 
-.container-gestion{
+.container-gestion {
     background-color: red;
 }
 
@@ -134,12 +145,14 @@ th, td {
     color: red;
     font-weight: bold;
 }
+
 /*----*/
 
 
-.title_section_admin{
+.title_section_admin {
     color: white;
 }
+
 .button {
     background-color: #4CAF50;
     border: none;
@@ -156,77 +169,102 @@ th, td {
 /* Estilo para el botón "Volver" */
 .boton-volver {
     display: inline-block;
-    padding: 10px 20px; /* Espacio interno del botón */
-    background-color: #007bff; /* Color de fondo del botón (puedes cambiarlo) */
-    color: #fff; /* Color del texto del botón */
-    text-decoration: none; /* Elimina el subrayado del enlace */
-    border: none; /* Sin borde */
-    border-radius: 4px; /* Borde redondeado */
-    cursor: pointer; /* Cambia el cursor al pasar por encima */
+    padding: 10px 20px;
+    /* Espacio interno del botón */
+    background-color: #007bff;
+    /* Color de fondo del botón (puedes cambiarlo) */
+    color: #fff;
+    /* Color del texto del botón */
+    text-decoration: none;
+    /* Elimina el subrayado del enlace */
+    border: none;
+    /* Sin borde */
+    border-radius: 4px;
+    /* Borde redondeado */
+    cursor: pointer;
+    /* Cambia el cursor al pasar por encima */
 }
 
 /* Estilo para el botón cuando se pasa el cursor por encima */
 .boton-volver:hover {
-    background-color: #0056b3; /* Cambia el color de fondo al pasar el cursor */
+    background-color: #0056b3;
+    /* Cambia el color de fondo al pasar el cursor */
 }
 
 /* Estilo para el botón de agregar */
 .boton-agregar {
     display: inline-block;
-    padding: 10px 20px; /* Espacio interno del botón */
-    background-color: #48ff00; /* Color de fondo del botón (puedes cambiarlo) */
-    color: #fff; /* Color del texto del botón */
-    border: none; /* Sin borde */
-    border-radius: 4px; /* Borde redondeado */
-    cursor: pointer; /* Cambia el cursor al pasar por encima */
+    padding: 10px 20px;
+    /* Espacio interno del botón */
+    background-color: #48ff00;
+    /* Color de fondo del botón (puedes cambiarlo) */
+    color: #fff;
+    /* Color del texto del botón */
+    border: none;
+    /* Sin borde */
+    border-radius: 4px;
+    /* Borde redondeado */
+    cursor: pointer;
+    /* Cambia el cursor al pasar por encima */
 }
 
 /* Estilo para el botón de agregar cuando se pasa el cursor por encima */
 .boton-agregar:hover {
-    background-color: #0056b3; /* Cambia el color de fondo al pasar el cursor */
+    background-color: #0056b3;
+    /* Cambia el color de fondo al pasar el cursor */
 }
 
-body{
-    /*background: url('/static/') no-repeat;*/
-    /* background-repeat: no-repeat;
-    background-attachment: fixed;
-    background-size: cover;
-    background-color: #F4F4F4 !important;
-    background-position: right; */
-    /* width: 200vh !important; */
+body {
+    height: 100vh;
+    margin: 0;
+    justify-content: center;
+    align-items: center;
 }
 
-main{
-    background-color: rgba(255, 255, 255, 0.7); /* Opacidad del 70% (0.7) */
+main {
+    background-color: rgba(255, 255, 255, 0.7);
+    /* Opacidad del 70% (0.7) */
     padding: 40px 20px;
-    margin: 0 auto; /* Centrado horizontal */
+    margin: 0 auto;
+    /* Centrado horizontal */
     text-align: center;
     position: relative;
     top: 50%;
     /* transform: translateY(-50%); */
-    border-radius: 10px; /* Establece un radio de 10px para los bordes */
-    margin-top: 230px; /* Ajusta la distancia vertical desde la barra de menú */ 
-    align-items: center; /* Centrado horizontal */
-   
+    border-radius: 10px;
+    /* Establece un radio de 10px para los bordes */
+    margin-top: 230px;
+    /* Ajusta la distancia vertical desde la barra de menú */
+    align-items: center;
+    /* Centrado horizontal */
+
 }
 
 #tabla {
-    
-    background-color: rgba(255, 255, 255, 0.7); /* Opacidad del 70% (0.7) */
+
+    background-color: rgba(255, 255, 255, 0.7);
+    /* Opacidad del 70% (0.7) */
     padding: 40px 20px;
-    margin: 0 auto; /* Centrado horizontal */
+    margin: 0 auto;
+    /* Centrado horizontal */
     margin-top: 330px;
     width: 800px;
     text-align: center;
     position: relative;
     top: 50%;
     transform: translateY(-50%);
-    flex-direction: column; /* Alinea el contenido en una sola columna */
-    align-items: center; /* Centra horizontalmente el contenido */
-    justify-content: center; /* Centra verticalmente el contenido */
-    border-radius: 10px; /* Establece un radio de 10px para los bordes */
-    overflow-y: auto; /* Hace que el contenido sea scrollable verticalmente */
-    max-height: 100vh; /* Limita la altura al 80% del alto de la ventana */
+    flex-direction: column;
+    /* Alinea el contenido en una sola columna */
+    align-items: center;
+    /* Centra horizontalmente el contenido */
+    justify-content: center;
+    /* Centra verticalmente el contenido */
+    border-radius: 10px;
+    /* Establece un radio de 10px para los bordes */
+    overflow-y: auto;
+    /* Hace que el contenido sea scrollable verticalmente */
+    max-height: 100vh;
+    /* Limita la altura al 80% del alto de la ventana */
 }
 
 
@@ -234,10 +272,14 @@ main{
 
 /* Estilo para centrar contenido dentro del main */
 .content-container {
-    text-align:left; /* Alinea el texto a la izquierda dentro del contenido */
-    max-width: 100%; /* Establece un ancho máximo para el contenido */
-    margin: 0 auto; /* Centrado horizontal del contenido */
-    max-height: 400px; /* Ajusta esta altura máxima según tus necesidades */
+    text-align: left;
+    /* Alinea el texto a la izquierda dentro del contenido */
+    max-width: 100%;
+    /* Establece un ancho máximo para el contenido */
+    margin: 0 auto;
+    /* Centrado horizontal del contenido */
+    max-height: 400px;
+    /* Ajusta esta altura máxima según tus necesidades */
     overflow-y: auto;
 }
 
@@ -265,47 +307,47 @@ table.table th {
 
 /* Estilos para el menú desplegable */
 
-.header__superior{
+.header__superior {
     max-width: 1200px;
     margin: auto;
-    display: flex;  
+    display: flex;
     align-items: center;
     justify-content: space-between;
 }
 
 /* barra menu */
 
-.container__menu{
-    max-width:100%;
+.container__menu {
+    max-width: 100%;
     min-width: 100%;
     height: 70px;
     background-color: rgb(247, 243, 15);
     padding: 0px 20px;
 }
 
-.menu{
+.menu {
     /* max-width: 1200px; */
     margin: auto;
-    height: 100%;    
-}
-
-
-nav{
     height: 100%;
 }
 
-nav > ul{
+
+nav {
+    height: 100%;
+}
+
+nav>ul {
     height: 100%;
     display: flex;
 }
 
-nav  ul  li{
+nav ul li {
     height: 100%;
     list-style: none;
     position: relative;
 }
 
-nav > ul > li > a{
+nav>ul>li>a {
     width: 100;
     height: 100%;
     display: flex;
@@ -322,37 +364,38 @@ nav > ul > li > a{
 
 /* ICONO*/
 
-nav > ul > li:last-child > a{
-    background-image: url(../cerrar-sesion.png) ;
+nav>ul>li:last-child>a {
+    background-image: url(../cerrar-sesion.png);
     background-size: 24px;
     background-repeat: no-repeat;
     background-position: center center;
     padding: 20px 40px;
 }
-nav > ul > li:last-child:hover > a{
-    background-image: url(../cerrar-sesion.png) ;
+
+nav>ul>li:last-child:hover>a {
+    background-image: url(../cerrar-sesion.png);
     background-size: 24px;
     background-repeat: no-repeat;
     background-position: center center;
 
 }
 
-a:hover{
+a:hover {
     transform: scale(1.1);
     background: #f7b63d;
-    box-shadow: 0px 0px 10 px 0px rgba(0,0,0, 0.5);
+    box-shadow: 0px 0px 10 px 0px rgba(0, 0, 0, 0.5);
 }
 
-#selected{
+#selected {
     transform: scale(1.1);
     transform: scale(1.1);
     background-color: #f7b63d;
-    box-shadow: 0px 0px 10 px 0px rgba(0,0,0, 0.5);
+    box-shadow: 0px 0px 10 px 0px rgba(0, 0, 0, 0.5);
 }
 
 /** Sub Menu*/
 
-nav ul li ul{
+nav ul li ul {
     width: 250px;
     display: flex;
     flex-direction: column;
@@ -363,20 +406,20 @@ nav ul li ul{
     padding: 14px 0px;
     visibility: hidden;
     opacity: 0;
-    box-shadow: 0px 0px 10 px 0px rgba(0,0,0, 0.5);
+    box-shadow: 0px 0px 10 px 0px rgba(0, 0, 0, 0.5);
     z-index: 10;
     transition: all 300ms ease;
     font-family: sans-serif;
     font-weight: bold;
 }
 
-nav ul li:hover ul{
+nav ul li:hover ul {
     visibility: visible;
     opacity: 1;
     top: 70px;
 }
 
-nav ul li ul:before{
+nav ul li ul:before {
     content: '';
     width: 0;
     height: 0;
@@ -387,9 +430,9 @@ nav ul li ul:before{
     left: 20px;
 }
 
-nav ul li ul li a{
+nav ul li ul li a {
     display: block;
-    color:#000000;
+    color: #000000;
     padding: 6px;
     padding-left: 14px;
     margin-top: 10px;
@@ -398,24 +441,24 @@ nav ul li ul li a{
     transition: all 300ms ease;
     align-items: center;
     text-decoration: solid;
-} 
+}
 
-nav ul li ul li a:hover{
+nav ul li ul li a:hover {
     background-color: #f7b63d;
     color: #000000;
     transform: scale(1.1);
     padding-left: 30px;
     font-size: 14px;
-    box-shadow: 0px 0px 10 px 0px rgba(0,0,0, 0.5);
+    box-shadow: 0px 0px 10 px 0px rgba(0, 0, 0, 0.5);
     align-items: center;
 }
 
-@media screen and (max-width){
-    .header__superior{
+@media screen and (max-width) {
+    .header__superior {
         padding: 10px;
     }
 
-    nav > ul{
+    nav>ul {
         flex-direction: column;
         background-color: #f7b63d;
         position: fixed;
@@ -430,70 +473,82 @@ nav ul li ul li a:hover{
 
     }
 
-    nav > ul > li > a:hover{
+    nav>ul>li>a:hover {
         transform: scale(1);
 
     }
 }
+
 /*TEMPLETE MEMBRESIA.HTML*/
-.admin{
+.admin {
     margin-top: 25px;
     margin-left: 650px;
 }
-.user{
+
+.user {
     margin-top: 20px;
     margin-left: 10px;
 }
-.titleMembresia{
+
+.titleMembresia {
     color: white;
     text-align: center;
     font-family: sans-serif;
     margin-top: 50px;
     text-shadow: black 20em 20em 40em !important;
 }
-.tablaMembresia{
+
+.tablaMembresia {
     border: 1px;
     text-align: center;
     margin: 10.5%;
     margin-left: 190px;
-    background-color:white;
+    background-color: white;
 }
-th{
+
+th {
     font-family: arial, sans-serif;
     text-align: center;
     border: 1px solid black !important;
     background: #f7b63d;
     padding: 10px;
 }
-table, td{
+
+table,
+td {
     font-family: arial, sans-serif;
     text-align: center;
     border: 1px solid black !important;
     background-color: white !important;
     padding: 10px;
 }
-.membresia_activa{
+
+.membresia_activa {
     background-color: #9bd13d;
     border: none;
     color: white;
     border-radius: 5px;
 }
-.membresia_inactiva{
+
+.membresia_inactiva {
     background-color: #f08080;
     border: none;
     color: white;
     border-radius: 5px;
 }
-.editar{
+
+.editar {
     display: flex;
 }
-.img_edit{
+
+.img_edit {
     margin-left: 6px;
 }
+
 /*TEMPLETE MEMBRESIA.HTML*/
 
 /*TEMPLETE MIEMBRO*/
-.img_user{
+.img_user {
     border-radius: 50%;
     width: 45%;
     height: 45%;
@@ -503,7 +558,8 @@ table, td{
     text-align: center;
     display: block;
 }
-.img_user{
+
+.img_user {
     border-radius: 50%;
     width: 30%;
     height: 30%;
@@ -514,16 +570,18 @@ table, td{
     display: block;
     margin-top: 20px;
 }
-.title_perfil{
+
+.title_perfil {
     margin-top: 10px;
     color: white;
     text-align: center;
     font-family: sans-serif;
-    color: black; 
+    color: black;
     text-shadow: black 20em 20em 40em !important;
     font-size: 22px;
 }
-.containers_info{
+
+.containers_info {
     padding: 50px;
     background: #E0E0E0;
     margin: 20px;
@@ -533,21 +591,22 @@ table, td{
     align-items: center;
     border-radius: 10px;
 }
-.edit_perfil{
+
+.edit_perfil {
     margin-left: 0px;
     color: black;
     text-align: justify;
 }
 
-.bton{
+.bton {
     margin-left: 220px;
 }
 
-.btn btn-primary ml-2{
+.btn btn-primary ml-2 {
     margin-left: 250px;
 }
 
-.formulario_info{
+.formulario_info {
     background: white;
     margin-top: 10%;
     margin-top: 5px;
@@ -556,61 +615,71 @@ table, td{
     margin-bottom: 100px;
     padding: 60px;
 }
-.campo{
+
+.campo {
     width: 100%;
     margin-bottom: 10px;
 }
-.form_password{
+
+.form_password {
     background: white;
     margin-top: 50px;
     margin-left: 300px;
     margin-right: 300px;
     padding: 50px;
 }
-.container_botones{
+
+.container_botones {
     display: flex;
 }
-.contenedor{
+
+.contenedor {
     background: #F1B63C;
     margin-top: 40%;
     margin-left: 350px;
     margin-bottom: 10px;
     margin-right: 350px;
     display: flex;
-    border-radius: 25px;    
+    border-radius: 25px;
 }
-.columna{
+
+.columna {
     color: black;
     float: none;
     margin: auto;
     padding: 10%;
     text-align: center !important;
-    
-    
+
+
 }
-.segunda_columna{
+
+.segunda_columna {
     color: black;
     margin-top: 40px;
     margin-left: 100px;
     padding-bottom: 20px;
     margin-bottom: 20px;
 }
-.boton_edit{
-    margin:auto;
+
+.boton_edit {
+    margin: auto;
 }
 
-h2{
+h2 {
     text-align: center;
 }
-.datosP{
+
+.datosP {
     font-size: 20px;
     text-align: justify;
 }
-.body_membresia{
+
+.body_membresia {
     background-image: "../img/fondo_proy.jpg" !important;
 }
+
 /*ESTILOS PARA LOGUIN*/
-.loguin{
+.loguin {
     /*background: rgba(138, 135, 0, 0.5);*/
     background: rgba(119, 154, 177, 0.5);
     margin-left: 30%;
@@ -620,13 +689,15 @@ h2{
     padding-top: 7%;
     border-radius: 35px;
 }
-.title{
+
+.title {
     text-align: center;
     font-size: 40px;
     color: #ffff;
     padding-bottom: 10%;
 }
-.btn-loguin{
+
+.btn-loguin {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -636,7 +707,7 @@ h2{
 
 
 /*-------------------------------------------------------------*/
-.identificacion_user{
+.identificacion_user {
     width: 50%;
     padding: 20px;
     border: none;
@@ -645,15 +716,18 @@ h2{
     font-weight: bold;
     color: #ffff;
     margin-left: 30%;
-    
+
 }
+
 ::placeholder {
-    color: #fff; /* Color rojo */
-    opacity: 1; /* Asegurarse de que el color tenga plena opacidad */
+    color: #fff;
+    /* Color rojo */
+    opacity: 1;
+    /* Asegurarse de que el color tenga plena opacidad */
     font-weight: bold;
 }
 
-.wrapper{
+.wrapper {
     width: 420px;
     color: #fff;
     margin: auto;
@@ -663,17 +737,19 @@ h2{
     justify-content: space-between;
     position: relative;
     flex-direction: column;
-    background:transparent;
-    border: 2px solid  rgba(1, 13, 51, 0.5);
+    background: transparent;
+    border: 2px solid rgba(1, 13, 51, 0.5);
     backdrop-filter: blur(20px);
     padding: 30px 40px;
 }
-.wrapper.h1{
+
+.wrapper.h1 {
     font-size: 36px;
     text-align: center;
     align-items: center;
 }
-.wrapper .input-box{
+
+.wrapper .input-box {
     width: 100%;
     height: 45%;
     border: none;
@@ -682,7 +758,8 @@ h2{
     margin-bottom: 40px;
     position: relative;
 }
-.input-box input{
+
+.input-box input {
     width: 100%;
     height: 45px;
     background: transparent;
@@ -692,42 +769,51 @@ h2{
     border-radius: 40px;
     font-size: 16px;
 }
-.input-box input::placeholder{
+
+.input-box input::placeholder {
     color: #fff;
 }
-.input-box i{
+
+.input-box i {
     position: absolute;
-    right: 10px; /* Ajusta la distancia del ícono al borde derecho */
+    right: 10px;
+    /* Ajusta la distancia del ícono al borde derecho */
     top: 50%;
     transform: translateY(-50%);
-    color: #fff; /* Ajusta el color del ícono según sea necesario */
-    pointer-events: none; 
+    color: #fff;
+    /* Ajusta el color del ícono según sea necesario */
+    pointer-events: none;
 }
-.recordar-credenciales label input{
+
+.recordar-credenciales label input {
     accent-color: #fff;
     margin-right: 3px;
 }
-.recordar-credenciales a{
+
+.recordar-credenciales a {
     color: #fff;
     text-decoration: none;
 }
-.recordar-credenciales a:hover{
+
+.recordar-credenciales a:hover {
     text-decoration: underline;
 }
-.wrapper .btn{
+
+.wrapper .btn {
     width: 100%;
     height: 45px;
     background: #fff;
     border: none;
     outline: none;
     border-radius: 40px;
-    box-shadow: 0 0 10px rgba(0,0,0, 1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 1);
     cursor: pointer;
     font-size: 16px;
     color: #333;
     font-weight: 600px;
 }
-.login-fondo{
+
+.login-fondo {
     background: url(/static/img/fondo2.jpg)no-repeat;
     background-repeat: no-repeat;
     background-attachment: fixed;
@@ -737,13 +823,83 @@ h2{
 }
 
 /* MENÚ MIEMBRO*/
-.nav_input:checked + .nav_menu{
+.nav_input:checked+.nav_menu {
     background: tomato;
 
 }
-.admin_fondo{
+
+.admin_fondo {
     background: url(/static/img/Portada_miembro.jpg);
 }
-.table-reserva{
+
+.table-reserva {
     margin: 2px;
+}
+
+
+/*OPCIONES DE CLASES EN ADMINISTRADOR*/
+.background-container {
+    position: fixed;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-image: url('../img/clase_fondo.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.container-class {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    width: 500px;
+    height: 320px;
+    align-items: center;
+    margin: auto;
+    margin-top: 10%;
+}
+
+.container h2 {
+    margin-bottom: 30px;
+    color: #333;
+}
+
+.button-group {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    margin-top: 10vh;
+}
+
+.btn {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    height: 60px;
+}
+
+.btn-create {
+    background-color: #28a745;
+}
+
+.btn-create:hover {
+    background-color: #218838;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+}
+
+.btn-delete:hover {
+    background-color: #c82333;
 }

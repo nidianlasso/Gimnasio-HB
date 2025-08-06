@@ -1,0 +1,39 @@
+{% include 'main.html' %}
+    {% include 'Administrator/menu.html' %}
+    <h1 style="text-align: center; margin-top: 5px;">Eliminar Clases</h1>
+
+    <div class="tabla_eliminar">
+        {% if clase_delete %}
+            <p style="color: green;">{{ clase_delete.message }}</p>
+        {% endif %}
+
+    {% if clases %}
+        <table border="0" style="width: 80%; margin: auto; margin-top: 40px; overflow-y: auto;">
+            <thead >
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Eliminar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for clase in clases %}
+                <tr>
+                    <td>{{ clase[0] }}</td>
+                    <td>{{ clase[1] }}</td>
+                    <td>{{ clase[2] }}</td>
+                    <td>
+                        <form method="POST" action="/delete-class" onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta clase?');">
+                            <input type="hidden" name="class_id" value="{{ clase[0] }}">
+                            <button type="submit" style="background: #dc3545;"> <i class="fa-solid fa-trash-can"></i></button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay clases registradas.</p>
+    {% endif %}
+    </div>

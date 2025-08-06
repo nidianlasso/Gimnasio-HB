@@ -6,7 +6,7 @@ from query import (validarLogin, check_credentials, login_required_admin, login_
                     conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship,
                     guardar_membresia, status_membreship, actualizar_membresia, lista_maquinas, search_machine, access_users,
                     guardar_acceso, obtener_tipo_acceso, cambiar_estado_acceso, asignar_entrenador, obtener_plan_trabajo, obtener_membrehip_user,
-                    save_class_to_db, obtener_reservas_maquinas, obtener_maquinas_disponibles, consultar_reservas_de_hoy, cant_maquinas,
+                    save_class_to_db, list_class, delete_class, obtener_reservas_maquinas, obtener_maquinas_disponibles, consultar_reservas_de_hoy, cant_maquinas,
                     cant_proveedores, cant_empleados, obtener_maquinas_disponibles_para_reserva, existe_reserva_en_bloque, registrar_reserva,
                     obtener_id_membresia_usuario, consultar_bloques_contiguos)
 
@@ -309,40 +309,6 @@ def existe_reserva_contigua(id_membresia_usuario, hora_inicio):
 
 #*************************************************************************
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # ENVIAR MAQUINA A REVISION
 @app.route('/review-machines', methods=['GET'])
 def review_machines():
@@ -509,6 +475,10 @@ def assign_coach_route():
 
 #MOSTRAR PLAN DE TRABAJO DEL MIEMBRO
 
+#MOSTRAR OPCIONES PARA CLASES
+@app.route('/acciones-clase')
+def acciones_clase():
+    return render_template('Administrator/options_class.html')
 
 #CREACION DE LAS CLASES
 @app.route('/create-class', methods=['GET'])
@@ -534,6 +504,17 @@ def create_class():
     else:
         return jsonify(result), 500
 
+#Eliminar clase
+@app.route('/delete-class', methods=['GET', 'POST'])
+def delete_class_admin():
+    if request.method == 'POST':
+        class_id = request.form.get('class_id')
+        result = delete_class(class_id)
+        classes = list_class()
+        return render_template('Administrator/delete_class.html', clases=classes, clase_delete=result)
+    
+    classes = list_class()
+    return render_template('Administrator/delete_class.html', clases=classes)
 
 
 if __name__ =='__main__':
