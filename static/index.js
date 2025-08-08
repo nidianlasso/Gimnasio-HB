@@ -487,12 +487,6 @@ function reservarBloque(id_maquina, hora_inicio) {
     });
 }
 
-
-
-
-
-
-
 document.addEventListener('DOMContentLoaded', () => {
     const select = document.getElementById('maquina');
 
@@ -955,4 +949,39 @@ function realizarReserva(data) {
             console.error('Error al reservar:', err);
             alert('Hubo un error al hacer la reserva.');
         });
+}
+
+function cargarDatosEmpleado() {
+    const select = document.getElementById("identificacion");
+    const nombre = document.getElementById("nombre");
+    const apellido = document.getElementById("apellido");
+    const salarioInput = document.getElementById("salario");
+
+    const selected = select.options[select.selectedIndex];
+    const nombreVal = selected.getAttribute("data-nombre");
+    const apellidoVal = selected.getAttribute("data-apellido");
+    const salarioVal = parseFloat(selected.getAttribute("data-salario"));
+
+    nombre.value = nombreVal || '';
+    apellido.value = apellidoVal || '';
+    salarioInput.value = salarioVal.toFixed(2);
+
+    calcularNomina();
+}
+
+function calcularNomina() {
+    const salario = parseFloat(document.getElementById("salario").value) || 0;
+    const auxilio = salario * 0.05;
+    const salud = salario * 0.04;
+    const pension = salario * 0.04;
+    const total_devengado = salario + auxilio;
+    const total_deducciones = salud + pension;
+    const liquido = total_devengado - total_deducciones;
+
+    document.getElementById("auxilio").value = auxilio.toFixed(2);
+    document.getElementById("salud").value = salud.toFixed(2);
+    document.getElementById("pension").value = pension.toFixed(2);
+    document.getElementById("total_devengado").value = total_devengado.toFixed(2);
+    document.getElementById("total_deducciones").value = total_deducciones.toFixed(2);
+    document.getElementById("liquido").value = liquido.toFixed(2);
 }

@@ -137,12 +137,11 @@ def login_required_receptionist(f):
         # Verificar si la cookie 'identificacion' está presente
         identificacion = request.cookies.get('identificacion')
         if identificacion:
-            print(f"Identificación de la cookie: {identificacion}")  # Debug: Verifica el valor de la cookie
-            # Realizar la consulta para verificar el rol del usuario
+            print(f"Identificación de la cookie: {identificacion}")
             cursor.execute("SELECT r.nombre FROM bd_gimnasio2.usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE u.identificacion = %s AND r.nombre = 'Recepcionista'", (identificacion))
             rol_user = cursor.fetchall()
-            print(f"Rol del usuario: {rol_user}")  # Debug: Verifica los resultados de la consulta
-            if len(rol_user) == 0:  # Si no hay rol "Entrenador", redirigir al login
+            print(f"Rol del usuario: {rol_user}")
+            if len(rol_user) == 0:
                 print("Usuario no autenticado. Redirigiendo al login.")
                 return redirect(url_for('login'))
         else:
@@ -199,6 +198,12 @@ def conteo_clases_reservadas():
     cursor.execute("SELECT COUNT(*) AS listado_clases FROM clase")
     result_lista_reservas = cursor.fetchone()[0]
     return result_lista_reservas
+
+def listado_empleados():
+    cursor.execute("SELECT u.id_usuario, u.identificacion, u.nombre, u.apellido, r.nombre, r.salario FROM usuario u JOIN rol r ON u.id_rol = r.id_rol WHERE r.nombre <> 'Miembro';")
+    result_emple = cursor.fetchall()
+    print(f"esto es lo que llega {result_emple} ")
+    return result_emple
 
 #OBTENER LA CANTIDAD DE ROLES
 
@@ -698,6 +703,24 @@ def consultar_bloques_contiguos(id_membresia_usuario, hora_inicio):
 
     return cursor.fetchone()
 
-
-
+def registrar_pago_nomina(datos):
+    try:
+        cursor.execute("""
+            INSERT INTO nomina (
+                id_usuario, fecha_generacion, salario_base, 
+                auxilio_transporte, aporte_salud, aporte_pension,
+                total_devengado, total_deducciones, liquido_a_recibir
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, datos)
+        connection.commit()
+        return True
+    except Exception as e:
+        connection.rollback()
+        print(f"Error al registrar la nómina: {e}")
+        return False
+    
+def obtener_id_usuario_por_identificacion(identificacion):
+    cursor.execute("SELECT id_usuario FROM usuario WHERE identificacion = %s", (identificacion,))
+    result = cursor.fetchone()
+    return result[0] if result else None
 

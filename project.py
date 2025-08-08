@@ -1,14 +1,21 @@
-from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
+from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response, send_file
 from flask_mysqldb import MySQL
 from datetime import datetime, timedelta
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.pagesizes import letter
+from reportlab.lib import colors
+from reportlab.pdfgen import canvas
+from io import BytesIO
+import os
 from query import (validarLogin, check_credentials, login_required_admin, login_required_member,login_required_coach, login_required_receptionist,
                     lista_miembros,lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
                     conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship,
-                    guardar_membresia, status_membreship, actualizar_membresia, lista_maquinas, search_machine, access_users,
+                    guardar_membresia, status_membreship, actualizar_membresia, lista_maquinas, listado_empleados, search_machine, access_users,
                     guardar_acceso, obtener_tipo_acceso, cambiar_estado_acceso, asignar_entrenador, obtener_plan_trabajo, obtener_membrehip_user,
                     save_class_to_db, list_class, delete_class, obtener_reservas_maquinas, obtener_maquinas_disponibles, consultar_reservas_de_hoy, cant_maquinas,
                     cant_proveedores, cant_empleados, obtener_maquinas_disponibles_para_reserva, existe_reserva_en_bloque, registrar_reserva,
-                    obtener_id_membresia_usuario, consultar_bloques_contiguos)
+                    obtener_id_membresia_usuario, consultar_bloques_contiguos, registrar_pago_nomina, obtener_id_usuario_por_identificacion)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -516,6 +523,123 @@ def delete_class_admin():
     classes = list_class()
     return render_template('Administrator/delete_class.html', clases=classes)
 
+# @app.route('/delete-class', methods=['GET', 'POST'])
+# def delete_class_admin():
+#     classes = list_class()
+#     return render_template('Administrator/delete_class.html', clases=classes)
+
+@app.route('/formulario-nomina')
+def mostrar_formulario_nomina():
+    try:
+        empleados =  listado_empleados()
+        return render_template('Administrator/nomina.html', empleados=empleados)
+    except Exception as e:
+        print(f"Error al cargar formulario de nómina: {e}")
+        flash("Error cargando formulario", "error")
+        return redirect(url_for('home'))  # Ajusta según tu ruta principal
+
+
+from flask import send_file
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+import os
+
+@app.route('/insertar-nomina', methods=['POST'])
+def insertar_nomina():
+    try:
+        identificacion = request.form.get('identificacion').strip()
+        id_usuario = obtener_id_usuario_por_identificacion(identificacion)
+
+        if not id_usuario:
+            print(f"No se encontró usuario con identificación {identificacion}")
+        else:
+            print(f"Este es el id_usuario que llega: {id_usuario} !!!!!!!***************")
+
+        # Conversión segura
+        id_usuario = int(request.form.get('identificacion', 0))
+        fecha_generacion = request.form.get('fecha_pago', '')
+
+        salario_base = float(request.form.get('salario', 0) or 0)
+        auxilio_transporte = float(request.form.get('auxilio', 0) or 0)
+        aporte_salud = float(request.form.get('salud', 0) or 0)
+        aporte_pension = float(request.form.get('pension', 0) or 0)
+        total_devengado = float(request.form.get('total_devengado', 0) or 0)
+        total_deducciones = float(request.form.get('total_deducciones', 0) or 0)
+        liquido_a_recibir = float(request.form.get('liquido', 0) or 0)
+
+        # Registro en la base de datos (SIN CAMBIOS)
+        datos = (
+            id_usuario, fecha_generacion, salario_base,
+            auxilio_transporte, aporte_salud, aporte_pension,
+            total_devengado, total_deducciones, liquido_a_recibir
+        )
+
+        exito = registrar_pago_nomina(datos)
+
+        if exito:
+            # Ruta donde se guardará el PDF (dentro del proyecto)
+            carpeta_pdfs = os.path.join(os.getcwd(), "static", "pdfs")
+            os.makedirs(carpeta_pdfs, exist_ok=True)
+            ruta_pdf = os.path.join(carpeta_pdfs, f"nomina_{identificacion}.pdf")
+
+            # Generar el PDF
+            c = canvas.Canvas(ruta_pdf, pagesize=letter)
+            c.drawString(100, 750, f"Nómina - ID Usuario: {id_usuario}")
+            c.drawString(100, 730, f"Fecha de Pago: {fecha_generacion}")
+            c.drawString(100, 710, f"Salario Base: {salario_base}")
+            c.drawString(100, 690, f"Auxilio Transporte: {auxilio_transporte}")
+            c.drawString(100, 670, f"Aporte Salud: {aporte_salud}")
+            c.drawString(100, 650, f"Aporte Pensión: {aporte_pension}")
+            c.drawString(100, 630, f"Total Devengado: {total_devengado}")
+            c.drawString(100, 610, f"Total Deducciones: {total_deducciones}")
+            c.drawString(100, 590, f"Líquido a Recibir: {liquido_a_recibir}")
+            c.save()
+
+            return send_file(ruta_pdf, as_attachment=True)
+
+        else:
+            return "Error al registrar en la base de datos", 500
+
+    except Exception as e:
+        print("Error en /insertar-nomina:", e)
+        return "Error al procesar la solicitud", 500
+
+
+# 📌 Función para generar PDF
+def generar_pdf(ruta, identificacion, fecha, salario, auxilio, salud, pension, devengado, deducciones, liquido):
+    doc = SimpleDocTemplate(ruta, pagesize=letter)
+    estilos = getSampleStyleSheet()
+    elementos = []
+
+    elementos.append(Paragraph("Comprobante de Nómina", estilos["Title"]))
+    elementos.append(Spacer(1, 12))
+    elementos.append(Paragraph(f"Empleado ID: {identificacion}", estilos["Normal"]))
+    elementos.append(Paragraph(f"Fecha de pago: {fecha}", estilos["Normal"]))
+    elementos.append(Spacer(1, 12))
+
+    data = [
+        ["Concepto", "Valor"],
+        ["Salario Base", f"${salario:,.2f}"],
+        ["Auxilio Transporte", f"${auxilio:,.2f}"],
+        ["Aporte Salud", f"${salud:,.2f}"],
+        ["Aporte Pensión", f"${pension:,.2f}"],
+        ["Total Devengado", f"${devengado:,.2f}"],
+        ["Total Deducciones", f"${deducciones:,.2f}"],
+        ["Líquido a Recibir", f"${liquido:,.2f}"],
+    ]
+
+    tabla = Table(data, colWidths=[200, 150])
+    tabla.setStyle(TableStyle([
+        ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
+        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+        ("GRID", (0, 0), (-1, -1), 1, colors.black)
+    ]))
+
+    elementos.append(tabla)
+    doc.build(elementos)
 
 if __name__ =='__main__':
     app.run(port =4000, debug =True)
