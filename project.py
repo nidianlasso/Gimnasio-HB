@@ -7,6 +7,10 @@ from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
 from reportlab.pdfgen import canvas
 from io import BytesIO
+from reportlab.lib.pagesizes import letter
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet
 import os
 from query import (validarLogin, check_credentials, login_required_admin, login_required_member,login_required_coach, login_required_receptionist,
                     lista_miembros,lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
@@ -538,12 +542,6 @@ def mostrar_formulario_nomina():
         flash("Error cargando formulario", "error")
         return redirect(url_for('home'))  # Ajusta según tu ruta principal
 
-
-from flask import send_file
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-import os
-
 @app.route('/insertar-nomina', methods=['POST'])
 def insertar_nomina():
     try:
@@ -558,7 +556,6 @@ def insertar_nomina():
         # Conversión segura
         id_usuario = int(request.form.get('identificacion', 0))
         fecha_generacion = request.form.get('fecha_pago', '')
-
         salario_base = float(request.form.get('salario', 0) or 0)
         auxilio_transporte = float(request.form.get('auxilio', 0) or 0)
         aporte_salud = float(request.form.get('salud', 0) or 0)
@@ -577,25 +574,24 @@ def insertar_nomina():
         exito = registrar_pago_nomina(datos)
 
         if exito:
-            # Ruta donde se guardará el PDF (dentro del proyecto)
             carpeta_pdfs = os.path.join(os.getcwd(), "static", "pdfs")
             os.makedirs(carpeta_pdfs, exist_ok=True)
             ruta_pdf = os.path.join(carpeta_pdfs, f"nomina_{identificacion}.pdf")
-
-            # Generar el PDF
-            c = canvas.Canvas(ruta_pdf, pagesize=letter)
-            c.drawString(100, 750, f"Nómina - ID Usuario: {id_usuario}")
-            c.drawString(100, 730, f"Fecha de Pago: {fecha_generacion}")
-            c.drawString(100, 710, f"Salario Base: {salario_base}")
-            c.drawString(100, 690, f"Auxilio Transporte: {auxilio_transporte}")
-            c.drawString(100, 670, f"Aporte Salud: {aporte_salud}")
-            c.drawString(100, 650, f"Aporte Pensión: {aporte_pension}")
-            c.drawString(100, 630, f"Total Devengado: {total_devengado}")
-            c.drawString(100, 610, f"Total Deducciones: {total_deducciones}")
-            c.drawString(100, 590, f"Líquido a Recibir: {liquido_a_recibir}")
-            c.save()
+            generar_pdf(
+                ruta_pdf,
+                identificacion=identificacion,
+                fecha=fecha_generacion,
+                salario=salario_base,
+                auxilio=auxilio_transporte,
+                salud=aporte_salud,
+                pension=aporte_pension,
+                devengado=total_devengado,
+                deducciones=total_deducciones,
+                liquido=liquido_a_recibir
+            )
 
             return send_file(ruta_pdf, as_attachment=True)
+
 
         else:
             return "Error al registrar en la base de datos", 500
@@ -606,40 +602,108 @@ def insertar_nomina():
 
 
 # 📌 Función para generar PDF
+
 def generar_pdf(ruta, identificacion, fecha, salario, auxilio, salud, pension, devengado, deducciones, liquido):
     doc = SimpleDocTemplate(ruta, pagesize=letter)
     estilos = getSampleStyleSheet()
     elementos = []
 
-    elementos.append(Paragraph("Comprobante de Nómina", estilos["Title"]))
-    elementos.append(Spacer(1, 12))
-    elementos.append(Paragraph(f"Empleado ID: {identificacion}", estilos["Normal"]))
-    elementos.append(Paragraph(f"Fecha de pago: {fecha}", estilos["Normal"]))
-    elementos.append(Spacer(1, 12))
+    # Título principal
+    titulo = Paragraph("<b><font size=16 color='#003366'>COMPROBANTE DE NÓMINA</font></b>", estilos["Title"])
+    elementos.append(titulo)
+    elementos.append(Spacer(1, 20))
 
-    data = [
-        ["Concepto", "Valor"],
-        ["Salario Base", f"${salario:,.2f}"],
-        ["Auxilio Transporte", f"${auxilio:,.2f}"],
-        ["Aporte Salud", f"${salud:,.2f}"],
-        ["Aporte Pensión", f"${pension:,.2f}"],
-        ["Total Devengado", f"${devengado:,.2f}"],
-        ["Total Deducciones", f"${deducciones:,.2f}"],
-        ["Líquido a Recibir", f"${liquido:,.2f}"],
+    # Sección: Datos de la Empresa
+    empresa_data = [
+        ['EMPRESA', ''],
+        ['Nombre:', 'Gimnasio La Candelaria'],
+        ['Dirección:', 'Cl. 68 Sur # 47 - 10, Cdad. Bolívar, Bogotá'],
     ]
-
-    tabla = Table(data, colWidths=[200, 150])
-    tabla.setStyle(TableStyle([
-        ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
-        ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
-        ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
-        ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
-        ("GRID", (0, 0), (-1, -1), 1, colors.black)
+    empresa_table = Table(empresa_data, colWidths=[180, 300])
+    empresa_table.setStyle(TableStyle([
+        ('SPAN', (0,0), (-1,0)),
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#e6f2ff')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.HexColor('#003366')),
+        ('BOX', (0,0), (-1,-1), 1, colors.black),
+        ('GRID', (0,1), (-1,-1), 0.5, colors.grey),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
     ]))
+    elementos.append(empresa_table)
+    elementos.append(Spacer(1, 16))
 
-    elementos.append(tabla)
+    # Sección: Datos del Trabajador
+    trabajador_data = [
+        ['TRABAJADOR/A', ''],
+        ['Nombre del Instructor:', 'Nombre Instructor Aquí'],  # Puedes pasar el nombre como parámetro
+        ['Identificación:', str(identificacion)],
+    ]
+    trabajador_table = Table(trabajador_data, colWidths=[180, 300])
+    trabajador_table.setStyle(TableStyle([
+        ('SPAN', (0,0), (-1,0)),
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#fff2cc')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.HexColor('#7f6000')),
+        ('BOX', (0,0), (-1,-1), 1, colors.black),
+        ('GRID', (0,1), (-1,-1), 0.5, colors.grey),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+        ('FONTNAME', (0,0), (-1,0), 'Helvetica-Bold'),
+    ]))
+    elementos.append(trabajador_table)
+    elementos.append(Spacer(1, 16))
+
+    # Tabla: Devengos
+    devengos_data = [
+        ['Devengos', 'Cantidad', 'Precio ($)', 'Total ($)'],
+        ['Salario base', '30 días', f"{salario:,.0f}", f"{salario * 30:,.0f}"],
+        ['Auxilio de transporte', '', f"{auxilio:,.0f}", f"{auxilio:,.0f}"],
+        ['Total', '', '', f"<b>{devengado:,.0f}</b>"],
+    ]
+    devengos_table = Table(devengos_data, colWidths=[160, 80, 100, 100])
+    devengos_table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#d9ead3')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.HexColor('#274e13')),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+        ('ALIGN', (1,1), (-1,-2), 'CENTER'),
+        ('ALIGN', (2,1), (-1,-1), 'RIGHT'),
+    ]))
+    elementos.append(devengos_table)
+    elementos.append(Spacer(1, 16))
+
+    # Tabla: Deducciones
+    deducciones_data = [
+        ['Deducciones', 'Cantidad', 'Porcentaje', 'Total ($)'],
+        ['Aporte a la salud', '', '4%', f"{salud:,.0f}"],
+        ['Aporte a la pensión', '', '4%', f"{pension:,.0f}"],
+        ['Total', '', '', f"{deducciones:,.0f}"],
+    ]
+    deducciones_table = Table(deducciones_data, colWidths=[160, 80, 100, 100])
+    deducciones_table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#f4cccc')),
+        ('TEXTCOLOR', (0,0), (-1,0), colors.HexColor('#990000')),
+        ('GRID', (0,0), (-1,-1), 0.5, colors.black),
+        ('ALIGN', (1,1), (-1,-2), 'CENTER'),
+        ('ALIGN', (2,1), (-1,-1), 'RIGHT'),
+    ]))
+    elementos.append(deducciones_table)
+    elementos.append(Spacer(1, 16))
+
+    # Resumen final
+    resumen_data = [
+        ['Líquido a recibir', f"{liquido:,.0f}"],
+        ['Fecha de generación de nómina', fecha],
+    ]
+    resumen_table = Table(resumen_data, colWidths=[200, 250])
+    resumen_table.setStyle(TableStyle([
+        ('BACKGROUND', (0,0), (0,0), colors.HexColor('#c9daf8')),
+        ('TEXTCOLOR', (0,0), (0,0), colors.HexColor('#0b5394')),
+        ('ALIGN', (1,0), (1,0), 'CENTER'),
+        ('ALIGN', (1,1), (1,1), 'CENTER'),
+        ('BOX', (0,0), (-1,-1), 1, colors.black),
+        ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
+    ]))
+    elementos.append(resumen_table)
+
+    # Construir el documento
     doc.build(elementos)
-
 if __name__ =='__main__':
     app.run(port =4000, debug =True)
