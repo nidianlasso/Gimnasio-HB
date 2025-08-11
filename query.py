@@ -162,6 +162,13 @@ def lista_miembros():
     return listado_miembros
 #OBTENER EL LISTADO DE MIEMBROS
 
+#OBTENER LISTA DE LOS PROVEEDORES
+def lista_proveedores():
+    cursor.execute("SELECT * FROM proveedor")
+    listado_proveedores = cursor.fetchall()
+    return listado_proveedores
+#OBTENER LISTA DE LOS PROVEEDORES
+
 #--LISTADO DE GENERO
 def lista_genero():
     cursor.execute("SELECT id_genero, tipo FROM genero")
@@ -724,3 +731,48 @@ def obtener_id_usuario_por_identificacion(identificacion):
     result = cursor.fetchone()
     return result[0] if result else None
 
+#GESTINAR LOS PROVEEDORES
+def insertar_proveedor(nombre):
+    try:
+        cursor.execute("""
+            INSERT INTO proveedor (
+                       nombre) VALUES (%s)
+                       """, nombre)
+        connection.commit()
+        return True
+    except Exception as e:
+        connection.rollback()
+        print(f"Error al registrar el proveedor {e}")
+        return False
+    
+def eliminar_proveedor_id(id_proveedor):
+    try:
+        cursor.execute("DELETE FROM proveedor WHERE id_proveedor = %s", (id_proveedor,))
+        connection.commit()
+        print(f"Proveedor {id_proveedor} eliminado correctamente.")
+        return True
+    except Exception as e:
+        connection.rollback()
+        print(f"Error al eliminar el proveedor: {e}")
+        return False
+
+    
+def actualizar_proveedor(id_proveedor, nombre):
+    try:
+        cursor.execute("UPDATE proveedor SET nombre = %s WHERE id_proveedor = %s", (nombre, id_proveedor))
+        connection.commit()
+        print(f"Proveedor {id_proveedor} actualizado correctamente.")
+        return True
+    except Exception as e:
+        connection.rollback()
+        print(f"Error al actualizar los proveedores: {e}")
+        return False
+
+def obtener_proveedor_por_id(id_proveedor):
+    try:
+        cursor.execute("SELECT id_proveedor, nombre FROM proveedor WHERE id_proveedor = %s", (id_proveedor,))
+        resultado = cursor.fetchone()
+        return resultado 
+    except Exception as e:
+        print(f"Error al obtener proveedor por ID: {e}")
+        return None

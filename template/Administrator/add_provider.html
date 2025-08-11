@@ -1,0 +1,30 @@
+{% include 'main.html' %}
+{% include 'Administrator/menu.html' %}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4">
+        {{ 'Editar Proveedor' if proveedor_seleccionado else 'Registrar Nuevo Proveedor' }}
+    </h2>
+
+    <div class="card mx-auto" style="max-width: 500px;">
+        <div class="card-body">
+            <form action="{{ url_for('guardar_proveedor') }}" method="POST">
+                <input type="hidden" name="accion" value="{{ 'editar' if proveedor_seleccionado else 'crear' }}">
+                <input type="hidden" name="id" value="{{ proveedor_seleccionado[0] if proveedor_seleccionado else '' }}">
+
+                <div class="mb-3">
+                    <label for="nombre" class="form-label">Nombre del Proveedor</label>
+                    <input type="text" class="form-control" name="nombre" id="nombre" required
+                           value="{{ proveedor_seleccionado[1] if proveedor_seleccionado else '' }}">
+                </div>
+
+                <div class="d-flex justify-content-between">
+                    <a href="{{ url_for('view_provider') }}" class="btn btn-secondary">← Volver</a>
+                    <button type="submit" class="btn btn-primary">
+                        {{ 'Actualizar' if proveedor_seleccionado else 'Registrar' }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

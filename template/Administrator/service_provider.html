@@ -1,0 +1,62 @@
+{% include 'main.html' %}
+{% include 'Administrator/menu.html' %}
+
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Listado de Proveedores de Máquinas</h2>
+
+    <div class="text-end mb-3">
+        <a href="/proveedores/nuevo" class="btn btn-success">➕ Nuevo Proveedor</a>
+    </div>
+
+    <!-- FORMULARIO DE EDICIÓN (o registro) -->
+    {% if proveedor_seleccionado %}
+    <div class="card mb-4 mx-auto" style="max-width: 500px;">
+    <div class="card-body">
+        <h4 class="card-title text-center mb-3">Editar Proveedor</h4>
+        <form action="{{ url_for('guardar_proveedor') }}" method="POST">
+            <input type="hidden" name="accion" value="editar">
+            <input type="hidden" name="id" value="{{ proveedor_seleccionado[0] }}">
+
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre del Proveedor</label>
+                <input type="text" class="form-control" id="nombre" name="nombre" required
+                       value="{{ proveedor_seleccionado[1] }}">
+            </div>
+
+            <div class="d-flex justify-content-between">
+                <a href="{{ url_for('view_provider') }}" class="btn btn-secondary">← Cancelar</a>
+                <button type="submit" class="btn btn-primary">Actualizar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+    {% endif %}
+
+    <!-- TABLA DE PROVEEDORES -->
+    <table class="table table-striped table-bordered">
+        <thead class="table-dark text-center">
+            <tr>
+                <th>ID</th>
+                <th>Nombre del Proveedor</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for proveedor in proveedores %}
+                <tr>
+                    <td class="text-center">{{ proveedor[0] }}</td>
+                    <td>{{ proveedor[1] }}</td>
+                    <td class="text-center">
+                        <a href="{{ url_for('view_provider') }}?editar_id={{ proveedor[0] }}" class="btn btn-sm btn-warning">Editar</a>
+                        <form action="{{ url_for('eliminar_proveedor', id=proveedor[0]) }}" method="POST" style="display:inline;">
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de eliminar este proveedor?')">
+                            🗑️ Eliminar
+                        </button>
+                    </form>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>

@@ -15,11 +15,12 @@ import os
 from query import (validarLogin, check_credentials, login_required_admin, login_required_member,login_required_coach, login_required_receptionist,
                     lista_miembros,lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
                     conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship,
-                    guardar_membresia, status_membreship, actualizar_membresia, lista_maquinas, listado_empleados, search_machine, access_users,
+                    guardar_membresia, status_membreship, actualizar_membresia, lista_maquinas, listado_empleados, lista_proveedores, search_machine, access_users,
                     guardar_acceso, obtener_tipo_acceso, cambiar_estado_acceso, asignar_entrenador, obtener_plan_trabajo, obtener_membrehip_user,
                     save_class_to_db, list_class, delete_class, obtener_reservas_maquinas, obtener_maquinas_disponibles, consultar_reservas_de_hoy, cant_maquinas,
                     cant_proveedores, cant_empleados, obtener_maquinas_disponibles_para_reserva, existe_reserva_en_bloque, registrar_reserva,
-                    obtener_id_membresia_usuario, consultar_bloques_contiguos, registrar_pago_nomina, obtener_id_usuario_por_identificacion)
+                    obtener_id_membresia_usuario, consultar_bloques_contiguos, registrar_pago_nomina, obtener_id_usuario_por_identificacion, insertar_proveedor,
+                    eliminar_proveedor_id, actualizar_proveedor, obtener_proveedor_por_id)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -706,8 +707,72 @@ def generar_pdf(ruta, identificacion,nombre, apellido, fecha, salario, auxilio, 
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
     ]))
     elementos.append(resumen_table)
-
     # Construir el documento
     doc.build(elementos)
+
+@app.route('/view-provider', methods=['GET', 'POST'])
+def view_provider():
+    if request.method == 'POST':
+        accion = request.form.get('accion')
+        id_proveedor = request.form.get('id')
+        nombre = request.form.get('nombre')
+
+        if accion == 'crear':
+            insertar_proveedor(nombre)
+        elif accion == 'editar':
+            actualizar_proveedor(id_proveedor, nombre)
+        elif accion == 'eliminar':
+            eliminar_proveedor_id(id_proveedor)
+
+        return redirect(url_for('view_provider'))
+
+    # GET
+    proveedores = lista_proveedores()
+    editar_id = request.args.get('editar_id')
+    print("EDITAR_ID:", editar_id)
+
+    proveedor_seleccionado = None
+
+    if editar_id:
+        proveedor_seleccionado = obtener_proveedor_por_id(int(editar_id))
+        print("Proveedor seleccionado:", proveedor_seleccionado)
+
+    return render_template(
+        'Administrator/service_provider.html',
+        proveedores=proveedores,
+        proveedor_seleccionado=proveedor_seleccionado
+    )
+
+@app.route('/proveedores/nuevo')
+def nuevo_proveedor():
+    return render_template('Administrator/add_provider.html', proveedor_seleccionado=None)
+
+# @app.route('/proveedores/editar/<int:id>', methods=['GET'])
+# def editar_proveedor(id):
+#     proveedor_seleccionado = obtener_proveedor_por_id(id)
+#     proveedores = lista_proveedores()
+#     return render_template('Administrator/service_provider.html', proveedores=proveedores, proveedor_seleccionado=proveedor_seleccionado)
+
+@app.route('/proveedores/eliminar/<int:id>', methods=['POST'])
+def eliminar_proveedor(id):
+    eliminar_proveedor_id(id)
+    return redirect(url_for('view_provider'))
+
+@app.route('/proveedores/guardar', methods=['POST'])
+def guardar_proveedor():
+    accion = request.form.get('accion')
+    nombre = request.form.get('nombre')
+    id_proveedor = request.form.get('id')
+
+    if accion == 'crear':
+        insertar_proveedor(nombre)
+    elif accion == 'editar':
+        actualizar_proveedor(id_proveedor, nombre)
+
+    return redirect(url_for('view_provider')) 
+
+
+
+
 if __name__ =='__main__':
     app.run(port =4000, debug =True)
