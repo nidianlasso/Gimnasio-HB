@@ -1,53 +1,90 @@
 {% include 'main.html' %}
 {% include 'Administrator/menu.html' %}
 
-<h1>Registrar Pago de Nómina</h1>
+<div class="container mt-5">
+    <h2 class="mb-4 text-center">Registrar Pago de Nómina</h2>
 
-<form action="/insertar-nomina" method="POST">
-    <label for="identificacion">Identificación del Empleado:</label>
-    <select id="identificacion" name="identificacion" required onchange="cargarDatosEmpleado()">
-        <option value="">Seleccione un empleado</option>
-        {% for emp in empleados %}
-            <option 
-                value="{{ emp[0] }}" 
-                data-nombre="{{ emp[2] }}"
-                data-apellido="{{ emp[3] }}"
-                data-salario="{{ emp[5] }}"
-            >
-                {{ emp[0] }} - {{ emp[1] }} {{ emp[2] }}
-            </option>
-        {% endfor %}
-    </select><br><br>
+    <form action="/insertar-nomina" method="POST" class="border p-4 rounded shadow bg-light">
 
-    <label for="nombre">Nombre:</label>
-    <input type="text" id="nombre" name="nombre" readonly><br><br>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="identificacion" class="form-label">Identificación del Empleado:</label>
+                <select id="identificacion" name="identificacion" class="form-select" required onchange="cargarDatosEmpleado()">
+                    <option value="">Seleccione un empleado</option>
+                    {% for emp in empleados %}
+                        <option 
+                            value="{{ emp[0] }}" 
+                            data-nombre="{{ emp[2] }}"
+                            data-apellido="{{ emp[3] }}"
+                            data-salario="{{ emp[5] }}"
+                        >
+                            {{ emp[0] }} - {{ emp[1] }} {{ emp[2] }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
 
-    <label for="apellido">Apellido:</label>
-    <input type="text" id="apellido" name="apellido" readonly><br><br>
+            <div class="col-md-3">
+                <label for="nombre" class="form-label">Nombre:</label>
+                <input type="text" id="nombre" name="nombre" class="form-control" readonly>
+            </div>
 
-    <label for="fecha_pago">Fecha de Pago:</label>
-    <input type="date" id="fecha_pago" name="fecha_pago" required><br><br>
+            <div class="col-md-3">
+                <label for="apellido" class="form-label">Apellido:</label>
+                <input type="text" id="apellido" name="apellido" class="form-control" readonly>
+            </div>
+        </div>
 
-    <label for="salario">Salario Base:</label>
-    <input type="number" id="salario" name="salario" step="0.01" readonly required><br><br>
+        <hr>
 
-    <label for="auxilio">Auxilio de Transporte (5%):</label>
-    <input type="number" id="auxilio" name="auxilio" step="0.01" readonly><br><br>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="fecha_pago" class="form-label">Fecha de Pago:</label>
+                <input type="date" id="fecha_pago" name="fecha_pago" class="form-control" required>
+            </div>
 
-    <label for="salud">Aporte Salud (4%):</label>
-    <input type="number" id="salud" name="salud" step="0.01" readonly><br><br>
+            <div class="col-md-4">
+                <label for="salario" class="form-label">Salario Base:</label>
+                <input type="number" id="salario" name="salario" class="form-control" readonly required>
+            </div>
 
-    <label for="pension">Aporte Pensión (4%):</label>
-    <input type="number" id="pension" name="pension" step="0.01" readonly><br><br>
+            <div class="col-md-4">
+                <label for="auxilio" class="form-label">Auxilio Transporte (5%):</label>
+                <input type="number" id="auxilio" name="auxilio" class="form-control" readonly>
+            </div>
+        </div>
 
-    <label for="total_devengado">Total Devengado:</label>
-    <input type="number" id="total_devengado" name="total_devengado" step="0.01" readonly><br><br>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="salud" class="form-label">Aporte Salud (4%):</label>
+                <input type="number" id="salud" name="salud" class="form-control" readonly>
+            </div>
 
-    <label for="total_deducciones">Total Deducciones:</label>
-    <input type="number" id="total_deducciones" name="total_deducciones" step="0.01" readonly><br><br>
+            <div class="col-md-4">
+                <label for="pension" class="form-label">Aporte Pensión (4%):</label>
+                <input type="number" id="pension" name="pension" class="form-control" readonly>
+            </div>
 
-    <label for="liquido">Líquido a Recibir:</label>
-    <input type="number" id="liquido" name="liquido" step="0.01" readonly><br><br>
+            <div class="col-md-4">
+                <label for="total_devengado" class="form-label">Total Devengado:</label>
+                <input type="number" id="total_devengado" name="total_devengado" class="form-control" readonly>
+            </div>
+        </div>
 
-    <button type="submit">Registrar Pago</button>
-</form>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <label for="total_deducciones" class="form-label">Total Deducciones:</label>
+                <input type="number" id="total_deducciones" name="total_deducciones" class="form-control" readonly>
+            </div>
+
+            <div class="col-md-6">
+                <label for="liquido" class="form-label">Líquido a Recibir:</label>
+                <input type="number" id="liquido" name="liquido" class="form-control" readonly>
+            </div>
+        </div>
+
+        <div class="text-center">
+            <button type="submit" class="btn btn-primary px-5 mt-3">Registrar Pago</button>
+        </div>
+    </form>
+</div>
