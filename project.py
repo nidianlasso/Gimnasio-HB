@@ -555,6 +555,8 @@ def insertar_nomina():
 
         # Conversión segura
         id_usuario = int(request.form.get('identificacion', 0))
+        nombre =request.form.get('nombre', '')
+        apellido =request.form.get('apellido', '')
         fecha_generacion = request.form.get('fecha_pago', '')
         salario_base = float(request.form.get('salario', 0) or 0)
         auxilio_transporte = float(request.form.get('auxilio', 0) or 0)
@@ -580,6 +582,8 @@ def insertar_nomina():
             generar_pdf(
                 ruta_pdf,
                 identificacion=identificacion,
+                nombre=nombre,
+                apellido=apellido,
                 fecha=fecha_generacion,
                 salario=salario_base,
                 auxilio=auxilio_transporte,
@@ -603,7 +607,7 @@ def insertar_nomina():
 
 # 📌 Función para generar PDF
 
-def generar_pdf(ruta, identificacion, fecha, salario, auxilio, salud, pension, devengado, deducciones, liquido):
+def generar_pdf(ruta, identificacion,nombre, apellido, fecha, salario, auxilio, salud, pension, devengado, deducciones, liquido):
     doc = SimpleDocTemplate(ruta, pagesize=letter)
     estilos = getSampleStyleSheet()
     elementos = []
@@ -635,10 +639,10 @@ def generar_pdf(ruta, identificacion, fecha, salario, auxilio, salud, pension, d
     # Sección: Datos del Trabajador
     trabajador_data = [
         ['TRABAJADOR/A', ''],
-        ['Nombre del Instructor:', 'Nombre Instructor Aquí'],  # Puedes pasar el nombre como parámetro
+        ['Empleado/a:', (nombre), (apellido)],  # Puedes pasar el nombre como parámetro
         ['Identificación:', str(identificacion)],
     ]
-    trabajador_table = Table(trabajador_data, colWidths=[180, 300])
+    trabajador_table = Table(trabajador_data, colWidths=[160, 80, 100, 100])
     trabajador_table.setStyle(TableStyle([
         ('SPAN', (0,0), (-1,0)),
         ('BACKGROUND', (0,0), (-1,0), colors.HexColor('#fff2cc')),
@@ -656,7 +660,7 @@ def generar_pdf(ruta, identificacion, fecha, salario, auxilio, salud, pension, d
         ['Devengos', 'Cantidad', 'Precio ($)', 'Total ($)'],
         ['Salario base', '30 días', f"{salario:,.0f}", f"{salario * 30:,.0f}"],
         ['Auxilio de transporte', '', f"{auxilio:,.0f}", f"{auxilio:,.0f}"],
-        ['Total', '', '', f"<b>{devengado:,.0f}</b>"],
+        ['Total', '', '', f"{devengado:,.0f}"],
     ]
     devengos_table = Table(devengos_data, colWidths=[160, 80, 100, 100])
     devengos_table.setStyle(TableStyle([
