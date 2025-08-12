@@ -20,7 +20,8 @@ from query import (validarLogin, check_credentials, login_required_admin, login_
                     save_class_to_db, list_class, delete_class, obtener_reservas_maquinas, obtener_maquinas_disponibles, consultar_reservas_de_hoy, cant_maquinas,
                     cant_proveedores, cant_empleados, obtener_maquinas_disponibles_para_reserva, existe_reserva_en_bloque, registrar_reserva,
                     obtener_id_membresia_usuario, consultar_bloques_contiguos, registrar_pago_nomina, obtener_id_usuario_por_identificacion, insertar_proveedor,
-                    eliminar_proveedor_id, actualizar_proveedor, obtener_proveedor_por_id,obtener_clases_disponibles, obtener_id_membresia_usuario_activa, insertar_reserva_clase)
+                    eliminar_proveedor_id, actualizar_proveedor, obtener_proveedor_por_id,obtener_clases_disponibles, obtener_id_membresia_usuario_activa, insertar_reserva_clase,
+                    existe_reserva)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -331,36 +332,30 @@ def listado_clases():
 @app.route("/reservar-clase", methods=["POST"])
 def reservar_clase():
     try:
-        print("POST /reservar-clase recibido")
-        print("Datos form:", request.form)
-
         id_clase = request.form.get("id_clase")
         fecha = request.form.get("fecha")
         hora = request.form.get("hora")
-
         id_usuario = session.get("id_usuario")
-        print(f"id_usuario en sesión: {id_usuario}")
 
         if not id_usuario:
             return jsonify({"error": "Usuario no autenticado"}), 401
 
         id_membresia_usuario = obtener_id_membresia_usuario_activa(id_usuario)
-        print(f"id_membresia_usuario activa: {id_membresia_usuario}")
 
         if not id_membresia_usuario:
             return jsonify({"error": "No tienes una membresía activa"}), 400
 
-        resultado = insertar_reserva_clase(fecha, hora, id_clase, id_membresia_usuario)
-        print("Resultado inserción:", resultado)
+        # 🔍 Validación: ¿Ya tiene reserva para esa clase, fecha y hora?
+        if existe_reserva(id_clase, id_membresia_usuario, fecha, hora):
+            return jsonify({"error": "Ya has reservado esta clase"}), 400
 
+        # ✅ Insertar reserva
+        resultado = insertar_reserva_clase(fecha, hora, id_clase, id_membresia_usuario)
         return jsonify({"mensaje": "Reserva realizada con éxito"}), 200
 
     except Exception as e:
         print("Error en reservar_clase:", e)
         return jsonify({"error": str(e)}), 500
-
-
-
 
 
 

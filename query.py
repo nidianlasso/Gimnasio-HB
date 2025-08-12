@@ -821,9 +821,6 @@ def obtener_id_membresia_usuario_activa(id_usuario):
     resultado = cursor.fetchone()
     return resultado[0] if resultado else None
 
-
-
-
 def insertar_reserva_clase(fecha, hora, id_clase, id_membresia_usuario):
     cursor.execute("""
             INSERT INTO reserva_clase (fecha, hora, id_clase, id_membresia_usuario)
@@ -832,6 +829,18 @@ def insertar_reserva_clase(fecha, hora, id_clase, id_membresia_usuario):
     connection.commit()
     
     return True
+
+def existe_reserva(id_clase, id_membresia_usuario, fecha, hora):
+    cursor.execute("""
+        SELECT 1 FROM reserva_clase
+        WHERE id_clase = %s AND id_membresia_usuario = %s AND fecha = %s AND hora = %s
+        LIMIT 1
+    """, (id_clase, id_membresia_usuario, fecha, hora))
+    resultado = cursor.fetchone()
+    return resultado is not None
+
+
+
 
 
 #FIN RESERVA DE LAS CLASES
