@@ -17,18 +17,20 @@
         <tbody>
             {% for clase in clases %}
             <tr style="border-bottom: 1px solid #ddd; transition: background-color 0.2s ease;">
-                <td style="padding: 12px;">{{ clase[1] }}</td> <!-- nombre -->
-                <td style="padding: 12px;">{{ clase[2] }}</td> <!-- fecha_inicio -->
-                <td style="padding: 12px;">{{ clase[3] }}</td> <!-- hora -->
-                <td style="padding: 12px;">{{ clase[4] }} Horas</td> <!-- duracion -->
+                <td style="padding: 12px;">{{ clase[1] }}</td> 
+                <td style="padding: 12px;">{{ clase[2] }}</td>
+                <td style="padding: 12px;">{{ clase[3] }}</td> 
+                <td style="padding: 12px;">{{ clase[4] }} Horas</td> 
                 <td style="padding: 12px;">
-                    <form action="/reservar-clase" method="post">
+                    <form method="post" action="/reservar-clase" class="form-reserva">
                         <input type="hidden" name="id_clase" value="{{ clase[0] }}">
                         <input type="hidden" name="fecha" value="{{ clase[2] }}">
                         <input type="hidden" name="hora" value="{{ clase[3] }}">
                         <button type="submit" style="background-color: #27ae60; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background-color 0.25s ease;">
                             Reservar <i class="fa-solid fa-calendar-check"></i>
                         </button>
+                        <div class="mensaje-reserva" style="margin-top: 8px; font-weight: 600;"></div>
+
                     </form>
                 </td>
             </tr>
@@ -40,3 +42,46 @@
         </tbody>
     </table>
 </div>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+    console.log("✅ JavaScript cargado correctamente");
+
+    document.querySelectorAll(".form-reserva").forEach(function (form) {
+        form.addEventListener("submit", function (e) {
+            e.preventDefault(); // ← DETIENE la redirección
+
+            const formData = new FormData(form);
+            const mensajeDiv = form.querySelector(".mensaje-reserva");
+            const button = form.querySelector("button");
+
+            button.disabled = true;
+            button.textContent = "Reservando...";
+
+            fetch("/reservar-clase", {
+                method: "POST",
+                body: formData,
+                credentials: "include"
+            })
+            .then(response => response.json().then(data => ({ ok: response.ok, data })))
+            .then(({ ok, data }) => {
+                if (ok) {
+                    mensajeDiv.textContent = data.mensaje;
+                    mensajeDiv.style.color = "green";
+                } else {
+                    mensajeDiv.textContent = data.error || "Ocurrió un error";
+                    mensajeDiv.style.color = "red";
+                }
+            })
+            .catch(error => {
+                console.error("❌ Error en JS:", error);
+                mensajeDiv.textContent = "Error al conectar con el servidor.";
+                mensajeDiv.style.color = "red";
+            })
+            .finally(() => {
+                button.disabled = false;
+                button.innerHTML = `Reservar <i class="fa-solid fa-calendar-check"></i>`;
+            });
+        });
+    });
+});
+</script>

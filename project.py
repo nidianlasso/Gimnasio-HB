@@ -323,7 +323,7 @@ def existe_reserva_contigua(id_membresia_usuario, hora_inicio):
 
 #RESERVAR CLASES
 
-@app.route('/clases')
+@app.route('/clases', methods=["GET"])
 def listado_clases():
     clases = obtener_clases_disponibles()
     return render_template('member/class_reservation.html', clases=clases)
@@ -331,32 +331,33 @@ def listado_clases():
 @app.route("/reservar-clase", methods=["POST"])
 def reservar_clase():
     try:
-        # Datos enviados desde el formulario o fetch JS
+        print("POST /reservar-clase recibido")
+        print("Datos form:", request.form)
+
         id_clase = request.form.get("id_clase")
         fecha = request.form.get("fecha")
         hora = request.form.get("hora")
 
-        # El id_usuario lo obtienes desde la sesión de login
         id_usuario = session.get("id_usuario")
+        print(f"id_usuario en sesión: {id_usuario}")
 
         if not id_usuario:
             return jsonify({"error": "Usuario no autenticado"}), 401
 
-        # Buscar la membresía activa
         id_membresia_usuario = obtener_id_membresia_usuario_activa(id_usuario)
+        print(f"id_membresia_usuario activa: {id_membresia_usuario}")
+
         if not id_membresia_usuario:
             return jsonify({"error": "No tienes una membresía activa"}), 400
 
-        # Guardar la reserva
-        insertar_reserva_clase(fecha, hora, id_clase, id_membresia_usuario)
+        resultado = insertar_reserva_clase(fecha, hora, id_clase, id_membresia_usuario)
+        print("Resultado inserción:", resultado)
+
         return jsonify({"mensaje": "Reserva realizada con éxito"}), 200
 
     except Exception as e:
+        print("Error en reservar_clase:", e)
         return jsonify({"error": str(e)}), 500
-
-
-
-
 
 
 

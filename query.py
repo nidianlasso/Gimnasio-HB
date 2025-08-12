@@ -826,11 +826,11 @@ def obtener_id_membresia_usuario_activa(id_usuario):
 
 def insertar_reserva_clase(fecha, hora, id_clase, id_membresia_usuario):
     cursor.execute("""
-        INSERT INTO reserva_clase (fecha, hora, id_clase, id_membresia_usuario)
-        VALUES (%s, %s, %s, %s)
-    """, (fecha, hora, id_clase, id_membresia_usuario))
+            INSERT INTO reserva_clase (fecha, hora, id_clase, id_membresia_usuario)
+            VALUES (%s, %s, %s, %s)
+        """, (fecha, hora, id_clase, id_membresia_usuario))
     connection.commit()
-    cursor.close()
+    
     return True
 
 

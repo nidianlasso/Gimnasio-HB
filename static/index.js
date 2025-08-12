@@ -986,17 +986,3 @@ function calcularNomina() {
     document.getElementById("liquido").value = liquido.toFixed(2);
 }
 
-
-document.addEventListener("DOMContentLoaded", function () {
-    const selectClase = document.getElementById("id_clase");
-    const inputFecha = document.getElementById("fecha");
-    const inputHora = document.getElementById("hora");
-    const inputDuracion = document.getElementById("duracion");
-
-    selectClase.addEventListener("change", function () {
-        const selectedOption = this.options[this.selectedIndex];
-        inputFecha.value = selectedOption.dataset.fecha || "";
-        inputHora.value = selectedOption.dataset.hora || "";
-        inputDuracion.value = selectedOption.dataset.duracion || "";
-    });
-});
