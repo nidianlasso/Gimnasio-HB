@@ -7,8 +7,6 @@
     <div class="text-end mb-3">
         <a href="/proveedores/nuevo" class="btn btn-success">➕ Nuevo Proveedor</a>
     </div>
-
-    <!-- FORMULARIO DE EDICIÓN (o registro) -->
     {% if proveedor_seleccionado %}
     <div class="card mb-4 mx-auto" style="max-width: 500px;">
     <div class="card-body">
@@ -48,10 +46,12 @@
                     <td class="text-center">{{ proveedor[0] }}</td>
                     <td>{{ proveedor[1] }}</td>
                     <td class="text-center">
-                        <a href="{{ url_for('view_provider') }}?editar_id={{ proveedor[0] }}" class="btn btn-sm btn-warning">Editar</a>
+                        <a href="{{ url_for('view_provider') }}?editar_id={{ proveedor[0] }}" class="btn btn-sm btn-warning">
+                            <i class="fa-solid fa-pen"></i> Editar
+                        </a>
                         <form action="{{ url_for('eliminar_proveedor', id=proveedor[0]) }}" method="POST" style="display:inline;">
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('¿Estás seguro de eliminar este proveedor?')">
-                            🗑️ Eliminar
+                            <i class="fa-solid fa-trash-can"></i>  Eliminar
                         </button>
                     </form>
                     </td>

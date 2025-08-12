@@ -20,7 +20,7 @@ from query import (validarLogin, check_credentials, login_required_admin, login_
                     save_class_to_db, list_class, delete_class, obtener_reservas_maquinas, obtener_maquinas_disponibles, consultar_reservas_de_hoy, cant_maquinas,
                     cant_proveedores, cant_empleados, obtener_maquinas_disponibles_para_reserva, existe_reserva_en_bloque, registrar_reserva,
                     obtener_id_membresia_usuario, consultar_bloques_contiguos, registrar_pago_nomina, obtener_id_usuario_por_identificacion, insertar_proveedor,
-                    eliminar_proveedor_id, actualizar_proveedor, obtener_proveedor_por_id)
+                    eliminar_proveedor_id, actualizar_proveedor, obtener_proveedor_por_id,obtener_clases_disponibles, obtener_id_membresia_usuario_activa, insertar_reserva_clase)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -321,6 +321,72 @@ def existe_reserva_contigua(id_membresia_usuario, hora_inicio):
 
 #*************************************************************************
 
+#RESERVAR CLASES
+
+@app.route('/clases')
+def listado_clases():
+    clases = obtener_clases_disponibles()
+    return render_template('member/class_reservation.html', clases=clases)
+
+@app.route("/reservar-clase", methods=["POST"])
+def reservar_clase():
+    try:
+        # Datos enviados desde el formulario o fetch JS
+        id_clase = request.form.get("id_clase")
+        fecha = request.form.get("fecha")
+        hora = request.form.get("hora")
+
+        # El id_usuario lo obtienes desde la sesión de login
+        id_usuario = session.get("id_usuario")
+
+        if not id_usuario:
+            return jsonify({"error": "Usuario no autenticado"}), 401
+
+        # Buscar la membresía activa
+        id_membresia_usuario = obtener_id_membresia_usuario_activa(id_usuario)
+        if not id_membresia_usuario:
+            return jsonify({"error": "No tienes una membresía activa"}), 400
+
+        # Guardar la reserva
+        insertar_reserva_clase(fecha, hora, id_clase, id_membresia_usuario)
+        return jsonify({"mensaje": "Reserva realizada con éxito"}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ENVIAR MAQUINA A REVISION
 @app.route('/review-machines', methods=['GET'])
 def review_machines():
@@ -360,43 +426,6 @@ def api_maquinas_disponibles():
 
 
 
-
-
-# @app.route('/machine-reservation', methods=['POST'])
-
-# def machine_reservation():
-#     if request.content_type != 'application/json':
-#         return jsonify({"message": "El Content-Type debe ser application/json", "success": False}), 415
-
-#     # Depuración para revisar los datos de la solicitud
-#     try:
-#         print("Encabezados:", request.headers)  # Ver los encabezados enviados en la solicitud
-#         print("Datos crudos:", request.data)  # Ver los datos crudos del body
-#         print("JSON procesado:", request.get_json())  # Intentar obtener el JSON de forma explícita
-
-#         # Si llega el JSON correctamente, trata los valores
-#         data = request.get_json()
-#         print("Datos JSON procesados:", data)
-#     except Exception as e:
-#         print("Error al procesar JSON:", e)  # Imprimir error si la conversión falla
-#         return jsonify({"message": "Error al procesar el JSON", "success": False}), 400
-
-#     # Valida los campos que se requieren
-#     machine = data.get('machine')
-#     date = data.get('date')
-#     start_time = data.get('start_time')
-
-#     if not all([machine, date, start_time]):
-#         return jsonify({"message": "Faltan datos en la solicitud.", "success": False}), 400
-
-#     # Procesar la reserva
-#     end_time = (datetime.strptime(start_time, "%H:%M") + timedelta(minutes=15)).strftime("%H:%M")
-#     # Procesar base de datos, hacer queries, etc.
-
-#     return jsonify({
-#         "message": "Reserva realizada correctamente",
-#         "success": True
-#     }), 201
 
 #LLAMADO AL TEMPLATE ENTRENADOR
 @app.route('/profile-coach')
@@ -528,10 +557,6 @@ def delete_class_admin():
     classes = list_class()
     return render_template('Administrator/delete_class.html', clases=classes)
 
-# @app.route('/delete-class', methods=['GET', 'POST'])
-# def delete_class_admin():
-#     classes = list_class()
-#     return render_template('Administrator/delete_class.html', clases=classes)
 
 @app.route('/formulario-nomina')
 def mostrar_formulario_nomina():

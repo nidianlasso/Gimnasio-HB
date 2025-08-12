@@ -776,3 +776,62 @@ def obtener_proveedor_por_id(id_proveedor):
     except Exception as e:
         print(f"Error al obtener proveedor por ID: {e}")
         return None
+
+#FIN GESTION DE PROVEEDORES
+
+#RESERVA DE LAS CLASES
+def obtener_clases_disponibles():
+    cursor.execute("""
+        SELECT id_clase, nombre, fecha_inicio, hora, duracion
+        FROM clase
+    """)
+    return cursor.fetchall()
+
+
+def obtener_clase_por_id(id_clase):
+    cursor.execute("""
+        SELECT id_clase, nombre, fecha_inicio, hora, duracion
+        FROM clase
+        WHERE id_clase = %s
+    """, (id_clase,))
+    return cursor.fetchone()
+
+
+def reservar_clase(id_clase, id_membresia_usuario):
+    try:
+        cursor.execute("""
+            INSERT INTO reserva_clase (fecha, hora, id_clase, id_membresia_usuario)
+            VALUES (DATE('now'), TIME('now'), ?, ?)
+        """, (id_clase, id_membresia_usuario))
+        connection.commit()
+        return True
+    except Exception as e:
+        connection.rollback()
+        print(f"Error al reservar clase: {e}")
+        return False
+    
+def obtener_id_membresia_usuario_activa(id_usuario):
+    cursor.execute("""
+        SELECT id_membresia_usuario 
+        FROM membresia_usuario
+        WHERE id_usuario = %s AND id_estado_membresia = 1
+        LIMIT 1
+    """, (id_usuario,))
+    
+    resultado = cursor.fetchone()
+    return resultado[0] if resultado else None
+
+
+
+
+def insertar_reserva_clase(fecha, hora, id_clase, id_membresia_usuario):
+    cursor.execute("""
+        INSERT INTO reserva_clase (fecha, hora, id_clase, id_membresia_usuario)
+        VALUES (%s, %s, %s, %s)
+    """, (fecha, hora, id_clase, id_membresia_usuario))
+    connection.commit()
+    cursor.close()
+    return True
+
+
+#FIN RESERVA DE LAS CLASES

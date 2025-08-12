@@ -419,39 +419,39 @@ function cargarMaquinas(tipo) {
 
             // Calendario: disponibilidad horaria
             else if (tipo === 'disponibilidad_horaria') {
-    data.forEach(maquina => {
-    const fila = document.createElement('div');
-    fila.className = 'maquina-grid';
+                data.forEach(maquina => {
+                    const fila = document.createElement('div');
+                    fila.className = 'maquina-grid';
 
-    const nombre = document.createElement('div');
-    nombre.className = 'nombre-maquina';
-    nombre.textContent = maquina.nombre_maquina;
-    fila.appendChild(nombre);
+                    const nombre = document.createElement('div');
+                    nombre.className = 'nombre-maquina';
+                    nombre.textContent = maquina.nombre_maquina;
+                    fila.appendChild(nombre);
 
-    const bloques = Object.values(maquina.bloques).flat();
+                    const bloques = Object.values(maquina.bloques).flat();
 
-    bloques.forEach(b => {
-        const bloque = document.createElement('div');
-        bloque.className = `bloque ${b.estado}`;
-        bloque.title = `${b.hora} - ${sumar15(b.hora)}`;
+                    bloques.forEach(b => {
+                        const bloque = document.createElement('div');
+                        bloque.className = `bloque ${b.estado}`;
+                        bloque.title = `${b.hora} - ${sumar15(b.hora)}`;
 
-        if (b.estado === 'disponible') {
-            bloque.style.cursor = 'pointer';
+                        if (b.estado === 'disponible') {
+                            bloque.style.cursor = 'pointer';
 
-            // ✅ Este bloque sí captura bien el id_maquina desde el scope externo
-            bloque.addEventListener('click', () => {
-                console.log('Click detectado en:', maquina.id_maquina, b.hora);  // 👈 Verifica esto
-                reservarBloque(maquina.id_maquina, b.hora);  // 👈 aquí ya no debe dar error
-            });
-        }
+                            // ✅ Este bloque sí captura bien el id_maquina desde el scope externo
+                            bloque.addEventListener('click', () => {
+                                console.log('Click detectado en:', maquina.id_maquina, b.hora);  // 👈 Verifica esto
+                                reservarBloque(maquina.id_maquina, b.hora);  // 👈 aquí ya no debe dar error
+                            });
+                        }
 
-        fila.appendChild(bloque);
-    });
+                        fila.appendChild(bloque);
+                    });
 
-    calendarioContainer.appendChild(fila);
-});
+                    calendarioContainer.appendChild(fila);
+                });
 
-}
+            }
         })
         .catch(err => {
             console.error('Error:', err);
@@ -463,28 +463,28 @@ function reservarBloque(id_maquina, hora_inicio) {
     console.log('Reservando máquina:', id_maquina, 'a las', hora_inicio);
 
     fetch('/reservar-bloque', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-        id_maquina: id_maquina,
-        hora: hora_inicio  // 👈 debe coincidir con esto
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            id_maquina: id_maquina,
+            hora: hora_inicio  // 👈 debe coincidir con esto
+        })
     })
-})
 
-    .then(res => res.json())
-.then(data => {
-    if (data.success) {
-        alert(data.message);
-        cargarMaquinas('disponibilidad_horaria');
-    } else {
-        alert('Error: ' + data.message);
-    }
-})
-    .catch(err => {
-        console.error('Error en la solicitud:', err);
-    });
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                cargarMaquinas('disponibilidad_horaria');
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(err => {
+            console.error('Error en la solicitud:', err);
+        });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -985,3 +985,18 @@ function calcularNomina() {
     document.getElementById("total_deducciones").value = total_deducciones.toFixed(2);
     document.getElementById("liquido").value = liquido.toFixed(2);
 }
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const selectClase = document.getElementById("id_clase");
+    const inputFecha = document.getElementById("fecha");
+    const inputHora = document.getElementById("hora");
+    const inputDuracion = document.getElementById("duracion");
+
+    selectClase.addEventListener("change", function () {
+        const selectedOption = this.options[this.selectedIndex];
+        inputFecha.value = selectedOption.dataset.fecha || "";
+        inputHora.value = selectedOption.dataset.hora || "";
+        inputDuracion.value = selectedOption.dataset.duracion || "";
+    });
+});

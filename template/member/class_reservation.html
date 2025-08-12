@@ -1,0 +1,42 @@
+{% include 'main.html' %}
+{% include 'member/menu.html' %}
+
+<div class="reserva-container" style="max-width: 900px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+    <h1 style="text-align: center; color: #2c3e50; margin-bottom: 25px; font-weight: 700;">Clases disponibles</h1>
+
+    <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 1rem;">
+        <thead>
+            <tr style="background-color: #27ae60; color: white;">
+                <th style="padding: 14px; min-width: 150px;">Nombre</th>
+                <th style="padding: 14px; min-width: 120px;">Fecha</th>
+                <th style="padding: 14px; min-width: 100px;">Hora</th>
+                <th style="padding: 14px; min-width: 120px;">Duración</th>
+                <th style="padding: 14px; min-width: 100px;">Acción</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for clase in clases %}
+            <tr style="border-bottom: 1px solid #ddd; transition: background-color 0.2s ease;">
+                <td style="padding: 12px;">{{ clase[1] }}</td> <!-- nombre -->
+                <td style="padding: 12px;">{{ clase[2] }}</td> <!-- fecha_inicio -->
+                <td style="padding: 12px;">{{ clase[3] }}</td> <!-- hora -->
+                <td style="padding: 12px;">{{ clase[4] }} Horas</td> <!-- duracion -->
+                <td style="padding: 12px;">
+                    <form action="/reservar-clase" method="post">
+                        <input type="hidden" name="id_clase" value="{{ clase[0] }}">
+                        <input type="hidden" name="fecha" value="{{ clase[2] }}">
+                        <input type="hidden" name="hora" value="{{ clase[3] }}">
+                        <button type="submit" style="background-color: #27ae60; color: white; border: none; padding: 8px 14px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: background-color 0.25s ease;">
+                            Reservar <i class="fa-solid fa-calendar-check"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="5" style="padding: 20px; text-align: center; color: #888;">No hay clases disponibles</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
