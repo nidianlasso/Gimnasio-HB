@@ -442,53 +442,6 @@ def status_membreship_member(identificacion):
     estado_membresia = cursor.fetchone()
     return estado_membresia
 
-# def count_reservation_machine(id_maquina, hora_inicio, hora_fin, fecha):
-#     cursor.execute("SELECT COUNT(*) FROM reservas WHERE id_inventario_maquina = %s AND fecha = %s AND ( (hora_inicio >= %s AND hora_fin <=%s) );", 
-#         (id_maquina, fecha, hora_inicio, hora_fin, hora_inicio, hora_fin))
-#     count = cursor.fetchone()[0]
-#     return count
-
-# #CREAR RESERVA DE LA MAQUINA
-# def insert_reservation(id_membresia_usuario, id_maquina, fecha, hora_inicio, hora_fin):
-#     try: cursor.execute("INSERT INTO reserva (fecha, hora_inicio, hora_fin, id_membresia_usuario, id_inventario_maquina) VALUES (%s, %s, %s, %s, %s)",
-#         (fecha, hora_inicio, hora_fin, id_membresia_usuario, id_maquina))
-#     except Exception as e:
-#         print(f"ERROR AL CREAR LA RESERVA {e}")
-#         return []
-
-# # Lógica para procesar la reserva
-# def process_reservation(id_membresia_usuario, id_maquina, fecha, hora_inicio, hora_fin):
-#     # Contar conflictos de horarios
-#     conflictos = count_reservation_machine(id_maquina, hora_inicio, hora_fin, fecha)
-#     if conflictos > 0:
-#         return {"success": False, "message": "La máquina no está disponible en el rango seleccionado."}
-
-#     # Insertar la reserva si no hay conflictos
-#     insert_reservation(id_membresia_usuario, id_maquina, fecha, hora_inicio, hora_fin)
-#     return {"success": True, "message": "Reserva registrada exitosamente."}
-
-# def handle_sql_queries(machine_id, date, start_time, end_time, membership_id):
-#     # Comprobar si hay conflicto de reservas
-#     cursor.execute = ("""SELECT * FROM reserva
-#     WHERE id_inventario_maquina = %s AND fecha = %s 
-#     AND ((%s BETWEEN hora_inicio AND hora_fin) OR (%s BETWEEN hora_inicio AND hora_fin));
-#     """,(machine_id, date, start_time, end_time))
-#     conflict = cursor.fetchone()
-
-#     if conflict:
-#         return {"success": False, "message": "La máquina ya está reservada en este horario."}
-
-#     # Insertar nueva reserva
-#     cursor.execute = ( """
-#     INSERT INTO reserva (fecha, hora_inicio, hora_fin, id_membresia_usuario, id_inventario_maquina)
-#     VALUES (%s, %s, %s, %s, %s);
-#     """
-#     (date, start_time, end_time, membership_id, machine_id))
-#     connection.commit()
-#     return {"success": True, "message": "Reserva realizada con éxito."}
-
-
-
 # Función para guardar la clase en la base de datos ADMINISTRADOR
 def save_class_to_db(nombre, fecha_inicio, hora, duration):
     try:
@@ -839,8 +792,32 @@ def existe_reserva(id_clase, id_membresia_usuario, fecha, hora):
     resultado = cursor.fetchone()
     return resultado is not None
 
+def obtener_reservas_usuario(id_usuario):
+    cursor.execute("""
+        SELECT rc.fecha, rc.hora, c.nombre
+        FROM reserva_clase rc
+        JOIN membresia_usuario mu ON rc.id_membresia_usuario = mu.id_membresia_usuario
+        JOIN clase c ON rc.id_clase = c.id_clase
+        WHERE mu.id_usuario = %s
+        ORDER BY rc.fecha, rc.hora
+    """, (id_usuario,))
+    return cursor.fetchall()
+
+def obtener_id_clase_por_nombre(nombre_clase):
+    cursor.execute("""
+        SELECT id_clase FROM clase
+        WHERE nombre = %s
+    """, (nombre_clase,))
+    resultado = cursor.fetchone()
+    return resultado[0] if resultado else None
 
 
+def cancelar_reserva_en_bd(id_clase, id_membresia_usuario, fecha, hora):
+    cursor.execute("""
+        DELETE FROM reserva_clase
+        WHERE id_clase = %s AND id_membresia_usuario = %s AND fecha = %s AND hora = %s
+    """, (id_clase, id_membresia_usuario, fecha, hora))
+    connection.commit()
 
 
 #FIN RESERVA DE LAS CLASES

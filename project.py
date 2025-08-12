@@ -21,7 +21,7 @@ from query import (validarLogin, check_credentials, login_required_admin, login_
                     cant_proveedores, cant_empleados, obtener_maquinas_disponibles_para_reserva, existe_reserva_en_bloque, registrar_reserva,
                     obtener_id_membresia_usuario, consultar_bloques_contiguos, registrar_pago_nomina, obtener_id_usuario_por_identificacion, insertar_proveedor,
                     eliminar_proveedor_id, actualizar_proveedor, obtener_proveedor_por_id,obtener_clases_disponibles, obtener_id_membresia_usuario_activa, insertar_reserva_clase,
-                    existe_reserva)
+                    existe_reserva, obtener_reservas_usuario, obtener_clase_por_id, cancelar_reserva_en_bd, obtener_id_clase_por_nombre)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -68,15 +68,6 @@ def manage_users():
     estado_membresia = status_membreship()
     return render_template('Administrator/manage_users.html',  listaGeneros=datosGenero, planes_trabajo=planes_trabajo, roles=roles, membresias = membresias, estado_membresia = estado_membresia)
 
-#VISTA LISTADO DE MIEMBROS
-# @app.route('/list-members', methods = ['POST', 'GET'])
-# @login_required_admin
-# def list_members():
-    
-#     miembros_gym = lista_miembros()
-#     return render_template('Administrator/list_members.html', list_miembros = miembros_gym)
-
-
 #API VISTA LISTADO DE MIEMBROS
 @app.route('/list-members', methods = ['POST', 'GET'])
 @login_required_admin
@@ -100,7 +91,6 @@ def add_users():
         plan_trabajo = request.form['plan_trab']
         rol = request.form['rol']
         contrasena = request.form['contrasena']
-        #print(f"Identificación: {cedula}, Nombre: {nombre}, Apellido: {apellido}, Edad: {edad}, Correo: {correo}, Teléfono: {telefono}, Género: {genero}, Plan de trabajo: {plan_trabajo}, Rol: {rol}, Contraseña: {contrasena}")
         if add_user(cedula, nombre, apellido, edad, correo, telefono, genero, plan_trabajo, rol, contrasena):
             flash('Registro exitoso!', 'success')
         else:
@@ -130,12 +120,12 @@ def assign_membreship():
 @login_required_admin
 def save_membreship():
     if request.method == 'POST':
-        usuario_id = request.form['usuarioId']  # Asegúrate de que este nombre sea correcto
+        usuario_id = request.form['usuarioId'] 
         tipo_membresia = request.form['tipoMembresia']
         fecha_inicio = request.form['fechaInicio']
         fecha_fin = request.form['fechaFin']
         estado_membresia = request.form['estadoMembresia']
-        print("Datos a guardar:", usuario_id, tipo_membresia, fecha_inicio, fecha_fin, estado_membresia)  # Para depuración
+        print("Datos a guardar:", usuario_id, tipo_membresia, fecha_inicio, fecha_fin, estado_membresia)
         if guardar_membresia(usuario_id, tipo_membresia, fecha_inicio, fecha_fin, estado_membresia):
             flash('Registro exitoso!', 'success')
         else:
@@ -201,7 +191,7 @@ def available_machines_page():
 
 
 def obtener_bloques_disponibles():
-    datos = consultar_reservas_de_hoy()  # (id_maquina, nombre_maquina, hora_reservada)
+    datos = consultar_reservas_de_hoy()
 
     maquinas = {}
     for fila in datos:
@@ -246,7 +236,7 @@ def obtener_bloques_disponibles():
                 })
 
         resultado.append({
-            "id_maquina": id_maquina,  # ✅ Ahora sí se envía al frontend
+            "id_maquina": id_maquina,
             "nombre_maquina": datos_maquina["nombre_maquina"],
             "bloques": bloques_por_hora
         })
@@ -261,7 +251,7 @@ def show_machine_reservation_form():
 
 @app.route('/member/disponibilidad', methods=['GET'])
 def disponibilidad_para_miembros():
-    return jsonify(obtener_bloques_disponibles())  # Esto ya lo tienes funcionando
+    return jsonify(obtener_bloques_disponibles())
 
 
 @app.route('/reservar-bloque', methods=['POST'])
@@ -282,7 +272,7 @@ def reservar_bloque():
     if not id_inventario_maquina or not hora_inicio:
         return jsonify({'success': False, 'message': 'Datos incompletos'}), 400
 
-    # Asegurar formato completo HH:MM:SS
+    #convertir a formato completo HH:MM:SS
     if len(hora_inicio) == 5:
         hora_inicio += ":00"
     print(">>> Hora formateada:", hora_inicio)
@@ -302,16 +292,13 @@ def reservar_bloque():
     hora_fin_dt = hora_inicio_dt + timedelta(minutes=15)
     hora_fin_str = hora_fin_dt.strftime('%H:%M:%S')
 
-    # Validar si el bloque ya está reservado
     if existe_reserva_en_bloque(id_inventario_maquina, hora_inicio):
         print(">>> BLOQUE YA RESERVADO")
         return jsonify({'success': False, 'message': 'Este bloque ya está reservado'}), 409
 
-    # Validar reserva contigua
     if existe_reserva_contigua(id_membresia_usuario, hora_inicio):
         return jsonify({'success': False, 'message': 'No puedes reservar bloques seguidos'}), 409
 
-    # Registrar reserva
     resultado = registrar_reserva(id_membresia_usuario, id_inventario_maquina, hora_inicio, hora_fin_str)
     return jsonify(resultado), 201 if resultado['success'] else 500
 
@@ -345,11 +332,9 @@ def reservar_clase():
         if not id_membresia_usuario:
             return jsonify({"error": "No tienes una membresía activa"}), 400
 
-        # 🔍 Validación: ¿Ya tiene reserva para esa clase, fecha y hora?
         if existe_reserva(id_clase, id_membresia_usuario, fecha, hora):
             return jsonify({"error": "Ya has reservado esta clase"}), 400
 
-        # ✅ Insertar reserva
         resultado = insertar_reserva_clase(fecha, hora, id_clase, id_membresia_usuario)
         return jsonify({"mensaje": "Reserva realizada con éxito"}), 200
 
@@ -357,8 +342,38 @@ def reservar_clase():
         print("Error en reservar_clase:", e)
         return jsonify({"error": str(e)}), 500
 
+#MOSTRAR LAS CLASES RESERVADAS
+@app.route('/mis-clases')
+def mis_clases():
+    id_usuario = session.get('id_usuario')
+    if not id_usuario:
+        return "Usuario no autenticado", 401
+    reservas = obtener_reservas_usuario(id_usuario)
+    return render_template('/member/mis_clases.html', reservas=reservas)
 
+@app.route('/cancelar-reserva', methods=['POST'])
+def cancelar_reserva():
+    fecha = request.form.get('fecha')
+    hora = request.form.get('hora')
+    nombre_clase = request.form.get('nombre_clase')
+    id_usuario = session.get('id_usuario')
 
+    if not id_usuario:
+        return "No autorizado", 401
+
+    id_membresia_usuario = obtener_id_membresia_usuario_activa(id_usuario)
+    if not id_membresia_usuario:
+        return "No tienes una membresía activa.", 403
+
+    id_clase = obtener_id_clase_por_nombre(nombre_clase)
+    if not id_clase:
+        return "Clase no encontrada", 404
+
+    # Usamos la función modular para eliminar la reserva
+    cancelar_reserva_en_bd(id_clase, id_membresia_usuario, fecha, hora)
+
+    flash("Reserva cancelada exitosamente.", "success")
+    return redirect(url_for('mis_clases'))
 
 
 
@@ -392,12 +407,12 @@ def review_machines():
 
 #LLAMADO AL TEMPLATE MIEMBRO
 @app.route('/profile-member')
-@login_required_member  # Asegúrate de que este decorador no afecta la sesión
+@login_required_member
 def profile_member():
-    identificacion = session.get('identificacion')  # Recupera la identificación
+    identificacion = session.get('identificacion')
     print(f"Identificación obtenida de la sesión: {identificacion}")
     if not identificacion:
-        return redirect(url_for('login'))  # Redirige si no hay identificación
+        return redirect(url_for('login'))
     
     plan_trabajo = obtener_plan_trabajo(identificacion)
     membresia_asignada = obtener_membrehip_user(identificacion)
@@ -432,11 +447,7 @@ def profile_coach():
 @app.route('/profile-receptionist', methods=['GET', 'POST'])
 @login_required_receptionist
 def profile_receptionist():
-    return render_template('receptionist/profile.html')  # Asegúrate de que resultados tenga un valor
-
-
-
-    
+    return render_template('receptionist/profile.html')    
 
 #REGISTRAR LOS ACCESOS
 @app.route('/registrar-ingreso', methods=['POST'])
@@ -445,8 +456,8 @@ def registrar_ingreso():
     resultado = access_users(cedula)
 
     if resultado:
-        usuario = resultado[0]  # Obtener la primera tupla
-        id_usuario = usuario[0]  # Esto es el id del usuario
+        usuario = resultado[0]
+        id_usuario = usuario[0]
         # Retorna la información del usuario y pero también espera la información del acceso
         return jsonify({
             'id_usuario': id_usuario,
@@ -522,10 +533,9 @@ def acciones_clase():
 def show_create_class_form():
     return render_template('Administrator/create_class.html')
 
-# Ruta para procesar la creación de la clase
+
 @app.route('/create-class', methods=['POST'])
 def create_class():
-    # Obtén los datos del formulario directamente
     nombre = request.form.get('nombre')
     fecha_inicio = request.form.get('fecha_inicio')
     hora = request.form.get('hora')
@@ -562,7 +572,7 @@ def mostrar_formulario_nomina():
     except Exception as e:
         print(f"Error al cargar formulario de nómina: {e}")
         flash("Error cargando formulario", "error")
-        return redirect(url_for('home'))  # Ajusta según tu ruta principal
+        return redirect(url_for('home'))
 
 @app.route('/insertar-nomina', methods=['POST'])
 def insertar_nomina():
@@ -588,7 +598,7 @@ def insertar_nomina():
         total_deducciones = float(request.form.get('total_deducciones', 0) or 0)
         liquido_a_recibir = float(request.form.get('liquido', 0) or 0)
 
-        # Registro en la base de datos (SIN CAMBIOS)
+        # dats de nomina en BD
         datos = (
             id_usuario, fecha_generacion, salario_base,
             auxilio_transporte, aporte_salud, aporte_pension,
@@ -627,8 +637,6 @@ def insertar_nomina():
         return "Error al procesar la solicitud", 500
 
 
-# 📌 Función para generar PDF
-
 def generar_pdf(ruta, identificacion,nombre, apellido, fecha, salario, auxilio, salud, pension, devengado, deducciones, liquido):
     doc = SimpleDocTemplate(ruta, pagesize=letter)
     estilos = getSampleStyleSheet()
@@ -639,7 +647,7 @@ def generar_pdf(ruta, identificacion,nombre, apellido, fecha, salario, auxilio, 
     elementos.append(titulo)
     elementos.append(Spacer(1, 20))
 
-    # Sección: Datos de la Empresa
+    # Datos de la Empresa
     empresa_data = [
         ['EMPRESA', ''],
         ['Nombre:', 'Gimnasio La Candelaria'],
@@ -658,10 +666,10 @@ def generar_pdf(ruta, identificacion,nombre, apellido, fecha, salario, auxilio, 
     elementos.append(empresa_table)
     elementos.append(Spacer(1, 16))
 
-    # Sección: Datos del Trabajador
+    # Datos del Trabajador
     trabajador_data = [
         ['TRABAJADOR/A', ''],
-        ['Empleado/a:', (nombre), (apellido)],  # Puedes pasar el nombre como parámetro
+        ['Empleado/a:', (nombre), (apellido)],
         ['Identificación:', str(identificacion)],
     ]
     trabajador_table = Table(trabajador_data, colWidths=[160, 80, 100, 100])
@@ -677,7 +685,7 @@ def generar_pdf(ruta, identificacion,nombre, apellido, fecha, salario, auxilio, 
     elementos.append(trabajador_table)
     elementos.append(Spacer(1, 16))
 
-    # Tabla: Devengos
+    # Devengos
     devengos_data = [
         ['Devengos', 'Cantidad', 'Precio ($)', 'Total ($)'],
         ['Salario base', '30 días', f"{salario:,.0f}", f"{salario * 30:,.0f}"],
@@ -695,7 +703,7 @@ def generar_pdf(ruta, identificacion,nombre, apellido, fecha, salario, auxilio, 
     elementos.append(devengos_table)
     elementos.append(Spacer(1, 16))
 
-    # Tabla: Deducciones
+    # Deducciones
     deducciones_data = [
         ['Deducciones', 'Cantidad', 'Porcentaje', 'Total ($)'],
         ['Aporte a la salud', '', '4%', f"{salud:,.0f}"],
@@ -713,7 +721,6 @@ def generar_pdf(ruta, identificacion,nombre, apellido, fecha, salario, auxilio, 
     elementos.append(deducciones_table)
     elementos.append(Spacer(1, 16))
 
-    # Resumen final
     resumen_data = [
         ['Líquido a recibir', f"{liquido:,.0f}"],
         ['Fecha de generación de nómina', fecha],
@@ -728,7 +735,7 @@ def generar_pdf(ruta, identificacion,nombre, apellido, fecha, salario, auxilio, 
         ('VALIGN', (0,0), (-1,-1), 'MIDDLE'),
     ]))
     elementos.append(resumen_table)
-    # Construir el documento
+    # PDF CONSTRUIDO
     doc.build(elementos)
 
 @app.route('/view-provider', methods=['GET', 'POST'])
@@ -767,12 +774,6 @@ def view_provider():
 @app.route('/proveedores/nuevo')
 def nuevo_proveedor():
     return render_template('Administrator/add_provider.html', proveedor_seleccionado=None)
-
-# @app.route('/proveedores/editar/<int:id>', methods=['GET'])
-# def editar_proveedor(id):
-#     proveedor_seleccionado = obtener_proveedor_por_id(id)
-#     proveedores = lista_proveedores()
-#     return render_template('Administrator/service_provider.html', proveedores=proveedores, proveedor_seleccionado=proveedor_seleccionado)
 
 @app.route('/proveedores/eliminar/<int:id>', methods=['POST'])
 def eliminar_proveedor(id):
