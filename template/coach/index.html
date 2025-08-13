@@ -1,0 +1,48 @@
+{% include 'main.html' %}
+{% include 'coach/menu.html' %}
+
+<h1 style="text-align:center; color:#222; margin-bottom: 40px;">
+    🏋️‍♂️ Bienvenido, {{ session['nombre'] }}
+</h1>
+
+<div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 40px;">
+
+    <!-- Clientes Asignados -->
+    <a href="{{ url_for('mis_clientes') }}" 
+       style="background:#0077b6; color:white; width:200px; height:200px; 
+              display:flex; flex-direction:column; justify-content:center; align-items:center;
+              text-decoration:none; border-radius:4px; box-shadow:0 4px 8px rgba(0,0,0,0.2);">
+        <i class="fas fa-users" style="font-size:50px; margin-bottom:10px;"></i>
+        <span style="font-size:18px; font-weight:bold;">Clientes Asignados</span>
+    </a>
+
+    <!-- Registrar Avance -->
+    <a href="{{ url_for('mis_clientes') }}" 
+       style="background:#00b4d8; color:white; width:200px; height:200px; 
+              display:flex; flex-direction:column; justify-content:center; align-items:center;
+              text-decoration:none; border-radius:4px; box-shadow:0 4px 8px rgba(0,0,0,0.2);">
+        <i class="fas fa-plus-circle" style="font-size:50px; margin-bottom:10px;"></i>
+        <span style="font-size:18px; font-weight:bold;">Registrar Avance</span>
+    </a>
+
+    <!-- Historial de Avances -->
+    <a href="{{url_for('historial_avances')}}" 
+       style="background:#ff8000; color:white; width:200px; height:200px; 
+              display:flex; flex-direction:column; justify-content:center; align-items:center;
+              text-decoration:none; border-radius:4px; box-shadow:0 4px 8px rgba(0,0,0,0.2);">
+        <i class="fas fa-chart-line" style="font-size:50px; margin-bottom:10px;"></i>
+        <span style="font-size:18px; font-weight:bold;">Historial Avances</span>
+    </a>
+
+    <!-- Planes de Trabajo -->
+    <a href="{{url_for('perfil_entrenador')}}" 
+       style="background:#8bc34a; color:white; width:200px; height:200px; 
+              display:flex; flex-direction:column; justify-content:center; align-items:center;
+              text-decoration:none; border-radius:4px; box-shadow:0 4px 8px rgba(0,0,0,0.2);">
+        <i class="fas fa-dumbbell" style="font-size:50px; margin-bottom:10px;"></i>
+        <span style="font-size:18px; font-weight:bold;">Mi cuenta</span>
+    </a>
+
+</div>
+
+<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>

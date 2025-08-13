@@ -1,0 +1,130 @@
+{% include 'main.html' %}
+{% include 'coach/menu.html' %}
+
+<div style="
+    max-width: 600px;
+    margin: 60px auto;
+    padding: 40px 35px;
+    background: white;
+    border-radius: 18px;
+    box-shadow: 0 8px 30px rgba(255, 75, 43, 0.4);
+    color: #1e1f26;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    position: relative;
+">
+
+    <!-- Botón X para cerrar -->
+    <a href="{{ url_for('perfil_entrenador') }}" style="
+        position: absolute;
+        top: 15px;
+        right: 20px;
+        color: #ff4b2b;
+        text-decoration: none;
+        font-size: 22px;
+        font-weight: bold;
+        transition: color 0.3s ease;
+    " onmouseover="this.style.color='#ff826a'" onmouseout="this.style.color='#ff4b2b'">✖</a>
+
+    <h2 style="
+        text-align: center;
+        margin-bottom: 35px;
+        color: #ff4b2b;
+        font-weight: 800;
+        font-size: 26px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    ">
+        Editar Perfil
+    </h2>
+
+    <form method="POST" action="{{ url_for('actualizar_perfil_entrenador') }}" style="display: flex; flex-direction: column; gap: 20px;">
+
+        {% set campos = [
+            ('nombre', 'Nombre', entrenador[2]),
+            ('apellido', 'Apellido', entrenador[3]),
+            ('identificacion', 'Identificación', entrenador[1]),
+            ('edad', 'Edad', entrenador[4]),
+            ('correo', 'Correo', entrenador[5]),
+            ('telefono', 'Teléfono', entrenador[6])
+        ] %}
+
+        {% for id, label, valor in campos %}
+            <div style="display: flex; flex-direction: column;">
+                <label for="{{ id }}" style="
+                    font-weight: 600;
+                    font-size: 15px;
+                    margin-bottom: 6px;
+                    color: black;
+                ">{{ label }}</label>
+                <input 
+                    type="{{ 'number' if id == 'edad' else 'email' if id == 'correo' else 'text' }}"
+                    id="{{ id }}"
+                    name="{{ id }}"
+                    value="{{ valor }}"
+                    required
+                    style="
+                        padding: 12px 18px;
+                        border-radius: 10px;
+                        border: 1.8px solid #333;
+                        font-size: 15px;
+                        background: white;
+                        color: black;
+                        transition: 0.25s ease;
+                    "
+                    onfocus="this.style.borderColor='#ff4b2b'; this.style.background='#333'"
+                    onblur="this.style.borderColor='#333'; this.style.background='#2a2a2e'"
+                >
+            </div>
+        {% endfor %}
+
+        <!-- Campo contraseña opcional -->
+        <div style="display: flex; flex-direction: column;">
+            <label for="contrasena" style="
+                font-weight: 600;
+                font-size: 15px;
+                margin-bottom: 6px;
+                color: black;
+            ">Contraseña (dejar vacío para no cambiar)</label>
+            <input 
+                type="password"
+                id="contrasena"
+                name="contrasena"
+                placeholder="Nueva contraseña"
+                style="
+                    padding: 12px 18px;
+                    border-radius: 10px;
+                    border: 1.8px solid #333;
+                    font-size: 15px;
+                    background: white;
+                    color: black;
+                    transition: 0.25s ease;
+                "
+                onfocus="this.style.borderColor='#ff4b2b'; this.style.background='#333'"
+                onblur="this.style.borderColor='#333'; this.style.background='#2a2a2e'"
+            >
+        </div>
+
+        <!-- Botones -->
+        <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+            <button type="submit"
+                style="
+                    background: linear-gradient(45deg, #ff4b2b, #ff416c);
+                    color: white;
+                    border: none;
+                    padding: 14px 24px;
+                    border-radius: 12px;
+                    font-size: 16px;
+                    font-weight: 700;
+                    letter-spacing: 0.5px;
+                    cursor: pointer;
+                    box-shadow: 0 4px 12px rgba(255, 75, 43, 0.6);
+                    transition: all 0.3s ease;
+                "
+                onmouseover="this.style.boxShadow='0 6px 20px rgba(255, 75, 43, 0.9)'"
+                onmouseout="this.style.boxShadow='0 4px 12px rgba(255, 75, 43, 0.6)'"
+            >
+                Guardar Cambios
+            </button>
+        </div>
+    </form>
+</div>

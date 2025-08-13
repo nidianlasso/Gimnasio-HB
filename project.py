@@ -12,6 +12,7 @@ from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, 
 from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 import os
+from werkzeug.security import generate_password_hash, check_password_hash
 from query import (validarLogin, check_credentials, login_required_admin, login_required_member,login_required_coach, login_required_receptionist,
                     lista_miembros,lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
                     conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship,
@@ -22,7 +23,7 @@ from query import (validarLogin, check_credentials, login_required_admin, login_
                     obtener_id_membresia_usuario, consultar_bloques_contiguos, registrar_pago_nomina, obtener_id_usuario_por_identificacion, insertar_proveedor,
                     eliminar_proveedor_id, actualizar_proveedor, obtener_proveedor_por_id,obtener_clases_disponibles, obtener_id_membresia_usuario_activa, insertar_reserva_clase,
                     existe_reserva, obtener_reservas_usuario, obtener_clase_por_id, cancelar_reserva_en_bd, obtener_id_clase_por_nombre, obtener_clientes_sin_avance_hoy, insertar_progreso,
-                    existe_avance_hoy, obtener_historial_avances)
+                    existe_avance_hoy, obtener_historial_avances, datos_entrenador, actualizar_datos_entrenador, hash_password)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -417,7 +418,7 @@ def api_maquinas_disponibles():
 @app.route('/profile-coach')
 @login_required_coach
 def profile_coach():
-    return render_template('coach/profile.html')
+    return render_template('coach/index.html')
 
 @app.route('/profile-receptionist', methods=['GET', 'POST'])
 @login_required_receptionist
@@ -807,6 +808,56 @@ def historial_avances():
     avances = obtener_historial_avances(id_entrenador)
     
     return render_template("coach/historial_avances.html", avances=avances)
+
+@app.route("/perfil-entrenador")
+def perfil_entrenador():
+    if "id_usuario" not in session:
+        return redirect(url_for("login"))
+
+    id_usuario = session["id_usuario"]
+
+    entrenador = datos_entrenador(id_usuario)
+    print("Entrenador:", entrenador)
+
+    if not entrenador:
+        return "No se encontró el perfil del entrenador o no tiene rol 'Entrenador'", 404
+
+    return render_template('coach/profile.html', entrenador=entrenador) 
+
+@app.route("/editar-perfil-entrenador", methods=["GET"])
+def editar_perfil_entrenador():
+    if "id_usuario" not in session:
+        return redirect(url_for("login"))
+    
+    id_usuario = session["id_usuario"]
+    entrenador = datos_entrenador(id_usuario)
+    
+    if not entrenador:
+        flash("No se encontró el entrenador.", "error")
+        return redirect(url_for("perfil_entrenador"))
+    
+    return render_template("coach/edit_profile.html", entrenador=entrenador)
+
+@app.route('/actualizar_perfil_entrenador', methods=['POST'])
+def actualizar_perfil_entrenador():
+    id_usuario =  session["id_usuario"]
+    nombre = request.form['nombre']
+    apellido = request.form['apellido']
+    identificacion = request.form['identificacion']
+    edad = request.form['edad']
+    correo = request.form['correo']
+    telefono = request.form['telefono']
+    contrasena = request.form.get('contrasena', '').strip()
+
+    if contrasena:
+        contrasena_hash = hash_password(contrasena)
+    else:
+        contrasena_hash = None
+
+    actualizar_datos_entrenador(id_usuario, nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash)
+
+    return redirect(url_for('perfil_entrenador'))
+
 
 
 

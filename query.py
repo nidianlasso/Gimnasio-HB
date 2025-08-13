@@ -3,11 +3,20 @@ import pymysql
 from functools import wraps
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 from datetime import datetime, date, timedelta
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__, static_folder='static', template_folder='template')
 # Configura la conexión a la base de datos MySQL
 connection = pymysql.connect(host="localhost", user="root", passwd="12345", database="bd_gimnasio2")
 cursor = connection.cursor()
+
+def hash_password(password):
+    # Genera un hash seguro usando pbkdf2:sha256
+    return generate_password_hash(password)
+
+def verify_password(hashed_password, password):
+    # Verifica si la contraseña coincide con el hash
+    return check_password_hash(hashed_password, password)
 
 def obtenerUsuarios():
     cursor.execute("SELECT * FROM bd_gimnasio2.usuario")
@@ -874,3 +883,54 @@ def obtener_historial_avances(id_entrenador):
     """, (id_entrenador,))
     return cursor.fetchall()
 
+def datos_entrenador(id_usuario):
+    cursor.execute('''
+        SELECT 
+            u.id_usuario, 
+            u.identificacion, 
+            u.nombre, 
+            u.apellido, 
+            u.edad, 
+            u.correo, 
+            u.telefono, 
+            u.contrasena, 
+            g.tipo, 
+            u.id_plan_trabajo, 
+            u.id_rol 
+        FROM 
+            usuario u 
+        JOIN 
+            rol r ON u.id_rol = r.id_rol  JOIN genero g ON u.id_genero = g.id_genero
+        WHERE 
+            u.id_usuario = %s AND r.nombre = 'Entrenador'
+    ''', (id_usuario,))
+    
+    resultado = cursor.fetchone()
+    return resultado
+
+def actualizar_datos_entrenador(id_usuario, nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash=None):
+    if contrasena_hash:
+        cursor.execute("""
+            UPDATE usuario
+            SET nombre = %s,
+                apellido = %s,
+                identificacion = %s,
+                edad = %s,
+                correo = %s,
+                telefono = %s,
+                contrasena = %s
+            WHERE id_usuario = %s
+        """, (nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash, id_usuario))
+    else:
+        cursor.execute("""
+            UPDATE usuario
+            SET nombre = %s,
+                apellido = %s,
+                identificacion = %s,
+                edad = %s,
+                correo = %s,
+                telefono = %s
+            WHERE id_usuario = %s
+        """, (nombre, apellido, identificacion, edad, correo, telefono, id_usuario))
+    connection.commit()
+    return True
