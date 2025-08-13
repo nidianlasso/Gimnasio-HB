@@ -582,7 +582,7 @@ const duracion_defecto = 60;
 function segundosAHHMMSS(segundos) {
     if (isNaN(segundos) || segundos < 0) {
         console.error('Duración inválida:', segundos);
-        return '00:00:00'; // Valor por defecto si la duración es inválida
+        return '00:00:00';
     }
     const horas = Math.floor(segundos / 3600);
     const minutos = Math.floor((segundos % 3600) / 60);

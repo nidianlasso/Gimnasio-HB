@@ -332,33 +332,40 @@ def access_users(identificacion):
     resultado = cursor.fetchall()
     return resultado
 
+from datetime import datetime, time
+
 def guardar_acceso(fecha, duracion, tipo_acceso, id_usuario):
     try:
         print("Intentando guardar acceso...")
-        cursor.execute("SELECT * FROM acceso WHERE id_usuario = %s AND tipo_acceso = 'Active'", (id_usuario,))
-        resultado_acceso = cursor.fetchone()
 
-        # Asegúrate de convertir la fecha a un formato correcto
+        # 1. Convertir fecha de string ISO a formato datetime
         fecha_dt = datetime.strptime(fecha[:-1], '%Y-%m-%dT%H:%M:%S.%f')  # Elimina la 'Z'
         fecha_str = fecha_dt.strftime('%Y-%m-%d %H:%M:%S')
 
+        # 2. Convertir duración HH:MM:SS a objeto time
+        h, m, s = map(int, duracion.split(':'))
+        duracion_time = time(hour=h, minute=m, second=s)
+
+        cursor.execute("SELECT * FROM acceso WHERE id_usuario = %s AND tipo_acceso = 'Active'", (id_usuario,))
+        resultado_acceso = cursor.fetchone()
+
         if resultado_acceso is None:
-            # Si no hay acceso activo, insertar un nuevo acceso
             print("No hay acceso activo, creando uno nuevo...")
             cursor.execute('INSERT INTO acceso (fecha, duracion, tipo_acceso, id_usuario) VALUES (%s, %s, %s, %s)',
-                           (fecha_str, duracion, tipo_acceso, id_usuario))
+                           (fecha_str, duracion_time, tipo_acceso, id_usuario))
         else:
-            # Si hay acceso activo, actualizarlo
             print("Actualizando acceso existente...")
             cursor.execute('UPDATE acceso SET fecha = %s, duracion = %s, tipo_acceso = %s WHERE id_usuario = %s AND tipo_acceso = %s',
-                           (fecha_str, duracion, tipo_acceso, id_usuario, 'Active'))
+                           (fecha_str, duracion_time, tipo_acceso, id_usuario, 'Active'))
 
         connection.commit()
         print("Acceso guardado/actualizado exitosamente.")
         return True
+
     except Exception as e:
         print("Error al guardar el acceso:", e)
         return False
+
 
 def obtener_tipo_acceso(id_usuario):
     try:
