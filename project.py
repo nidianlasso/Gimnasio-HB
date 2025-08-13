@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response, send_file
 from flask_mysqldb import MySQL
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 from reportlab.lib.styles import getSampleStyleSheet
 from reportlab.lib.pagesizes import letter
@@ -21,7 +21,8 @@ from query import (validarLogin, check_credentials, login_required_admin, login_
                     cant_proveedores, cant_empleados, obtener_maquinas_disponibles_para_reserva, existe_reserva_en_bloque, registrar_reserva,
                     obtener_id_membresia_usuario, consultar_bloques_contiguos, registrar_pago_nomina, obtener_id_usuario_por_identificacion, insertar_proveedor,
                     eliminar_proveedor_id, actualizar_proveedor, obtener_proveedor_por_id,obtener_clases_disponibles, obtener_id_membresia_usuario_activa, insertar_reserva_clase,
-                    existe_reserva, obtener_reservas_usuario, obtener_clase_por_id, cancelar_reserva_en_bd, obtener_id_clase_por_nombre)
+                    existe_reserva, obtener_reservas_usuario, obtener_clase_por_id, cancelar_reserva_en_bd, obtener_id_clase_por_nombre, obtener_clientes_asignados, insertar_progreso,
+                    existe_avance_hoy)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -342,7 +343,7 @@ def reservar_clase():
         print("Error en reservar_clase:", e)
         return jsonify({"error": str(e)}), 500
 
-#MOSTRAR LAS CLASES RESERVADAS
+#GESTION DE CLASES RESERVADAS
 @app.route('/mis-clases')
 def mis_clases():
     id_usuario = session.get('id_usuario')
@@ -369,33 +370,10 @@ def cancelar_reserva():
     if not id_clase:
         return "Clase no encontrada", 404
 
-    # Usamos la función modular para eliminar la reserva
     cancelar_reserva_en_bd(id_clase, id_membresia_usuario, fecha, hora)
 
     flash("Reserva cancelada exitosamente.", "success")
     return redirect(url_for('mis_clases'))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 # ENVIAR MAQUINA A REVISION
@@ -434,9 +412,6 @@ def api_maquinas_disponibles():
 
 
 # *************************************************************************
-
-
-
 
 #LLAMADO AL TEMPLATE ENTRENADOR
 @app.route('/profile-coach')
@@ -793,7 +768,37 @@ def guardar_proveedor():
 
     return redirect(url_for('view_provider')) 
 
+#OBTENER CLIENTES ASIGNADOS A ENTRENADOR
+@app.route("/mis-clientes")
+def mis_clientes():
+    if "id_usuario" not in session:
+        return redirect(url_for("login"))
 
+    id_entrenador = session["id_usuario"]
+    clientes = obtener_clientes_asignados(id_entrenador)
+    print("los miembros asignados al instructor")
+    print(clientes)
+    return render_template("coach/mis_clientes.html", clientes=clientes)
+
+
+@app.route("/guardar_progreso", methods=["POST"])
+def guardar_progreso():
+    if "id_usuario" not in session:
+        return redirect(url_for("login"))
+
+    id_entrenador = session["id_usuario"]
+    id_usuario_miembro = request.form["id_usuario_miembro"]
+    peso = request.form["peso"]
+    descripcion = request.form["descripcion"]
+
+    if existe_avance_hoy(id_usuario_miembro, id_entrenador):
+        flash("⚠ Ya registraste un avance para este cliente hoy.", "warning")
+        return redirect(url_for("mis_clientes"))
+
+    insertar_progreso(peso, descripcion, datetime.now(), id_usuario_miembro, id_entrenador)
+
+    flash("✅ Avance guardado correctamente.", "success")
+    return redirect(url_for("mis_clientes"))
 
 
 if __name__ =='__main__':

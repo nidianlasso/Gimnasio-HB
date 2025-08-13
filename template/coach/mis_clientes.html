@@ -1,0 +1,70 @@
+{% include 'main.html' %}
+{% include 'member/menu.html' %}
+
+<h1 style="text-align: center; color: #ff4b2b; margin-bottom: 30px;">🏋️‍♂️ Clientes Asignados</h1>
+
+<div style="max-width: 1300px; margin: auto; background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); overflow-x: auto;">
+    {% if clientes %}
+    <table style="width: 100%; border-collapse: collapse; overflow: hidden; border-radius: 8px; text-align: center;">
+        <thead style="background: #ff4b2b;">
+            <tr>
+                <th style="padding: 12px; color: #fff;">Identificación</th>
+                <th style="padding: 12px; color: #fff;">Nombre</th>
+                <th style="padding: 12px; color: #fff;">Apellido</th>
+                <th style="padding: 12px; color: #fff;">Correo</th>
+                <th style="padding: 12px; color: #fff;">Teléfono</th>
+                <th style="padding: 12px; color: #fff;">Plan de Trabajo</th>
+                <th style="padding: 12px; color: #fff;">Avances</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for c in clientes %}
+            {% set bg_color = 'rgba(255, 255, 255, 0.05)' if loop.index is even else 'transparent' %}
+            <tr style="background-color:' {{ bg_color }}';"
+                onmouseover="this.style.backgroundColor='rgba(255, 75, 43, 0.2)';"
+                onmouseout="this.style.backgroundColor='{{ bg_color }}';">
+
+                <td style="padding: 10px;">{{ c[1] }}</td>
+                <td style="padding: 10px;">{{ c[2] }}</td>
+                <td style="padding: 10px;">{{ c[3] }}</td>
+                <td style="padding: 10px;">{{ c[4] }}</td>
+                <td style="padding: 10px;">{{ c[5] }}</td>
+                <td style="padding: 10px;">{{ c[6] }}</td>
+
+                <!-- Columna Avances -->
+                <td style="padding: 10px; text-align: center;">
+                    <form method="POST" action="{{ url_for('guardar_progreso') }}"
+      style="display: flex; flex-direction: column; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; width: 200px;">
+
+    <input type="hidden" name="id_usuario_miembro" value="{{ c[0] }}">
+
+    <!-- Peso -->
+    <label style="font-size: 12px; color: black;">Peso (kg)</label>
+    <input type="number" step="0.1" name="peso" required
+           style="width: 100%; padding: 6px; border-radius: 6px; border: 1px solid #ccc; text-align: center; font-size: 14px;">
+
+    <!-- Descripción -->
+    <!-- Descripción -->
+<label style="font-size: 12px; font-weight: bold; color: black;">Descripción</label>
+<textarea name="descripcion" required
+          style="width: 100%; height: 60px; padding: 6px; border-radius: 6px; border: 1px solid #ccc; font-size: 14px; resize: none;"></textarea>
+
+    <!-- Botón -->
+    <button type="submit"
+            style="background: linear-gradient(45deg, #ff4b2b, #ff416c); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; transition: 0.3s;">
+        Guardar
+    </button>
+</form>
+
+                </td>
+
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="text-align: center; font-size: 18px; padding: 20px; background: rgba(255, 255, 255, 0.05); border-radius: 10px;">
+        🚫 No tienes clientes asignados actualmente.
+    </div>
+    {% endif %}
+</div>

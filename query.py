@@ -819,5 +819,42 @@ def cancelar_reserva_en_bd(id_clase, id_membresia_usuario, fecha, hora):
     """, (id_clase, id_membresia_usuario, fecha, hora))
     connection.commit()
 
-
 #FIN RESERVA DE LAS CLASES
+
+#ENTRENADOR
+def obtener_clientes_asignados(id_entrenador):
+    cursor.execute("""
+        SELECT m.id_usuario, m.identificacion, m.nombre, m.apellido, m.correo, m.telefono, p.nombre AS plan_trabajo
+        FROM usuario e
+        JOIN usuario m 
+            ON e.id_plan_trabajo = m.id_plan_trabajo
+        JOIN plan_trabajo p 
+            ON m.id_plan_trabajo = p.id_plan_trabajo
+        WHERE e.id_usuario = %s
+        AND m.id_rol = (SELECT id_rol FROM rol WHERE nombre = 'Miembro')
+        AND m.id_usuario <> e.id_usuario;
+    """, (id_entrenador,))
+    return cursor.fetchall()
+
+def existe_avance_hoy(id_usuario_miembro, id_entrenador):
+    hoy = date.today()
+    cursor.execute("""
+        SELECT 1 
+        FROM progreso_trabajo 
+        WHERE id_usuario_miembro = %s 
+        AND id_usuario_entrenador = %s 
+        AND DATE(fecha) = %s
+    """, (id_usuario_miembro, id_entrenador, hoy))
+    resultado = cursor.fetchone()
+    return resultado is not None
+
+
+def insertar_progreso(peso, descripcion, fecha, id_miembro, id_entrenador):
+    cursor.execute("""
+        INSERT INTO progreso_trabajo (peso, descripcion, fecha, id_usuario_miembro, id_usuario_entrenador)
+        VALUES (%s, %s, %s, %s, %s)
+    """, (peso, descripcion, fecha, id_miembro, id_entrenador))
+    connection.commit()
+    return True
+
+

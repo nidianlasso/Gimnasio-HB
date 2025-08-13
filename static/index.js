@@ -7,15 +7,14 @@ function getListUsers() {
     tablaCuerpo.innerHTML = '';
     fetch('/list-members')
         .then(response => {
-            if (!response.ok) { throw new Error('Error en la solicitud'); } return response.json();  // Parsear la respuesta a JSON
+            if (!response.ok) { throw new Error('Error en la solicitud'); } return response.json();
         })
         .then(data => {
             console.log(data);
             data.forEach(user => {
-                // Crear una fila
+
                 const fila = document.createElement('tr');
 
-                // Crear y agregar celdas a la fila
                 const celdaId = document.createElement('td');
                 celdaId.textContent = user[0];
                 fila.appendChild(celdaId);
@@ -45,7 +44,7 @@ function getListUsers() {
                 celdaRol.textContent = user[6];
                 fila.appendChild(celdaRol);
 
-                // Agregar la fila al cuerpo de la tabla
+
                 tablaCuerpo.appendChild(fila);
             });
         })
@@ -70,17 +69,15 @@ function getSearchUsers() {
         },
     })
         .then(response => {
-            if (!response.ok) { throw new Error('Error en la solicitud'); } return response.json();  // Parsear la respuesta a JSON
+            if (!response.ok) { throw new Error('Error en la solicitud'); } return response.json();
         })
         .then(data => {
             console.log("Informacion!!!!");
 
             console.log(data);
             data.forEach(user => {
-                // Crear una fila
                 const fila = document.createElement('tr');
 
-                // Crear y agregar celdas a la fila
                 const celdaId = document.createElement('td');
                 celdaId.textContent = user[0];
                 fila.appendChild(celdaId);
@@ -118,7 +115,7 @@ function getSearchUsers() {
                 celdaRol.textContent = user[8];
                 fila.appendChild(celdaRol);
 
-                // Agregar la fila al cuerpo de la tabla
+
                 cuerpoTabla.appendChild(fila);
             });
         })
@@ -135,24 +132,22 @@ function assign_membreship() {
             if (!response.ok) {
                 throw new Error('Error en la solicitud');
             }
-            return response.json(); // Parsear la respuesta a JSON
+            return response.json();
         })
         .then(data => {
             console.log("Información recibida:", data);
-            // Limpiar la tabla antes de agregar nuevas filas
             asignacionMembresia.innerHTML = '';
 
-            // Filtrar los datos para mostrar solo aquellos con información incompleta
             const datosFiltrados = data.filter(info_user => {
                 return !info_user[3] || !info_user[4] || !info_user[5] || !info_user[6]; // costos, tipo, fechaInicio, estadoMembresia
             });
 
-            // Agregar filas a la tabla
+
             datosFiltrados.forEach(info_user => {
-                // Crear una nueva fila
+
                 const fila = document.createElement('tr');
 
-                // Crear y agregar celdas a la fila para las 3 primeras columnas
+
                 const id = document.createElement('td');
                 id.textContent = info_user[0]; // Identificación
                 fila.appendChild(id);
@@ -165,33 +160,31 @@ function assign_membreship() {
                 apellido.textContent = info_user[2]; // Apellido
                 fila.appendChild(apellido);
 
-                // Crear la celda para Membresía con un botón
+
                 const membresiaCelda = document.createElement('td');
                 const botonMembresia = document.createElement('button');
                 botonMembresia.textContent = 'Asignar';
                 botonMembresia.className = 'btn btn-primary';
 
-                // Añadir el evento de clic al botón "Asignar"
+
                 botonMembresia.onclick = function () {
-                    // Limpia los campos del modal
+
                     document.getElementById('id_membresia').value = '';
                     document.getElementById('fechaInicio').value = '';
                     document.getElementById('fechaFin').value = '';
                     document.getElementById('estadoMembresia').value = '';
 
-                    const usuarioId = info_user[8]; // Asumiendo que info_user[0] es el usuario_id
+                    const usuarioId = info_user[8];
                     document.getElementById('usuarioId').value = usuarioId;
 
-                    // Abre el modal
+
                     $('#detallesMembresia').modal('show');
                 };
 
-
-                // Agregar el botón a la celda y la celda a la fila
                 membresiaCelda.appendChild(botonMembresia);
                 fila.appendChild(membresiaCelda);
 
-                // Agregar la fila al cuerpo de la tabla
+
                 asignacionMembresia.appendChild(fila);
             });
         })
@@ -206,11 +199,10 @@ function update_membreship() {
             if (!response.ok) {
                 throw new Error('Error en la solicitud');
             }
-            return response.json(); // Parsear la respuesta a JSON
+            return response.json();
         })
         .then(data => {
             console.log("Información recibida:", data);
-            // Limpiar la tabla antes de agregar nuevas filas
             asignacionMembresia.innerHTML = '';
 
             // Filtrar los datos para mostrar solo aquellos con información incompleta
@@ -218,12 +210,11 @@ function update_membreship() {
                 return info_user[3] || info_user[4] || info_user[5] || info_user[6]; // costos, tipo, fechaInicio, estadoMembresia
             });
 
-            // Agregar filas a la tabla
+
             datosFiltrados.forEach(info_user => {
-                // Crear una nueva fila
+
                 const fila = document.createElement('tr');
 
-                // Crear y agregar celdas a la fila para las 3 primeras columnas
                 const id = document.createElement('td');
                 id.textContent = info_user[0]; // Identificación
                 fila.appendChild(id);
@@ -236,15 +227,12 @@ function update_membreship() {
                 apellido.textContent = info_user[2]; // Apellido
                 fila.appendChild(apellido);
 
-                // Crear la celda para Membresía con un botón
                 const membresiaCelda = document.createElement('td');
                 const botonMembresia = document.createElement('button');
                 botonMembresia.textContent = 'Actualizar';
                 botonMembresia.className = 'btn btn-primary';
 
-                // Añadir el evento de clic al botón "Asignar"
                 botonMembresia.onclick = function () {
-                    // Limpia los campos del modal
                     document.getElementById('tipoMembresia').value = '';
                     document.getElementById('tipoMembresia').value = info_user[10];
                     console.log(info_user[10]);
@@ -262,19 +250,13 @@ function update_membreship() {
 
                     const usuarioId = info_user[8];
                     const membresiaUsuario = info_user[9];
-                    // Asumiendo que info_user[0] es el usuario_id
                     document.getElementById('id_user_update').value = usuarioId;
                     document.getElementById('id_membresia_usuario').value = membresiaUsuario;
-                    // Abre el modal
                     $('#updateMembresia').modal('show');
                 };
-
-
-                // Agregar el botón a la celda y la celda a la fila
                 membresiaCelda.appendChild(botonMembresia);
                 fila.appendChild(membresiaCelda);
 
-                // Agregar la fila al cuerpo de la tabla
                 asignacionMembresia.appendChild(fila);
             });
         })
@@ -292,15 +274,13 @@ function getListMachine() {
     tablaCuerpo.innerHTML = '';
     fetch('/list-machine')
         .then(response => {
-            if (!response.ok) { throw new Error('Error en la solicitud'); } return response.json();  // Parsear la respuesta a JSON
+            if (!response.ok) { throw new Error('Error en la solicitud'); } return response.json();
         })
         .then(data => {
             console.log(data);
             data.forEach(user => {
-                // Crear una fila
                 const fila = document.createElement('tr');
 
-                // Crear y agregar celdas a la fila
                 const nombreMaquina = document.createElement('td');
                 nombreMaquina.textContent = user[0];
                 fila.appendChild(nombreMaquina);
@@ -335,7 +315,7 @@ function getListMachine() {
                 disponibilidadMaquina.textContent = user[5] === 1 ? 'Disponible' : 'No Disponible';
                 fila.appendChild(disponibilidadMaquina);
 
-                // Agregar la fila al cuerpo de la tabla
+
                 tablaCuerpo.appendChild(fila);
             });
         })
@@ -346,7 +326,7 @@ function getListMachine() {
 
 //Disponibilidad de maquinas administrador
 $('#maquinasDisponibles').on('show.bs.modal', function () {
-    available_machines_page();  // Esta es la función que cargará los datos
+    available_machines_page();  // Esta es la función que cargará los datos DESDE BACK
 });
 
 function cargarMaquinas(tipo) {
@@ -438,10 +418,9 @@ function cargarMaquinas(tipo) {
                         if (b.estado === 'disponible') {
                             bloque.style.cursor = 'pointer';
 
-                            // ✅ Este bloque sí captura bien el id_maquina desde el scope externo
                             bloque.addEventListener('click', () => {
-                                console.log('Click detectado en:', maquina.id_maquina, b.hora);  // 👈 Verifica esto
-                                reservarBloque(maquina.id_maquina, b.hora);  // 👈 aquí ya no debe dar error
+                                console.log('Click detectado en:', maquina.id_maquina, b.hora);
+                                reservarBloque(maquina.id_maquina, b.hora);
                             });
                         }
 
@@ -469,7 +448,7 @@ function reservarBloque(id_maquina, hora_inicio) {
         },
         body: JSON.stringify({
             id_maquina: id_maquina,
-            hora: hora_inicio  // 👈 debe coincidir con esto
+            hora: hora_inicio
         })
     })
 
@@ -534,12 +513,6 @@ function sumar15(horaStr) {
     return fecha.toTimeString().slice(0, 5);
 }
 
-// function sumar15(horaStr) {
-//   const [h, m] = horaStr.split(':').map(Number);
-//   const date = new Date(0, 0, 0, h, m + 15);
-//   return date.toTimeString().slice(0, 5);
-// }
-
 function formatearFecha(fechaStr) {
     const [anio, mes, dia] = fechaStr.split('-');
     return `${dia}/${mes}/${anio}`;
@@ -567,10 +540,8 @@ function getSearchMachine() {
 
             console.log(data);
             data.forEach(user => {
-                // Crear una fila
                 const fila = document.createElement('tr');
 
-                // Crear y agregar celdas a la fila
                 const nombre_maquina = document.createElement('td');
                 nombre_maquina.textContent = user[0];
                 fila.appendChild(nombre_maquina);
@@ -597,8 +568,6 @@ function getSearchMachine() {
                 const precio = document.createElement('td');
                 precio.textContent = user[4];
                 fila.appendChild(precio);
-
-                // Agregar la fila al cuerpo de la tabla
                 cuerpoTabla.appendChild(fila);
             });
         })
@@ -643,7 +612,7 @@ function registrarIngreso() {
         .then(data => {
             console.log('Datos recibidos:', data);
             const resultadoIngreso = document.getElementById('resultadoIngreso');
-            resultadoIngreso.innerHTML = ''; // Limpieza del div
+            resultadoIngreso.innerHTML = '';
 
             // Mostrar la información del usuario
             const infoUsuario = document.createElement('div');
@@ -720,7 +689,7 @@ function registrarIngreso() {
 
                             if (duracionSegundos < 0) {
                                 console.error('Duración inválida, el tiempo de inicio es posterior al tiempo de fin');
-                                return; // Evita continuar si la duración es inválida
+                                return;
                             }
 
                             const duracionFormato = segundosAHHMMSS(duracionSegundos); // Convertir a formato HH:MM:SS
@@ -739,7 +708,6 @@ function registrarIngreso() {
                                     throw new Error('Error en la solicitud');
                                 })
                                 .then(data => {
-                                    console.log('Acceso desactivado:', data);
                                     boton.textContent = 'Activar'; // Cambia el texto del botón
                                     isActive = false; // Marca que ya no está activo
                                 })
@@ -800,42 +768,32 @@ function assign_coach() {
             return response.json(); // Parsear la respuesta a JSON
         })
         .then(data => {
-            console.log("Información recibida:", data);
-
-            // Filtrar los datos para obtener solo miembros y entrenadores activos
             const miembrosActivos = data.filter(info_user =>
                 info_user[4] === 'Active' && info_user[6] === 'Miembro' // info_user[4] es el tipo de acceso y info_user[6] es el rol
             );
             const entrenadoresActivos = data.filter(info_user =>
                 info_user[4] === 'Active' && info_user[6] === 'Entrenador'
             );
-
-            // Limpiar la tabla antes de agregar nuevas filas
             asignacionEntrenador.innerHTML = '';
 
-            // Agregar filas a la tabla
             miembrosActivos.forEach(info_user => {
-                // Crear una nueva fila
                 const fila = document.createElement('tr');
 
                 const id = document.createElement('td');
-                id.textContent = info_user[0]; // Identificación
+                id.textContent = info_user[0];
                 fila.appendChild(id);
 
                 const nombre = document.createElement('td');
-                nombre.textContent = info_user[1]; // Nombre
+                nombre.textContent = info_user[1];
                 fila.appendChild(nombre);
 
                 const apellido = document.createElement('td');
-                apellido.textContent = info_user[2]; // Apellido
+                apellido.textContent = info_user[2];
                 fila.appendChild(apellido);
 
-                // Validacion del plan de trabajo de instructores y miembros
                 const planTrabajoMiembro = info_user[8]; // Plan de trabajo del miembro
-                const entrenadorAsignado = entrenadoresActivos.find(entrenador => entrenador[8] === planTrabajoMiembro); // Buscar entrenador con el mismo plan de trabajo
-
+                const entrenadorAsignado = entrenadoresActivos.find(entrenador => entrenador[8] === planTrabajoMiembro);
                 if (entrenadorAsignado) {
-                    // celda del entrenador
                     const entrenadorCelda = document.createElement('td');
                     entrenadorCelda.textContent = entrenadorAsignado[1]; // Nombre del entrenador
                     fila.appendChild(entrenadorCelda);
@@ -845,8 +803,6 @@ function assign_coach() {
                     entrenadorCelda.textContent = "Sin entrenador disponible";
                     fila.appendChild(entrenadorCelda);
                 }
-
-                // Agregar la fila al cuerpo de la tabla
                 asignacionEntrenador.appendChild(fila);
             });
         })
@@ -862,63 +818,47 @@ function assign_membreship() {
             if (!response.ok) {
                 throw new Error('Error en la solicitud');
             }
-            return response.json(); // Parsear la respuesta a JSON
+            return response.json();
         })
         .then(data => {
-            console.log("Información recibida:", data);
-            // Limpiar la tabla antes de agregar nuevas filas
             asignacionMembresia.innerHTML = '';
 
             // Filtrar los datos para mostrar solo aquellos con información incompleta
             const datosFiltrados = data.filter(info_user => {
                 return !info_user[3] || !info_user[4] || !info_user[5] || !info_user[6]; // costos, tipo, fechaInicio, estadoMembresia
             });
-
-            // Agregar filas a la tabla
             datosFiltrados.forEach(info_user => {
-                // Crear una nueva fila
                 const fila = document.createElement('tr');
-
-                // Crear y agregar celdas a la fila para las 3 primeras columnas
                 const id = document.createElement('td');
-                id.textContent = info_user[0]; // Identificación
+                id.textContent = info_user[0];
                 fila.appendChild(id);
 
                 const nombre = document.createElement('td');
-                nombre.textContent = info_user[1]; // Nombre
+                nombre.textContent = info_user[1];
                 fila.appendChild(nombre);
 
                 const apellido = document.createElement('td');
-                apellido.textContent = info_user[2]; // Apellido
+                apellido.textContent = info_user[2];
                 fila.appendChild(apellido);
-
-                // Crear la celda para Membresía con un botón
                 const membresiaCelda = document.createElement('td');
                 const botonMembresia = document.createElement('button');
                 botonMembresia.textContent = 'Asignar';
                 botonMembresia.className = 'btn btn-primary';
 
-                // Añadir el evento de clic al botón "Asignar"
                 botonMembresia.onclick = function () {
-                    // Limpia los campos del modal
                     document.getElementById('id_membresia').value = '';
                     document.getElementById('fechaInicio').value = '';
                     document.getElementById('fechaFin').value = '';
                     document.getElementById('estadoMembresia').value = '';
 
-                    const usuarioId = info_user[8]; // Asumiendo que info_user[0] es el usuario_id
+                    const usuarioId = info_user[8];
                     document.getElementById('usuarioId').value = usuarioId;
 
                     // Abre el modal
                     $('#detallesMembresia').modal('show');
                 };
-
-
-                // Agregar el botón a la celda y la celda a la fila
                 membresiaCelda.appendChild(botonMembresia);
                 fila.appendChild(membresiaCelda);
-
-                // Agregar la fila al cuerpo de la tabla
                 asignacionMembresia.appendChild(fila);
             });
         })
@@ -942,7 +882,7 @@ function realizarReserva(data) {
                 alert("Error: " + respuesta.error);
             } else {
                 alert(respuesta.mensaje);
-                cargarMaquinas('disponibilidad_horaria'); // Recargar calendario
+                cargarMaquinas('disponibilidad_horaria'); // Recarga EL calendario CUANDO SE RESERVA
             }
         })
         .catch(err => {
