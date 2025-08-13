@@ -822,7 +822,8 @@ def cancelar_reserva_en_bd(id_clase, id_membresia_usuario, fecha, hora):
 #FIN RESERVA DE LAS CLASES
 
 #ENTRENADOR
-def obtener_clientes_asignados(id_entrenador):
+def obtener_clientes_sin_avance_hoy(id_entrenador):
+    hoy = date.today()
     cursor.execute("""
         SELECT m.id_usuario, m.identificacion, m.nombre, m.apellido, m.correo, m.telefono, p.nombre AS plan_trabajo
         FROM usuario e
@@ -832,8 +833,14 @@ def obtener_clientes_asignados(id_entrenador):
             ON m.id_plan_trabajo = p.id_plan_trabajo
         WHERE e.id_usuario = %s
         AND m.id_rol = (SELECT id_rol FROM rol WHERE nombre = 'Miembro')
-        AND m.id_usuario <> e.id_usuario;
-    """, (id_entrenador,))
+        AND m.id_usuario <> e.id_usuario
+        AND m.id_usuario NOT IN (
+            SELECT id_usuario_miembro
+            FROM progreso_trabajo
+            WHERE id_usuario_entrenador = %s
+            AND DATE(fecha) = %s
+        )
+    """, (id_entrenador, id_entrenador, hoy))
     return cursor.fetchall()
 
 def existe_avance_hoy(id_usuario_miembro, id_entrenador):

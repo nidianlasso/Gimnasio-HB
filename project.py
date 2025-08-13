@@ -21,7 +21,7 @@ from query import (validarLogin, check_credentials, login_required_admin, login_
                     cant_proveedores, cant_empleados, obtener_maquinas_disponibles_para_reserva, existe_reserva_en_bloque, registrar_reserva,
                     obtener_id_membresia_usuario, consultar_bloques_contiguos, registrar_pago_nomina, obtener_id_usuario_por_identificacion, insertar_proveedor,
                     eliminar_proveedor_id, actualizar_proveedor, obtener_proveedor_por_id,obtener_clases_disponibles, obtener_id_membresia_usuario_activa, insertar_reserva_clase,
-                    existe_reserva, obtener_reservas_usuario, obtener_clase_por_id, cancelar_reserva_en_bd, obtener_id_clase_por_nombre, obtener_clientes_asignados, insertar_progreso,
+                    existe_reserva, obtener_reservas_usuario, obtener_clase_por_id, cancelar_reserva_en_bd, obtener_id_clase_por_nombre, obtener_clientes_sin_avance_hoy, insertar_progreso,
                     existe_avance_hoy)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
@@ -773,12 +773,10 @@ def guardar_proveedor():
 def mis_clientes():
     if "id_usuario" not in session:
         return redirect(url_for("login"))
-
     id_entrenador = session["id_usuario"]
-    clientes = obtener_clientes_asignados(id_entrenador)
-    print("los miembros asignados al instructor")
-    print(clientes)
-    return render_template("coach/mis_clientes.html", clientes=clientes)
+    clientes = obtener_clientes_sin_avance_hoy(id_entrenador)
+    return render_template('coach/mis_clientes.html', clientes=clientes)
+
 
 
 @app.route("/guardar_progreso", methods=["POST"])
