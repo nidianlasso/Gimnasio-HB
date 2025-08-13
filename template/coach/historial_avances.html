@@ -1,0 +1,36 @@
+{% include 'main.html' %}
+{% include 'member/menu.html' %}
+
+<h1 style="text-align: center; color: #ff4b2b; margin-bottom: 30px;">📊 Historial de Avances</h1>
+
+<div style="max-width: 1000px; margin: auto; background: rgba(255, 255, 255, 0.05); padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+    {% if avances %}
+    <table style="width: 100%; border-collapse: collapse; text-align: center;">
+        <thead style="background: #ff4b2b; color: white;">
+            <tr>
+                <th style="padding: 12px;">Cliente</th>
+                <th style="padding: 12px;">Peso (kg)</th>
+                <th style="padding: 12px;">Descripción</th>
+                <th style="padding: 12px;">Fecha</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for a in avances %}
+            {% set bg_color = 'rgba(255, 255, 255, 0.05)' if loop.index is even else 'transparent' %}
+            <tr style="background-color: '{{ bg_color }}';"
+                onmouseover="this.style.backgroundColor='rgba(255, 75, 43, 0.2)';"
+                onmouseout="this.style.backgroundColor='{{ bg_color }}';">
+                <td style="padding: 10px;">{{ a[0] }} {{ a[1] }}</td>
+                <td style="padding: 10px;">{{ a[2] }}</td>
+                <td style="padding: 10px;">{{ a[3] }}</td>
+                <td style="padding: 10px;">{{ a[4].strftime('%d/%m/%Y') }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div style="text-align: center; color: #ccc; padding: 20px;">
+        🚫 No hay avances registrados aún.
+    </div>
+    {% endif %}
+</div>

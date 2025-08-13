@@ -864,4 +864,13 @@ def insertar_progreso(peso, descripcion, fecha, id_miembro, id_entrenador):
     connection.commit()
     return True
 
+def obtener_historial_avances(id_entrenador):
+    cursor.execute("""
+        SELECT m.nombre, m.apellido, p.peso, p.descripcion, p.fecha
+        FROM progreso_trabajo p
+        JOIN usuario m ON p.id_usuario_miembro = m.id_usuario
+        WHERE p.id_usuario_entrenador = %s
+        ORDER BY p.fecha DESC
+    """, (id_entrenador,))
+    return cursor.fetchall()
 
