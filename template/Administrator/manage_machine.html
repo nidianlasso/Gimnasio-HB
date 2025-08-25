@@ -1,61 +1,64 @@
 {% include 'main.html' %}
 {% include 'Administrator/menu.html' %}
 
-<h3 style="text-align: center; color: #000; margin-top: 3%; font-size: 2rem; font-weight: bold;">GESTIÓN DE MÁQUINAS</h3>
+<h3 style="text-align: center; color: #000; margin-top: 3%; font-size: 2rem; font-weight: bold;">
+  GESTIÓN DE MÁQUINAS
+</h3>
+
 <div class="contenedor-gestion" style="display: flex; justify-content: center; padding-bottom: 2%; background: #f8f9fa; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin: 2% auto; max-width: 90%;">
   <div style="display: inline-flex; gap: 2vh; margin: 2% auto; flex-wrap: wrap; justify-content: center;">
-    <!-- Botón para ir a la lista de máquinas -->
-    <button style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;" 
-            onmouseover="this.style.transform='scale(1.05)'" 
-            onmouseout="this.style.transform='scale(1)'" 
+
+    <!-- Botón para listado -->
+    <button style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;"
+            onmouseover="this.style.transform='scale(1.05)'"
+            onmouseout="this.style.transform='scale(1)'"
             onclick="getListMachine()">
       Listado Máquinas
     </button>
 
-    <!-- Botón para buscar máquina -->
-    <button style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;" 
-            onmouseover="this.style.transform='scale(1.05)'" 
-            onmouseout="this.style.transform='scale(1)'" 
+    <!-- Botón buscar -->
+    <button style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;"
+            onmouseover="this.style.transform='scale(1.05)'"
+            onmouseout="this.style.transform='scale(1)'"
             type="button" data-toggle="modal" data-target="#searchMachine">
       Buscar Máquina
     </button>
 
-    <!-- Botón para disponibilidad de máquinas -->
-    <button style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;" 
-            onmouseover="this.style.transform='scale(1.05)'" 
-            onmouseout="this.style.transform='scale(1)'" 
+    <!-- Botón disponibilidad -->
+    <button style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;"
+            onmouseover="this.style.transform='scale(1.05)'"
+            onmouseout="this.style.transform='scale(1)'"
             onclick="cargarMaquinas()" data-toggle="modal" data-target="#maquinasDisponibles">
       Disponibilidad
     </button>
 
-    <!-- Botón para revisión de maquinaria -->
-    <button style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;" 
-            onmouseover="this.style.transform='scale(1.05)'" 
-            onmouseout="this.style.transform='scale(1)'" 
-            onclick="enviarRevision()" data-toggle="modal" data-target="#membresiaActualizacion">
+    <!-- Botón revisión -->
+    <!-- <button style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;"
+            onmouseover="this.style.transform='scale(1.05)'"
+            onmouseout="this.style.transform='scale(1)'"
+            type="button" data-toggle="modal" data-target="#modalRevision">
       Revisión Maquinaria
-    </button>
+    </button> -->
+
   </div>
 </div>
 
-<!-- Tabla de máquinas -->
+<!-- Tabla -->
 <table border="1" id="listaMaquinas" style="width: 90%; margin: 2% auto; border-collapse: collapse; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
   <thead>
     <tr style="background: #343a40; color: white;">
-      <th style="padding: 12px; text-align: left;">Nombre</th>
-      <th style="padding: 12px; text-align: left;">Serial</th>
-      <th style="padding: 12px; text-align: left;">Fecha de compra</th>
-      <th style="padding: 12px; text-align: left;">Precio</th>
-      <th style="padding: 12px; text-align: left;">Proveedor</th>
-      <th style="padding: 12px; text-align: left;">Disponibilidad</th>
+      <th style="padding: 12px;">Nombre</th>
+      <th style="padding: 12px;">Serial</th>
+      <th style="padding: 12px;">Fecha de compra</th>
+      <th style="padding: 12px;">Precio</th>
+      <th style="padding: 12px;">Proveedor</th>
+      <th style="padding: 12px;">Disponibilidad</th>
     </tr>
   </thead>
-  <tbody>
-    <!-- Las filas se agregarán dinámicamente aquí -->
-  </tbody>
+  <tbody></tbody>
 </table>
 
-<!-- Mensajes flash -->
+<!-- Flash messages -->
 {% with messages = get_flashed_messages(with_categories=True) %}
   {% if messages %}
     <div class="alert-container" style="width: 90%; margin: 2% auto;">
@@ -68,24 +71,43 @@
   {% endif %}
 {% endwith %}
 
-<!-- Modal para agregar usuarios (no cambia) -->
-<!-- <div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
-  <div class="modal-dialog" role="document">
+
+
+<!--MODAL PARA REVISION DE MAQUINAS-->
+<div class="modal fade" id="modalRevision" tabindex="-1" aria-labelledby="modalRevisionLabel" aria-hidden="true">
+  <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLongTitle">Agregar Usuario</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+      <div class="modal-header bg-dark text-white">
+        <h5 class="modal-title" id="modalRevisionLabel">Enviar máquina a revisión</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-      <div class="modal-body">
-        {% include 'Administrator/add_users.html' %}
-      </div>
+      <form id="formRevisionAdmin">
+        <div class="modal-body">
+          <input type="hidden" id="idMaquinaRevision">
+
+          <label>Estado:</label>
+          <select id="estadoRevision" class="form-control mb-3" required>
+            <option value="">Seleccione un estado</option>
+            <option value="1">Pendiente</option>
+            <option value="2">En proceso</option>
+            <option value="3">Finalizado</option>
+          </select>
+
+          <label>Observación:</label>
+          <textarea id="observacionRevision" rows="3" class="form-control" required></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button onclick="enviarRevision(event)" type="submit" class="btn btn-primary">Confirmar</button>
+        </div>
+      </form>
     </div>
   </div>
-</div> -->
+</div>
 
-<!-- Modal para disponibilidad de máquinas -->
+<!--MODAL PARA RESERVA DE LAS MAQUINAS-->
 <div class="modal fade" id="maquinasDisponibles" tabindex="-1" aria-labelledby="maquinasDisponiblesLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
@@ -114,7 +136,7 @@
   </div>
 </div>
 
-<!-- Modal para búsqueda de máquinas -->
+<!-- MODAL PARA BUSCAR LAS MAQUINAS -->
 <div class="modal fade" id="searchMachine" tabindex="-1" aria-labelledby="searchMachineLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">

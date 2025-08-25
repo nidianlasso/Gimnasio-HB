@@ -266,6 +266,47 @@ function update_membreship() {
 }
 
 /*GESTION DE LAS MAQUINAS */
+// =========================
+// Inicialización del modal
+// =========================
+// =========================
+// Función global que abre el modal
+// =========================
+// =========================
+// Función global para abrir el modal
+// =========================
+function abrirModalRevision(idInventario) {
+    const modalRevision = document.getElementById("modalRevision");
+    const observacionInput = document.getElementById("observacionInput");
+
+    // Guardamos el ID seleccionado en un input hidden (o data-atributo)
+    document.getElementById("idMaquinaRevision").value = idInventario;
+
+    observacionInput.value = ""; // limpiar campo
+    modalRevision.style.display = "block"; // mostrar modal
+}
+
+// =========================
+// Inicializar modal (botón cancelar)
+// =================// =========================
+// Inicialización del modal de revisión
+// =========================
+function initModalRevision() {
+    // Ya no necesitas document.getElementById ni tocar style.display
+    // Bootstrap se encarga de mostrar/ocultar
+    const btnCancelar = document.getElementById("btnCancelarRevision");
+
+    if (btnCancelar) {
+        btnCancelar.addEventListener("click", function () {
+            $('#modalRevision').modal('hide'); // 👈 Ocultar modal con Bootstrap
+        });
+    }
+}
+
+
+// =========================
+// Listado de máquinas
+// =========================
 function getListMachine() {
     const tablaCuerpo = document.querySelector('#listaMaquinas tbody');
     const tabla = document.getElementById('listaMaquinas');
@@ -274,13 +315,15 @@ function getListMachine() {
     tablaCuerpo.innerHTML = '';
     fetch('/list-machine')
         .then(response => {
-            if (!response.ok) { throw new Error('Error en la solicitud'); } return response.json();
+            if (!response.ok) { throw new Error('Error en la solicitud'); }
+            return response.json();
         })
         .then(data => {
             console.log(data);
             data.forEach(user => {
                 const fila = document.createElement('tr');
 
+                // user[0] = nombre, user[1] = serial, etc.
                 const nombreMaquina = document.createElement('td');
                 nombreMaquina.textContent = user[0];
                 fila.appendChild(nombreMaquina);
@@ -290,18 +333,13 @@ function getListMachine() {
                 fila.appendChild(serialMaquina);
 
                 const fechaCompleta = new Date(user[2]);
-
-                // UTC SIRVE PARA MOSTRAR LA FECHA EXACTA SIN VERSE AFECTADA POR EL SERVIDOR
                 const dia = fechaCompleta.getUTCDate();
                 const mes = fechaCompleta.getUTCMonth() + 1;
                 const anio = fechaCompleta.getUTCFullYear();
-                // FORMATO DE LA FECHA
                 const fechaFormateada = `${dia}/${mes}/${anio}`;
                 const fechaCompra = document.createElement('td');
                 fechaCompra.textContent = fechaFormateada;
                 fila.appendChild(fechaCompra);
-
-                console.log(fechaCompleta);
 
                 const precioMaquina = document.createElement('td');
                 precioMaquina.textContent = user[3];
@@ -311,10 +349,28 @@ function getListMachine() {
                 proveedorMaquina.textContent = user[4];
                 fila.appendChild(proveedorMaquina);
 
+                // Columna de disponibilidad
                 const disponibilidadMaquina = document.createElement('td');
                 disponibilidadMaquina.textContent = user[5] === 1 ? 'Disponible' : 'No Disponible';
                 fila.appendChild(disponibilidadMaquina);
 
+                // Columna del botón
+                const columnaBoton = document.createElement('td');
+                if (user[5] !== 1) {
+                    const btnRevision = document.createElement('button');
+                    btnRevision.textContent = 'Enviar a revisión';
+                    btnRevision.classList.add('btn', 'btn-warning', 'btn-sm');
+                    btnRevision.dataset.idInventario = user[6];  // <-- Guardar ID
+
+                    btnRevision.addEventListener('click', function () {
+                        abrirModalRevision(this.dataset.idInventario);
+                    });
+
+                    columnaBoton.appendChild(btnRevision);
+                } else {
+                    columnaBoton.textContent = '-';
+                }
+                fila.appendChild(columnaBoton);
 
                 tablaCuerpo.appendChild(fila);
             });
@@ -323,6 +379,50 @@ function getListMachine() {
             console.error('Hubo un problema con la solicitud:', error);
         });
 }
+
+// =========================
+// Abrir modal y setear datos
+// =========================
+// Función para abrir modal de revisión
+// =========================
+function abrirModalRevision(idInventario) {
+  document.getElementById("idMaquinaRevision").value = idInventario;
+  $('#modalRevision').modal('show');
+}
+
+
+
+function enviarRevision(event) {
+    event.preventDefault(); // Evita que el formulario se recargue
+
+    const idInventario = document.getElementById("idMaquinaRevision").value;
+    const estado = document.getElementById("estadoRevision").value;
+    const observacion = document.getElementById("observacionRevision").value;
+
+    if (!idInventario) {
+        console.error("No se encontró idInventario");
+        return;
+    }
+
+    fetch('/enviar-revision', {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            id_inventario: idInventario,
+            estado: estado,
+            observacion: observacion
+        })
+    })
+    .then(res => res.json())
+    .then(data => {
+        console.log("Respuesta:", data);
+        alert(data.mensaje || "Revisión enviada");
+        $('#modalRevision').modal('hide'); // cerrar modal
+        getListMachine(); // refrescar tabla
+    })
+    .catch(error => console.error("Error al enviar revisión:", error));
+}
+
 
 //Disponibilidad de maquinas administrador
 $('#maquinasDisponibles').on('show.bs.modal', function () {

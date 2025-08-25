@@ -232,10 +232,9 @@ def add_user(identificacion, nombre, apellido, edad, correo, telefono, genero, p
         connection.commit()
         return True
     except Exception as e:
-        #---Guardar la info en la base de datos
         print("Informacion que se sube a la base")
         print(identificacion, nombre, apellido, edad, correo, telefono, genero, plan_trab, rol, contrasena)
-        return False # Retorna False si no se ha procesado el formulario
+        return False 
 #--AGREGAR USUARIO
 
 #BUSQUEDA DE USUARIOS
@@ -302,7 +301,7 @@ def actualizar_membresia( tipo, fecha_inicio, fecha_fin, estado, id_membresia_us
 
 #OBTENER EL LISTADO DE MIEMBROS PARA GESTION
 def lista_maquinas():
-    cursor.execute("SELECT m.nombre, i.serial, i.fecha_compra, i.precio, p.nombre, i.disponibilidad FROM inventario_maquina i INNER JOIN maquina m ON i.id_maquina = m.id_maquina INNER JOIN proveedor p ON i.id_proveedor = p.id_proveedor")
+    cursor.execute("SELECT m.nombre, i.serial, i.fecha_compra, i.precio, p.nombre, i.disponibilidad, i.id_inventario_maquina FROM inventario_maquina i INNER JOIN maquina m ON i.id_maquina = m.id_maquina INNER JOIN proveedor p ON i.id_proveedor = p.id_proveedor")
     listado_maquinas = cursor.fetchall()
     return listado_maquinas
 #OBTENER EL LISTADO DE MIEMBROS
@@ -941,3 +940,76 @@ def actualizar_datos_entrenador(id_usuario, nombre, apellido, identificacion, ed
         """, (nombre, apellido, identificacion, edad, correo, telefono, id_usuario))
     connection.commit()
     return True
+
+
+#ENVIAR LA MAQUINA PARA LA REVISION 
+def maquinas_sin_disponibles():
+    cursor.execute("""
+        SELECT 
+    i.id_inventario_maquina,
+    m.nombre       AS nombre_maquina,
+    i.serial       AS serial_maquina,
+    i.fecha_compra,
+    i.precio,
+    p.nombre       AS proveedor,
+    i.disponibilidad
+FROM inventario_maquina i
+INNER JOIN maquina m ON i.id_maquina = m.id_maquina
+INNER JOIN proveedor p ON i.id_proveedor = p.id_proveedor
+WHERE i.disponibilidad = 0;
+
+    """)
+    maquinas = cursor.fetchall()
+    return maquinas
+
+def lista_tecnicos():
+    cursor.execute("SELECT u.id_usuario, u.nombre, u.apellido FROM usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE r.nombre = 'Tecnico'")
+    resultado = cursor.fetchall()
+    return resultado
+
+
+# ========== CONSULTAS ==========
+def insert_revision_sql():
+    return """
+        INSERT INTO revision (fecha_revision, id_inventario_maquina, id_estado_revision, id_usuario)
+        VALUES (NOW(), %s, %s, %s)
+    """
+
+def insert_observacion_sql():
+    return """
+        INSERT INTO observacion_revision (id_revision, id_usuario, observacion_admin, fecha)
+        VALUES (%s, %s, %s, NOW())
+    """
+
+def last_id_sql():
+    return "SELECT LAST_INSERT_ID() AS id_revision"
+
+
+# =========================
+# FUNCIONES DE INSERCIÓN
+# =========================
+def insertar_revision(id_inventario_maquina, id_usuario, observacion_admin, estado):
+    try:
+        conn = connection
+
+        # 1. Insertar en revision
+        cursor.execute(insert_revision_sql(), (id_inventario_maquina, estado, id_usuario))
+
+        # 2. Obtener ID generado
+        cursor.execute(last_id_sql())
+        id_revision = cursor.fetchone()[0]
+
+        # 3. Insertar observación inicial del administrador
+        cursor.execute(insert_observacion_sql(), (id_revision, id_usuario, observacion_admin))
+
+        # 4. Confirmar cambios
+        conn.commit()
+
+        return id_revision
+
+    except Exception as e:
+        conn.rollback()
+        print(f"Error al insertar revisión: {e}")
+        return None
+
+    

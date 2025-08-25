@@ -23,7 +23,8 @@ from query import (validarLogin, check_credentials, login_required_admin, login_
                     obtener_id_membresia_usuario, consultar_bloques_contiguos, registrar_pago_nomina, obtener_id_usuario_por_identificacion, insertar_proveedor,
                     eliminar_proveedor_id, actualizar_proveedor, obtener_proveedor_por_id,obtener_clases_disponibles, obtener_id_membresia_usuario_activa, insertar_reserva_clase,
                     existe_reserva, obtener_reservas_usuario, obtener_clase_por_id, cancelar_reserva_en_bd, obtener_id_clase_por_nombre, obtener_clientes_sin_avance_hoy, insertar_progreso,
-                    existe_avance_hoy, obtener_historial_avances, datos_entrenador, actualizar_datos_entrenador, hash_password)
+                    existe_avance_hoy, obtener_historial_avances, datos_entrenador, actualizar_datos_entrenador, hash_password, maquinas_sin_disponibles, insertar_revision,
+                    insert_revision_sql, insert_observacion_sql, insertar_revision)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -93,6 +94,7 @@ def add_users():
         plan_trabajo = request.form['plan_trab']
         rol = request.form['rol']
         contrasena = request.form['contrasena']
+        print(f"llegada de l id {cedula} *****************")
         if add_user(cedula, nombre, apellido, edad, correo, telefono, genero, plan_trabajo, rol, contrasena):
             flash('Registro exitoso!', 'success')
         else:
@@ -858,6 +860,35 @@ def actualizar_perfil_entrenador():
 
     return redirect(url_for('perfil_entrenador'))
 
+
+#REVISION DE LAS MAQUINAS
+@app.route('/maquinas-no-disponibles')
+@login_required_admin
+def maquinas_no_disponibles():
+    maquinas = maquinas_sin_disponibles()
+    return jsonify(maquinas)
+
+
+@app.route("/enviar-revision", methods=["POST"])
+def enviar_revision():
+    try:
+        data = request.get_json()
+
+        id_inventario_maquina = data.get("id_inventario")
+        print(f" Inventario recibido: {id_inventario_maquina}")
+
+        id_usuario = session.get("id_usuario")   # admin logueado
+        print(f" Usuario (admin) que envía: {id_usuario}")
+
+        observacion_admin = data.get("observacion", "Revisión asignada por el administrador")
+        estado = data.get("estado", 1)  # 1 = pendiente
+
+        id_revision = insertar_revision(id_inventario_maquina, id_usuario, observacion_admin, estado)
+
+        return jsonify({"mensaje": f"Máquina enviada a revisión correctamente", "id_revision": id_revision})
+    except Exception as e:
+        print("Error en enviar_revision:", e)
+        return jsonify({"error": str(e)}), 500
 
 
 
