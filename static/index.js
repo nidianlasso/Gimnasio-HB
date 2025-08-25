@@ -362,9 +362,17 @@ function getListMachine() {
                     btnRevision.classList.add('btn', 'btn-warning', 'btn-sm');
                     btnRevision.dataset.idInventario = user[6];  // <-- Guardar ID
 
-                    btnRevision.addEventListener('click', function () {
-                        abrirModalRevision(this.dataset.idInventario);
-                    });
+                    // 👉 Si ya fue enviada, se deshabilita
+                    if (user[7] === 1) {
+                        btnRevision.textContent = 'En revisión';
+                        btnRevision.disabled = true; 
+                        btnRevision.classList.remove('btn-warning');
+                        btnRevision.classList.add('btn-secondary');
+                    } else {
+                        btnRevision.addEventListener('click', function () {
+                            abrirModalRevision(this.dataset.idInventario);
+                        });
+                    }
 
                     columnaBoton.appendChild(btnRevision);
                 } else {
@@ -380,14 +388,15 @@ function getListMachine() {
         });
 }
 
+
 // =========================
 // Abrir modal y setear datos
 // =========================
 // Función para abrir modal de revisión
 // =========================
 function abrirModalRevision(idInventario) {
-  document.getElementById("idMaquinaRevision").value = idInventario;
-  $('#modalRevision').modal('show');
+    document.getElementById("idMaquinaRevision").value = idInventario;
+    $('#modalRevision').modal('show');
 }
 
 
@@ -413,14 +422,59 @@ function enviarRevision(event) {
             observacion: observacion
         })
     })
-    .then(res => res.json())
-    .then(data => {
-        console.log("Respuesta:", data);
-        alert(data.mensaje || "Revisión enviada");
-        $('#modalRevision').modal('hide'); // cerrar modal
-        getListMachine(); // refrescar tabla
-    })
-    .catch(error => console.error("Error al enviar revisión:", error));
+        .then(res => res.json())
+        .then(data => {
+            console.log("Respuesta:", data);
+            alert(data.mensaje || "Revisión enviada");
+            const btn = document.querySelector(`button[data-id-inventario="${idInventario}"]`);
+            if (btn) {
+                btn.textContent = 'En revisión';
+                btn.disabled = true;                          // que no haga nada
+                btn.classList.remove('btn-warning');
+                btn.classList.add('btn-secondary');          // cambia color
+            }
+            $('#modalRevision').modal('hide'); // cerrar modal
+            getListMachine();
+        })
+        .catch(error => console.error("Error al enviar revisión:", error));
+}
+
+function mostrarInformes() {
+  document.getElementById("informes").style.display = "block";
+
+  // Ejemplo de datos simulados (esto luego vendrá de tu BD Flask/MySQL)
+  const informes = [
+    { maquina: "Bicicleta Estática", fecha: "2025-08-20", estado: "En revisión", obs: "Cadena floja" },
+    { maquina: "Caminadora", fecha: "2025-08-21", estado: "Reparada", obs: "Motor reemplazado" },
+    { maquina: "Press de banca", fecha: "2025-08-23", estado: "Pendiente", obs: "A la espera de repuestos" }
+  ];
+
+  let tabla = document.getElementById("tabla-informes");
+  tabla.innerHTML = "";
+
+  informes.forEach(informe => {
+    let fila = `
+      <tr>
+        <td>${informe.maquina}</td>
+        <td>${informe.fecha}</td>
+        <td>
+          <span style="padding:4px 8px; border-radius:6px; 
+            ${informe.estado === "Pendiente" ? "background:#ffc107; color:#000;" : 
+              informe.estado === "En revisión" ? "background:#17a2b8; color:#fff;" : 
+              "background:#28a745; color:#fff;"}">
+            ${informe.estado}
+          </span>
+        </td>
+        <td>${informe.obs}</td>
+        <td>
+          <button style="padding:6px 10px; background:#007bff; color:#fff; border:none; border-radius:6px; cursor:pointer;">
+            Ver Detalle
+          </button>
+        </td>
+      </tr>
+    `;
+    tabla.innerHTML += fila;
+  });
 }
 
 

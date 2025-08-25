@@ -248,6 +248,7 @@ def assig_membreships():
     try:
         cursor.execute("SELECT u.identificacion, u.nombre, u.apellido, m.costo, m.tipo, mu.fecha_inicio, mu.fecha_fin, em.nombre AS estado_membresia, u.id_usuario, mu.id_membresia_usuario, m.id_membresia FROM usuario u LEFT JOIN membresia_usuario mu ON mu.id_usuario = u.id_usuario LEFT JOIN membresia m ON mu.id_membresia = m.id_membresia LEFT JOIN estado_membresia em ON mu.id_estado_membresia = em.id_estado_membresia WHERE u.id_rol= '5';")
         campos_asignacion = cursor.fetchall()
+        print(f'esto es lo que llega de asignacion de membresia')
         return campos_asignacion
     except Exception as e:
         print(f"Error al ejecutar la consulta: {e}")
@@ -301,7 +302,32 @@ def actualizar_membresia( tipo, fecha_inicio, fecha_fin, estado, id_membresia_us
 
 #OBTENER EL LISTADO DE MIEMBROS PARA GESTION
 def lista_maquinas():
-    cursor.execute("SELECT m.nombre, i.serial, i.fecha_compra, i.precio, p.nombre, i.disponibilidad, i.id_inventario_maquina FROM inventario_maquina i INNER JOIN maquina m ON i.id_maquina = m.id_maquina INNER JOIN proveedor p ON i.id_proveedor = p.id_proveedor")
+    cursor.execute("""
+        SELECT 
+            m.nombre            AS nombre_maquina,
+            i.serial            AS serial,
+            i.fecha_compra,
+            i.precio,
+            p.nombre            AS proveedor,
+            i.disponibilidad,
+            i.id_inventario_maquina,
+            r.id_estado_revision,
+            orv.observacion_admin,
+            orv.observacion_tecnico
+        FROM inventario_maquina i
+        INNER JOIN maquina m ON i.id_maquina = m.id_maquina
+        INNER JOIN proveedor p ON i.id_proveedor = p.id_proveedor
+        LEFT JOIN revision r 
+            ON r.id_inventario_maquina = i.id_inventario_maquina
+            AND r.id_revision = (
+                SELECT MAX(r2.id_revision)
+                FROM revision r2
+                WHERE r2.id_inventario_maquina = i.id_inventario_maquina
+            )
+        LEFT JOIN observacion_revision orv 
+            ON orv.id_revision = r.id_revision
+        ORDER BY i.id_inventario_maquina;
+    """)
     listado_maquinas = cursor.fetchall()
     return listado_maquinas
 #OBTENER EL LISTADO DE MIEMBROS
@@ -1012,4 +1038,7 @@ def insertar_revision(id_inventario_maquina, id_usuario, observacion_admin, esta
         print(f"Error al insertar revisión: {e}")
         return None
 
-    
+def reports_machine():
+    cursor.execute("SELECT i.id_maquina, m.nombre, r.fecha_revision, r.id_estado_revision, o.observacion_admin FROM inventario_maquina i JOIN maquina m ON i.id_maquina = m.id_maquina JOIN revision r ON i.id_inventario_maquina = r.id_inventario_maquina LEFT JOIN observacion_revision o ON o.id_revision = r.id_revision")
+    reportes = cursor.fetchall()
+    return reportes

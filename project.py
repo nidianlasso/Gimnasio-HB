@@ -24,7 +24,7 @@ from query import (validarLogin, check_credentials, login_required_admin, login_
                     eliminar_proveedor_id, actualizar_proveedor, obtener_proveedor_por_id,obtener_clases_disponibles, obtener_id_membresia_usuario_activa, insertar_reserva_clase,
                     existe_reserva, obtener_reservas_usuario, obtener_clase_por_id, cancelar_reserva_en_bd, obtener_id_clase_por_nombre, obtener_clientes_sin_avance_hoy, insertar_progreso,
                     existe_avance_hoy, obtener_historial_avances, datos_entrenador, actualizar_datos_entrenador, hash_password, maquinas_sin_disponibles, insertar_revision,
-                    insert_revision_sql, insert_observacion_sql, insertar_revision)
+                    insert_revision_sql, insert_observacion_sql, insertar_revision, reports_machine)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -889,6 +889,13 @@ def enviar_revision():
     except Exception as e:
         print("Error en enviar_revision:", e)
         return jsonify({"error": str(e)}), 500
+
+#MOSTRAR EL INFORME DE LA REVISION
+@app.route("/informes-revision")
+def informes_revision():
+    # Más adelante aquí puedes conectar a la BD y traer los informes
+    reportes = reports_machine()
+    return render_template("/Administrator/machine_inspection.html", reportes = reportes)
 
 
 
