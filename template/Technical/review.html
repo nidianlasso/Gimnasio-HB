@@ -1,0 +1,55 @@
+{% include 'main.html' %}
+<body class="bg-light" style="background: lightgrey;">
+
+  <div class="container py-5">
+    <div class="card shadow-lg rounded-4">
+      <div class="card-body p-4">
+        <h2 class="text-center mb-4 mt-4">
+          🔧 Revisión de la máquina: <span class="fw-bold text-warning">{{ revision[3] }}</span>
+        </h2>
+        <p><strong>ID Revisión:</strong> {{ revision[0] }}</p>
+        <p><strong>Fecha:</strong> {{ revision[1] }}</p>
+
+        <form method="POST" class="mt-4">
+          <div class="mb-3">
+            <label for="estado" class="form-label fw-bold"><strong>Estado</strong></label>
+            <select name="estado" id="estado" class="form-select" required>
+                <option value="1" {% if revision[2] == 1 %}selected{% endif %}>Recibida</option>
+                <option value="2" {% if revision[2] == 2 %}selected{% endif %}>En Proceso</option>
+                <option value="3" {% if revision[2] == 3 %}selected{% endif %}>Cancelada</option>
+                <option value="4" {% if revision[2] == 4 %}selected{% endif %}>Finalizada</option>
+            </select>
+
+          </div>
+
+          <div class="mb-3">
+            <label for="observacion" class="form-label fw-semibold"><strong>Nueva observación</strong></label>
+            <textarea name="observacion" id="observacion" class="form-control" rows="4" required></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-warning w-100 fw-bold shadow-sm">
+            💾 Guardar
+          </button>
+        </form>
+
+        <h3 class="mt-5 border-bottom pb-2">
+  <i class="fa-solid fa-receipt" style="color: pink;"></i> Historial de observaciones
+</h3>
+<ul class="list-group list-group-flush mt-3">
+  {% for o in observaciones %}
+    <li class="list-group-item">
+      <p><strong>Admin:</strong> {{ o[0] or 'Sin observación' }}</p>
+      <p><strong>Técnico:</strong> {{ o[1] or 'Sin observación' }}</p>
+      <small class="text-muted">Fecha: {{ o[2] }}</small>
+    </li>
+  {% else %}
+    <li class="list-group-item text-center text-muted fst-italic">
+      No hay observaciones registradas
+    </li>
+  {% endfor %}
+</ul>
+
+      </div>
+    </div>
+  </div>
+</body>

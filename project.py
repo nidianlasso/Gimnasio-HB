@@ -24,7 +24,8 @@ from query import (validarLogin, check_credentials, login_required_admin, login_
                     eliminar_proveedor_id, actualizar_proveedor, obtener_proveedor_por_id,obtener_clases_disponibles, obtener_id_membresia_usuario_activa, insertar_reserva_clase,
                     existe_reserva, obtener_reservas_usuario, obtener_clase_por_id, cancelar_reserva_en_bd, obtener_id_clase_por_nombre, obtener_clientes_sin_avance_hoy, insertar_progreso,
                     existe_avance_hoy, obtener_historial_avances, datos_entrenador, actualizar_datos_entrenador, hash_password, maquinas_sin_disponibles, insertar_revision,
-                    insert_revision_sql, insert_observacion_sql, insertar_revision, reports_machine)
+                    insert_revision_sql, insert_observacion_sql, insertar_revision, reports_machine, actualizar_estado_revision, insertar_observacion, obtener_revision, obtener_observaciones, obtener_revisiones_pendientes,
+                    actualizar_observacion_tecnico)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -893,11 +894,39 @@ def enviar_revision():
 #MOSTRAR EL INFORME DE LA REVISION
 @app.route("/informes-revision")
 def informes_revision():
-    # Más adelante aquí puedes conectar a la BD y traer los informes
     reportes = reports_machine()
     return render_template("/Administrator/machine_inspection.html", reportes = reportes)
 
 
+
+@app.route('/profile-technical')
+def profile_technical():
+    revisiones = obtener_revisiones_pendientes()  # revisiones pendientes del tecnico
+    return render_template('Technical/inspections.html', revisiones=revisiones)
+
+
+@app.route('/tecnico/revisar/<int:id_revision>', methods=['GET', 'POST'])
+def revisar_maquina(id_revision):
+    if request.method == 'POST':
+        estado = request.form['estado']
+        observacion_tecnico = request.form['observacion']
+
+        # Verificar usuario logueado
+        id_usuario = session.get('id_usuario')
+        if not id_usuario:
+            flash("⚠️ Debes iniciar sesión para registrar una observación.", "warning")
+            return redirect(url_for('login'))
+
+        # Actualizar estado de la revisión
+        actualizar_estado_revision(id_revision, estado)
+
+        # Actualizar observación del técnico en vez de insertar nueva
+        actualizar_observacion_tecnico(id_revision, observacion_tecnico)
+
+    revision = obtener_revision(id_revision)
+    observaciones = obtener_observaciones(id_revision)
+
+    return render_template("Technical/review.html", revision=revision, observaciones=observaciones)
 
 if __name__ =='__main__':
     app.run(port =4000, debug =True)

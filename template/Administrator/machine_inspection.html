@@ -74,7 +74,10 @@
       color: #2196f3;
       font-weight: bold;
     }
-
+    .estado-finalizada {
+    color: #28a745; /* Verde */
+    font-weight: bold;
+  }
     /* Botón moderno */
     .btn-back {
       display: block;
@@ -120,10 +123,12 @@
           <td class="{% if rep[3] == 1 %}estado-pendiente
                      {% elif rep[3] == 2 %}estado-en-revision
                      {% elif rep[3] == 3 %}estado-reparada
+                     {% elif rep[3] == 4 %}estado-finalizada
                      {% endif %}">
             {% if rep[3] == 1 %}Pendiente
             {% elif rep[3] == 2 %}En Revisión
             {% elif rep[3] == 3 %}Reparada
+            {% elif rep[3] == 4 %}Finalizada
             {% else %}Desconocido{% endif %}
           </td>
           <td>{{ rep[4] or "Sin observaciones" }}</td>

@@ -51,6 +51,8 @@ def validarLogin(identificacion, contrasena):
             resp = redirect(url_for('profile_coach'))
         elif rol.lower() == "recepcionista":
             resp = redirect(url_for('profile_receptionist'))
+        elif rol.lower() == "tecnico":
+            resp = redirect(url_for('profile_technical'))
 
         resp.set_cookie('identificacion', str(user_identificacion))
         return resp
@@ -1042,3 +1044,92 @@ def reports_machine():
     cursor.execute("SELECT i.id_maquina, m.nombre, r.fecha_revision, r.id_estado_revision, o.observacion_admin FROM inventario_maquina i JOIN maquina m ON i.id_maquina = m.id_maquina JOIN revision r ON i.id_inventario_maquina = r.id_inventario_maquina LEFT JOIN observacion_revision o ON o.id_revision = r.id_revision")
     reportes = cursor.fetchall()
     return reportes
+
+#ACTUALIZAR EL ESTADO DE LA REVISION DE LA MAQUINA DESDE EL PERFIL DE TECNICO
+def actualizar_estado_revision(id_revision, estado):
+    cursor.execute("UPDATE revision SET id_estado_revision = %s WHERE id_revision = %s", (estado, id_revision))
+    connection.commit()
+    return True
+    
+
+# def insertar_observacion(id_revision, id_usuario, observacion):
+#     conn = connection
+#     try:
+#         with conn.cursor() as cursor:
+#             sql = """
+#                 INSERT INTO observacion_revision (id_revision, id_usuario, observacion_tecnico)
+#                 VALUES (%s, %s, %s)
+#             """
+#             cursor.execute(sql, (id_revision, id_usuario, observacion))
+#         conn.commit()
+#     except Exception as e:
+#         conn.rollback()
+#         print(f"Error al insertar observación: {e}")
+
+def insertar_observacion(id_revision, id_usuario, observacion):
+    cursor.execute("SELECT id_obs_revision FROM observacion_revision WHERE id_revision = %s", (id_revision,))
+    existe = cursor.fetchone()
+
+    if existe:
+        cursor.execute("""
+            UPDATE observacion_revision
+            SET observacion_tecnico = %s, fecha = NOW(), id_usuario = %s
+            WHERE id_revision = %s
+        """, (observacion, id_usuario, id_revision))
+
+    else:
+        cursor.execute("""
+            INSERT INTO observacion_revision (id_revision, id_usuario, observacion_tecnico, fecha)
+            VALUES (%s, %s, %s, NOW())
+        """, (id_revision, id_usuario, observacion))
+
+    connection.commit()
+
+
+def obtener_revision(id_revision):
+    cursor.execute("SELECT r.id_revision, r.fecha_revision, r.id_estado_revision, m.nombre FROM revision r JOIN inventario_maquina i ON r.id_inventario_maquina = i.id_inventario_maquina INNER JOIN maquina m ON m.id_maquina = i.id_maquina WHERE r.id_revision = %s", (id_revision,))
+    revision = cursor.fetchone()
+    return revision
+
+def obtener_observaciones(id_revision):
+    cursor.execute("""
+        SELECT observacion_admin, observacion_tecnico, fecha
+        FROM observacion_revision
+        WHERE id_revision = %s
+        ORDER BY fecha DESC
+    """, (id_revision,))
+    observaciones = cursor.fetchall()
+    return observaciones
+
+def actualizar_estado_revision(id_revision, nuevo_estado):
+    cursor.execute("""
+        UPDATE revision
+        SET id_estado_revision = %s
+        WHERE id_revision = %s
+    """, (nuevo_estado, id_revision))
+    connection.commit()
+
+
+def obtener_revisiones_pendientes():
+    cursor.execute("""
+        SELECT r.id_revision, r.fecha_revision, r.id_estado_revision,
+               i.id_maquina, m.nombre AS maquina,
+               o.observacion_admin
+        FROM inventario_maquina i
+        JOIN maquina m ON i.id_maquina = m.id_maquina
+        JOIN revision r ON i.id_inventario_maquina = r.id_inventario_maquina
+        LEFT JOIN observacion_revision o ON o.id_revision = r.id_revision
+        WHERE r.id_estado_revision = 1
+        ORDER BY r.fecha_revision DESC
+    """)
+    revisiones = cursor.fetchall()
+    return revisiones
+
+def actualizar_observacion_tecnico(id_revision, observacion_tecnico):
+    cursor.execute("""
+       UPDATE observacion_revision
+        SET observacion_tecnico = %s, fecha = NOW()
+        WHERE id_revision = %s
+    """, (observacion_tecnico, id_revision))
+    connection.commit()
+
