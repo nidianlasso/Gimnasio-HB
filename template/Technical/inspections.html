@@ -5,6 +5,7 @@
   🛠️ Revisiones Pendientes
 </h2>
 
+{% if revisiones %}
 <div style="overflow-x:auto; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1); background:white; padding:15px;">
   <table style="width:100%; border-collapse:collapse; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size:0.95rem; border-radius:12px; overflow:hidden;">
     <thead>
@@ -20,39 +21,77 @@
     <tbody>
       {% for reporte in revisiones %}
       <tr 
-  {% if loop.index is even %}
-    style="text-align:center; background:#fafafa; cursor:pointer;" 
-  {% else %}
-    style="text-align:center; background:white; cursor:pointer;" 
-  {% endif %}
-  onmouseover="this.style.background='#fff3cd'" 
-  onmouseout="this.style.background='{% if loop.index is even %}#fafafa{% else %}white{% endif %}'"
->
-  <td style="padding:14px;">{{ reporte[0] }}</td>
-  <td style="padding:14px;">{{ reporte[4] }}</td>
-  <td style="padding:14px;">{{ reporte[1] }}</td>
- <td class="{% if reporte[2] == 1 %}estado-pendiente
-           {% elif reporte[2] == 2 %}estado-enrevision
-           {% elif reporte[2] == 3 %}estado-reparada
-           {% else %}estado-desconocido{% endif %}">
-    {% if reporte[2] == 1 %} Pendiente
-    {% elif reporte[2] == 2 %} En Revisión
-    {% elif reporte[2] == 3 %} Reparada
-    {% else %} Desconocido
-    {% endif %}
-</td>
-
-
-  <td style="padding:14px; text-align:left;">{{ reporte[5] or 'Sin observaciones' }}</td>
-  <td style="padding:14px;">
-    <a href="/tecnico/revisar/{{ reporte[0] }}" 
-       style="display:inline-block; padding:8px 16px; background:#ffc107; border-radius:8px; text-decoration:none; font-weight:bold; color:#000; box-shadow:0 2px 5px rgba(0,0,0,0.15); transition:all 0.2s ease-in-out;">
-      Revisar
-    </a>
-  </td>
-</tr>
-
+        {% if loop.index is even %}
+          style="text-align:center; background:#fafafa; cursor:pointer;" 
+        {% else %}
+          style="text-align:center; background:white; cursor:pointer;" 
+        {% endif %}
+        onmouseover="this.style.background='#fff3cd'" 
+        onmouseout="this.style.background='{% if loop.index is even %}#fafafa{% else %}white{% endif %}'"
+      >
+        <td style="padding:14px;">{{ reporte[0] }}</td>
+        <td style="padding:14px;">{{ reporte[4] }}</td>
+        <td style="padding:14px;">{{ reporte[1] }}</td>
+        <td 
+          class="
+            {% if reporte[2] == 1 %} estado-pendiente
+            {% elif reporte[2] == 2 %} estado-revision
+            {% elif reporte[2] == 3 %} estado-reparada
+            {% else %} estado-desconocido
+            {% endif %}
+          "
+        >
+          {% if reporte[2] == 1 %} Pendiente
+          {% elif reporte[2] == 2 %} En Revisión
+          {% elif reporte[2] == 3 %} Reparada
+          {% else %} Desconocido
+          {% endif %}
+        </td>
+        <td style="padding:14px; text-align:left;">{{ reporte[5] or 'Sin observaciones' }}</td>
+        <td style="padding:14px;">
+          <a href="/tecnico/revisar/{{ reporte[0] }}" 
+             style="display:inline-block; padding:8px 16px; background:#ffc107; border-radius:8px; text-decoration:none; font-weight:bold; color:#000; box-shadow:0 2px 5px rgba(0,0,0,0.15); transition:all 0.2s ease-in-out;">
+            Revisar
+          </a>
+        </td>
+      </tr>
       {% endfor %}
     </tbody>
   </table>
 </div>
+{% else %}
+<div style="display:flex; justify-content:center; align-items:center; height:60vh; font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+  <div style="background:#ffffff; padding:40px 50px; border-radius:20px; text-align:center; 
+              box-shadow:0px 8px 20px rgba(0,0,0,0.1); max-width:450px; transition:all 0.2s ease-in-out;">
+    <div style="font-size:70px; color:#6c63ff; margin-bottom:15px;">✅</div>
+    <h2 style="color:#343a40; margin-bottom:10px; font-size:1.5rem;">¡Todo está en orden!</h2>
+    <p style="color:#6c757d; font-size:1rem; margin:0;">
+      No tienes revisiones pendientes en este momento.<br>
+      Disfruta de tu día 😎
+    </p>
+  </div>
+</div>
+{% endif %}
+
+<style>
+  .estado-pendiente {
+    color: #ff9800;
+    font-weight: bold;
+    padding: 14px;
+  }
+  .estado-revision {
+    color: #2196f3;
+    font-weight: bold;
+    padding: 14px;
+  }
+  .estado-reparada {
+    color: #4caf50;
+    font-weight: bold;
+    padding: 14px;
+  }
+  .estado-desconocido {
+    color: #6c757d;
+    font-weight: bold;
+    padding: 14px;
+  }
+</style>

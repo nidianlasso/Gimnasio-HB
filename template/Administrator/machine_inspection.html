@@ -107,17 +107,16 @@
     <table>
       <thead>
         <tr>
-          <th>ID Máquina</th>
           <th>Nombre</th>
           <th>Fecha de Envío</th>
           <th>Estado</th>
           <th>Observaciones</th>
+          <th>Observaciones Técnico</th>
         </tr>
       </thead>
       <tbody>
         {% for rep in reportes %}
         <tr>
-          <td>{{ rep[0] }}</td>
           <td>{{ rep[1] }}</td>
           <td>{{ rep[2] }}</td>
           <td class="{% if rep[3] == 1 %}estado-pendiente
@@ -132,6 +131,7 @@
             {% else %}Desconocido{% endif %}
           </td>
           <td>{{ rep[4] or "Sin observaciones" }}</td>
+          <td>{{ rep[5] or "Sin observaciones" }}</td>
         </tr>
         {% endfor %}
       </tbody>

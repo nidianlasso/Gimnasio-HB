@@ -990,10 +990,24 @@ WHERE i.disponibilidad = 0;
     maquinas = cursor.fetchall()
     return maquinas
 
-def lista_tecnicos():
-    cursor.execute("SELECT u.id_usuario, u.nombre, u.apellido FROM usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE r.nombre = 'Tecnico'")
-    resultado = cursor.fetchall()
-    return resultado
+def lista_tecnicos(id_usuario= None):
+    if id_usuario:
+        cursor.execute("SELECT u.id_usuario, u.identificacion, u.nombre, u.apellido, u.correo, r.nombre, u.edad, g.tipo FROM usuario u INNER JOIN rol r ON u.id_rol = r.id_rol INNER JOIN genero g ON g.id_genero = u.id_genero WHERE r.nombre = 'Tecnico' AND u.id_usuario = %s", (id_usuario))
+        resultado = cursor.fetchone()
+        return resultado
+    else:
+        cursor.execute("SELECT u.id_usuario, u.nombre, u.apellido, u.identificacion, u.correo, r.nombre AS rol, u.edad, u.id_genero FROM usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE r.nombre = 'Tecnico'")
+        resultado = cursor.fetchone()
+        return resultado
+
+def actualizar_usuario(id, nombre, apellido, correo, edad):
+    cursor.execute("""
+        UPDATE usuario 
+        SET nombre=%s, apellido=%s, correo=%s, edad=%s 
+        WHERE id_usuario=%s
+    """, (nombre, apellido, correo, edad, id))
+    connection.commit()
+
 
 
 # ========== CONSULTAS ==========
@@ -1041,7 +1055,7 @@ def insertar_revision(id_inventario_maquina, id_usuario, observacion_admin, esta
         return None
 
 def reports_machine():
-    cursor.execute("SELECT i.id_maquina, m.nombre, r.fecha_revision, r.id_estado_revision, o.observacion_admin FROM inventario_maquina i JOIN maquina m ON i.id_maquina = m.id_maquina JOIN revision r ON i.id_inventario_maquina = r.id_inventario_maquina LEFT JOIN observacion_revision o ON o.id_revision = r.id_revision")
+    cursor.execute("SELECT i.id_maquina, m.nombre, r.fecha_revision, r.id_estado_revision, o.observacion_admin, o.observacion_tecnico FROM inventario_maquina i JOIN maquina m ON i.id_maquina = m.id_maquina JOIN revision r ON i.id_inventario_maquina = r.id_inventario_maquina LEFT JOIN observacion_revision o ON o.id_revision = r.id_revision")
     reportes = cursor.fetchall()
     return reportes
 
@@ -1051,21 +1065,6 @@ def actualizar_estado_revision(id_revision, estado):
     connection.commit()
     return True
     
-
-# def insertar_observacion(id_revision, id_usuario, observacion):
-#     conn = connection
-#     try:
-#         with conn.cursor() as cursor:
-#             sql = """
-#                 INSERT INTO observacion_revision (id_revision, id_usuario, observacion_tecnico)
-#                 VALUES (%s, %s, %s)
-#             """
-#             cursor.execute(sql, (id_revision, id_usuario, observacion))
-#         conn.commit()
-#     except Exception as e:
-#         conn.rollback()
-#         print(f"Error al insertar observación: {e}")
-
 def insertar_observacion(id_revision, id_usuario, observacion):
     cursor.execute("SELECT id_obs_revision FROM observacion_revision WHERE id_revision = %s", (id_revision,))
     existe = cursor.fetchone()
@@ -1132,4 +1131,3 @@ def actualizar_observacion_tecnico(id_revision, observacion_tecnico):
         WHERE id_revision = %s
     """, (observacion_tecnico, id_revision))
     connection.commit()
-

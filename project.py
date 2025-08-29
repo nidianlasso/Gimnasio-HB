@@ -25,7 +25,7 @@ from query import (validarLogin, check_credentials, login_required_admin, login_
                     existe_reserva, obtener_reservas_usuario, obtener_clase_por_id, cancelar_reserva_en_bd, obtener_id_clase_por_nombre, obtener_clientes_sin_avance_hoy, insertar_progreso,
                     existe_avance_hoy, obtener_historial_avances, datos_entrenador, actualizar_datos_entrenador, hash_password, maquinas_sin_disponibles, insertar_revision,
                     insert_revision_sql, insert_observacion_sql, insertar_revision, reports_machine, actualizar_estado_revision, insertar_observacion, obtener_revision, obtener_observaciones, obtener_revisiones_pendientes,
-                    actualizar_observacion_tecnico)
+                    actualizar_observacion_tecnico, lista_tecnicos, actualizar_usuario)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -910,23 +910,49 @@ def revisar_maquina(id_revision):
     if request.method == 'POST':
         estado = request.form['estado']
         observacion_tecnico = request.form['observacion']
-
-        # Verificar usuario logueado
         id_usuario = session.get('id_usuario')
         if not id_usuario:
             flash("⚠️ Debes iniciar sesión para registrar una observación.", "warning")
             return redirect(url_for('login'))
-
-        # Actualizar estado de la revisión
         actualizar_estado_revision(id_revision, estado)
 
         # Actualizar observación del técnico en vez de insertar nueva
         actualizar_observacion_tecnico(id_revision, observacion_tecnico)
+        flash("✅ Revisión actualizada correctamente", "success")
+        return redirect(url_for('profile_technical'))
 
     revision = obtener_revision(id_revision)
     observaciones = obtener_observaciones(id_revision)
 
     return render_template("Technical/review.html", revision=revision, observaciones=observaciones)
+
+
+@app.route('/profile')
+def profile_tech():
+    datosTec = lista_tecnicos()
+    print(f"esto llega de {datosTec}")
+    return render_template('Technical/profile.html', datos = datosTec)
+
+@app.route('/profile/edit/<int:id>', methods=['GET'])
+def edit_profile(id):
+    tecnico = lista_tecnicos(id)
+    return render_template('Technical/edit_profile.html', tecnico=tecnico)
+
+@app.route('/profile/update/<int:id>', methods=['POST'])
+def update_profile(id):
+    nombre = request.form['nombre']
+    apellido = request.form['apellido']
+    correo = request.form['correo']
+    edad = request.form['edad']
+
+    actualizado = actualizar_usuario(id, nombre, apellido, correo, edad)
+
+    if actualizado:
+        flash("✅ Perfil actualizado correctamente.")
+    else:
+        flash("⚠️ No se realizaron cambios.")
+
+    return redirect(url_for('profile_tech'))
 
 if __name__ =='__main__':
     app.run(port =4000, debug =True)
