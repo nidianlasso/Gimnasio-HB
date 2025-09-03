@@ -1,6 +1,9 @@
-{% include 'main.html' %}
-    {% include 'Administrator/menu.html' %}
-    <h1 style="text-align: center; margin-top: 5px;">Eliminar Clases</h1>
+{% extends "base.html" %}
+{% block menu %}
+    {% include "administrator/menu.html" %}
+{% endblock %}
+{% block content %}
+    <h1 style="text-align: center; margin-top: -370px;">Eliminar Clases</h1>
 
     <div class="tabla_eliminar">
         {% if clase_delete %}
@@ -37,3 +40,4 @@
         <p>No hay clases registradas.</p>
     {% endif %}
     </div>
+{% endblock %}

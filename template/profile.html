@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block menu %}
+{% include carpeta_rol + '/menu.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="margin-top: -400px;">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-11 col-lg-9">
+      <div class="card shadow-lg border-0 rounded-4 p-4" style="background: linear-gradient(135deg, #f5f7fa, #c3cfe2);">
+        
+        <!-- Encabezado con avatar y nombre -->
+        <div class="d-flex flex-column flex-md-row align-items-center justify-content-between mb-4 gap-3">
+          <div class="d-flex align-items-center">
+            <div class="rounded-circle d-flex align-items-center justify-content-center"
+              style="width: 100px; height: 100px; background-color: rgba(0, 123, 255, 0.15);">
+              <i class="fas fa-user fa-3x text-primary"></i>
+            </div>
+            <div class="ms-3" style="margin-left: 50px;">
+              <h4 class="fw-bold mb-1">{{ usuario.nombre }} {{ usuario.apellido }}</h4>
+              <small class="text-muted text-uppercase">{{ usuario.rol }}</small>
+            </div>
+          </div>
+          <div class="text-md-end">
+            <span class="badge bg-success fs-6 py-2 px-3 rounded-pill">
+              <i class="fas fa-circle me-1"></i> Activo
+            </span>
+          </div>
+        </div>
+
+        <hr class="mb-4">
+
+        <!-- Información general (para todos los roles) -->
+        <div class="row g-3 mb-4">
+          <div class="col-12 col-md-6">
+            <div class="card shadow-sm rounded-3 p-3 h-100">
+              <h6 class="fw-semibold mb-2 text-primary">
+                <i class="fa-solid fa-envelope-circle-check" style="color: blue;"></i> Correo
+              </h6>
+              <p class="mb-0 text-muted fs-5">{{ usuario.correo }}</p>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="card shadow-sm rounded-3 p-3 h-100">
+              <h6 class="fw-semibold mb-2 text-primary">
+                <i class="fa-solid fa-phone-flip" style="color: green;"></i> Teléfono
+              </h6>
+              <p class="mb-0 text-muted fs-5">{{ usuario.telefono }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-3 mb-4">
+          <div class="col-12 col-md-12">
+            <div class="card shadow-sm rounded-3 p-3 h-100">
+              <h6 class="fw-semibold mb-2 text-primary">
+                <i class="fa-solid fa-id-badge" style="color: burlywood;"></i> Edad
+              </h6>
+              <p class="mb-0 text-muted fs-5">{{ usuario.edad }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contenido según el rol -->
+        {% if usuario.rol.lower() == "miembro" %}
+        <div class="row g-3 mb-4">
+          <div class="col-12 col-md-6">
+            <div class="card shadow-sm rounded-3 p-3 h-100">
+              <h6 class="fw-semibold mb-2 text-primary">
+                <i class="fas fa-dumbbell me-2" style="color: black;"></i> Plan de trabajo
+              </h6>
+              <p class="mb-0 text-muted fs-5">{{ plan_trabajo }}</p>
+            </div>
+          </div>
+          <div class="col-12 col-md-6">
+            <div class="card shadow-sm rounded-3 p-3 h-100">
+              <h6 class="fw-semibold mb-2 text-primary">
+                <i class="fas fa-id-card me-2" style="color: blue;"></i> Estado de membresía
+              </h6>
+              <p class="mb-0 text-muted fs-5">
+                {{ membresia.1 }}
+                {% if membresia.1 == 'Activa' %}
+                <i class="fas fa-check-circle ms-2 text-success"></i>
+                {% else %}
+                <i class="fas fa-times-circle ms-2 text-danger"></i>
+                {% endif %}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {% elif usuario.rol.lower() == "entrenador" %}
+        <a href="{{ url_for('mis_clientes') }}" class="card shadow-sm rounded-4 p-3 mb-4 d-block text-decoration-none">
+          <h5 class="fw-semibold mb-3 text-primary">
+            <i class="fas fa-users me-2"></i> Clientes asignados
+          </h5>
+        </a>
+        <a href="{{ url_for('mis_clientes') }}" class="card shadow-sm rounded-4 p-3 mb-4 d-block text-decoration-none">
+          <h5 class="fw-semibold mb-3 text-primary">
+            <i class="fa-solid fa-file-circle-check" style="color: green"></i> Avances registrados
+          </h5>
+        </a>
+
+        {% elif usuario.rol.lower() == "administrador" %}
+        <div class="card shadow-sm rounded-4 p-3 mb-4">
+          <h5 class="fw-semibold text-primary">Panel de administración</h5>
+          <p class="text-muted">Acceso a las funciones administrativas.</p>
+        </div>
+
+        {% else %}
+        <div class="card shadow-sm rounded-4 p-3 mb-4">
+          <h5 class="fw-semibold text-primary">Información de {{ usuario.rol }}</h5>
+          <p class="text-muted">Contenido personalizado para este rol.</p>
+        </div>
+        {% endif %}
+
+        <!-- Botón editar perfil -->
+        <div class="d-flex justify-content-end mt-4">
+          <a href="{{ url_for('edit_profile', rol=usuario.rol|lower) }}" class="btn rounded-pill px-4 shadow-sm"
+            style="background: #F1B63C;">
+            <i class="fas fa-edit me-2"></i> Editar perfil
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

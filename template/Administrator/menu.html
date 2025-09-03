@@ -1,27 +1,12 @@
-<header>
-    <div class="container__menu">
-        <div class="menu">
-            <nav>
-                <ul>
-                    <li><a href="{{ url_for('administrator') }}" id="selected">Inicio</a></li>
-                        <li><a href="#">Servicios</a>
-                            <ul>
-                                <li><a href="{{ url_for('manage_users') }}">Gestión de usuarios</a></li>
-                                <li><a href="{{url_for('manage_machine')}}">Gestión de máquinas</a></li>
-                                <li><a href="{{url_for('mostrar_formulario_nomina')}}">Gestión de nómina</a></li>
-                                <li><a href="#">Gestión de membresias</a></li>
-                                <li><a href="{{url_for('view_provider')}}">Gestión de proveedores</a></li>
-                            </ul>
-                        </li>
-                        <li><a href="#">Nosotros</a></li>
-                        <li><a href="#">Contactos</a></li>
-                        <!-- <li class="admin">
-                            <h6>Admin</h6>
-                        </li>
-                        <li class="user"><img src="/static/img/ic_person.png" alt=""></li> -->
-                        <li style="position: absolute; right: 5px; top: 5px; height: 55px;"><a href="{{ url_for('login') }}">Salir</a></li>
-                </ul>
-            </nav>
-        </div>
-    </div>
-</header>
+<li><a href="{{ url_for('administrator') }}" id="selected">Inicio</a></li>
+<li><a href="#">Servicios</a>
+    <ul>
+        <li><a href="{{ url_for('manage_users') }}">Gestión de usuarios</a></li>
+        <li><a href="{{ url_for('manage_machine') }}">Gestión de máquinas</a></li>
+        <li><a href="{{ url_for('mostrar_formulario_nomina') }}">Gestión de nómina</a></li>
+        <li><a href="#">Gestión de membresías</a></li>
+        <li><a href="{{ url_for('view_provider') }}">Gestión de proveedores</a></li>
+        <li><a href="{{ url_for('profile', rol=session['rol'].lower()) }}">Perfil</a></li>
+    </ul>
+</li>
+

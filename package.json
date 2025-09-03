@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "datetime": "^0.0.3",
     "flask": "^0.2.10",
     "mysql": "^2.18.1",

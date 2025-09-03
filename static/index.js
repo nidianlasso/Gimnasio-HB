@@ -265,48 +265,27 @@ function update_membreship() {
         });
 }
 
-/*GESTION DE LAS MAQUINAS */
-// =========================
-// Inicialización del modal
-// =========================
-// =========================
-// Función global que abre el modal
-// =========================
-// =========================
-// Función global para abrir el modal
-// =========================
 function abrirModalRevision(idInventario) {
     const modalRevision = document.getElementById("modalRevision");
     const observacionInput = document.getElementById("observacionInput");
-
-    // Guardamos el ID seleccionado en un input hidden (o data-atributo)
     document.getElementById("idMaquinaRevision").value = idInventario;
 
-    observacionInput.value = ""; // limpiar campo
-    modalRevision.style.display = "block"; // mostrar modal
+    observacionInput.value = ""; 
+    modalRevision.style.display = "block"; 
 }
 
-// =========================
-// Inicializar modal (botón cancelar)
-// =================// =========================
-// Inicialización del modal de revisión
-// =========================
+
 function initModalRevision() {
-    // Ya no necesitas document.getElementById ni tocar style.display
-    // Bootstrap se encarga de mostrar/ocultar
     const btnCancelar = document.getElementById("btnCancelarRevision");
 
     if (btnCancelar) {
         btnCancelar.addEventListener("click", function () {
-            $('#modalRevision').modal('hide'); // 👈 Ocultar modal con Bootstrap
+            $('#modalRevision').modal('hide'); 
         });
     }
 }
 
 
-// =========================
-// Listado de máquinas
-// =========================
 function getListMachine() {
     const tablaCuerpo = document.querySelector('#listaMaquinas tbody');
     const tabla = document.getElementById('listaMaquinas');
@@ -322,8 +301,6 @@ function getListMachine() {
             console.log(data);
             data.forEach(user => {
                 const fila = document.createElement('tr');
-
-                // user[0] = nombre, user[1] = serial, etc.
                 const nombreMaquina = document.createElement('td');
                 nombreMaquina.textContent = user[0];
                 fila.appendChild(nombreMaquina);
@@ -349,20 +326,17 @@ function getListMachine() {
                 proveedorMaquina.textContent = user[4];
                 fila.appendChild(proveedorMaquina);
 
-                // Columna de disponibilidad
                 const disponibilidadMaquina = document.createElement('td');
                 disponibilidadMaquina.textContent = user[5] === 1 ? 'Disponible' : 'No Disponible';
                 fila.appendChild(disponibilidadMaquina);
 
-                // Columna del botón
                 const columnaBoton = document.createElement('td');
                 if (user[5] !== 1) {
                     const btnRevision = document.createElement('button');
                     btnRevision.textContent = 'Enviar a revisión';
                     btnRevision.classList.add('btn', 'btn-warning', 'btn-sm');
-                    btnRevision.dataset.idInventario = user[6];  // <-- Guardar ID
+                    btnRevision.dataset.idInventario = user[6]; 
 
-                    // 👉 Si ya fue enviada, se deshabilita
                     if (user[7] === 1) {
                         btnRevision.textContent = 'En revisión';
                         btnRevision.disabled = true; 
@@ -389,11 +363,6 @@ function getListMachine() {
 }
 
 
-// =========================
-// Abrir modal y setear datos
-// =========================
-// Función para abrir modal de revisión
-// =========================
 function abrirModalRevision(idInventario) {
     document.getElementById("idMaquinaRevision").value = idInventario;
     $('#modalRevision').modal('show');
@@ -429,11 +398,11 @@ function enviarRevision(event) {
             const btn = document.querySelector(`button[data-id-inventario="${idInventario}"]`);
             if (btn) {
                 btn.textContent = 'En revisión';
-                btn.disabled = true;                          // que no haga nada
+                btn.disabled = true;                          
                 btn.classList.remove('btn-warning');
-                btn.classList.add('btn-secondary');          // cambia color
+                btn.classList.add('btn-secondary');   
             }
-            $('#modalRevision').modal('hide'); // cerrar modal
+            $('#modalRevision').modal('hide'); 
             getListMachine();
         })
         .catch(error => console.error("Error al enviar revisión:", error));
@@ -442,13 +411,7 @@ function enviarRevision(event) {
 function mostrarInformes() {
   document.getElementById("informes").style.display = "block";
 
-  // Ejemplo de datos simulados (esto luego vendrá de tu BD Flask/MySQL)
-  const informes = [
-    { maquina: "Bicicleta Estática", fecha: "2025-08-20", estado: "En revisión", obs: "Cadena floja" },
-    { maquina: "Caminadora", fecha: "2025-08-21", estado: "Reparada", obs: "Motor reemplazado" },
-    { maquina: "Press de banca", fecha: "2025-08-23", estado: "Pendiente", obs: "A la espera de repuestos" }
-  ];
-
+  
   let tabla = document.getElementById("tabla-informes");
   tabla.innerHTML = "";
 
@@ -478,9 +441,9 @@ function mostrarInformes() {
 }
 
 
-//Disponibilidad de maquinas administrador
+
 $('#maquinasDisponibles').on('show.bs.modal', function () {
-    available_machines_page();  // Esta es la función que cargará los datos DESDE BACK
+    available_machines_page();
 });
 
 function cargarMaquinas(tipo) {
@@ -495,12 +458,10 @@ function cargarMaquinas(tipo) {
             const tabla = document.getElementById('tablaPrincipal');
             const calendarioContainer = document.getElementById('contenedorCalendario');
 
-            // Limpia solo si existen
             if (tbody) tbody.innerHTML = '';
             if (thead) thead.innerHTML = '';
             if (calendarioContainer) calendarioContainer.innerHTML = '';
 
-            // Mostrar u ocultar contenedores según el tipo
             if (tipo === 'disponibilidad_horaria') {
                 if (tabla) tabla.style.display = 'none';
                 if (calendarioContainer) calendarioContainer.style.display = 'block';
@@ -509,7 +470,6 @@ function cargarMaquinas(tipo) {
                 if (calendarioContainer) calendarioContainer.style.display = 'none';
             }
 
-            // Tabla: máquinas reservadas
             if (tipo === 'reservadas') {
                 thead.innerHTML = `
                     <tr>
@@ -535,7 +495,6 @@ function cargarMaquinas(tipo) {
                 });
             }
 
-            // Tabla: máquinas disponibles
             else if (tipo === 'disponibles') {
                 thead.innerHTML = `
                     <tr>
@@ -551,7 +510,6 @@ function cargarMaquinas(tipo) {
                 });
             }
 
-            // Calendario: disponibilidad horaria
             else if (tipo === 'disponibilidad_horaria') {
                 data.forEach(maquina => {
                     const fila = document.createElement('div');
@@ -591,7 +549,6 @@ function cargarMaquinas(tipo) {
         });
 }
 
-//***************************************************** */
 function reservarBloque(id_maquina, hora_inicio) {
     console.log('Reservando máquina:', id_maquina, 'a las', hora_inicio);
 
@@ -623,7 +580,6 @@ function reservarBloque(id_maquina, hora_inicio) {
 document.addEventListener('DOMContentLoaded', () => {
     const select = document.getElementById('maquina');
 
-    // Cargar máquinas disponibles
     fetch('/api/maquinas_disponibles')
         .then(res => res.json())
         .then(data => {
@@ -635,7 +591,6 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         });
 
-    // Enviar reserva
     document.getElementById('formReservaMaquina').addEventListener('submit', e => {
         e.preventDefault();
 
@@ -687,7 +642,7 @@ function getSearchMachine() {
         },
     })
         .then(response => {
-            if (!response.ok) { throw new Error('Error en la solicitud'); } return response.json();  // Parsear la respuesta a JSON
+            if (!response.ok) { throw new Error('Error en la solicitud'); } return response.json(); 
         })
         .then(data => {
             console.log("Informacion!!!!");
@@ -798,16 +753,15 @@ function registrarIngreso() {
                     boton.textContent = accesoData.tipo_acceso === 'Active' ? 'Desactivar' : 'Activar';
                     isActive = accesoData.tipo_acceso === 'Active'; // Actualiza el estado
 
-                    // Manejo del clic del botón
                     boton.addEventListener('click', () => {
                         const nuevoTipoAcceso = boton.textContent === 'Desactivar' ? 'Inactive' : 'Active';
 
                         if (nuevoTipoAcceso === 'Active') {
                             // Activar acceso
-                            inicio = new Date(); // Establece el tiempo de inicio
-                            console.log('Inicio establecido:', inicio); // Verifica el valor de inicio
-                            const fecha = inicio.toISOString(); // Fecha actual
-                            const duracionFormato = segundosAHHMMSS(duracion_defecto); // Usar la duración por defecto
+                            inicio = new Date(); 
+                            console.log('Inicio establecido:', inicio);
+                            const fecha = inicio.toISOString();
+                            const duracionFormato = segundosAHHMMSS(duracion_defecto);
 
                             fetch('/guardar-acceso', {
                                 method: 'POST',
@@ -824,21 +778,20 @@ function registrarIngreso() {
                                 })
                                 .then(data => {
                                     console.log('Acceso registrado:', data);
-                                    boton.textContent = 'Desactivar'; // Cambia el texto del botón
-                                    isActive = true; // Marca que está activo
+                                    boton.textContent = 'Desactivar';
+                                    isActive = true;
                                 })
                                 .catch(error => {
                                     console.error('Error al guardar el acceso:', error);
                                 });
                         } else {
-                            // Desactivar acceso
                             if (!isActive) {
                                 console.error('No se puede desactivar, el acceso no está activo');
                                 return;
                             }
 
                             const fin = new Date();
-                            const duracionSegundos = Math.floor((fin - inicio) / 1000); // Duración en segundos
+                            const duracionSegundos = Math.floor((fin - inicio) / 1000);
                             console.log('Duración en segundos:', duracionSegundos);
 
                             if (duracionSegundos < 0) {
@@ -846,7 +799,7 @@ function registrarIngreso() {
                                 return;
                             }
 
-                            const duracionFormato = segundosAHHMMSS(duracionSegundos); // Convertir a formato HH:MM:SS
+                            const duracionFormato = segundosAHHMMSS(duracionSegundos); 
 
                             fetch('/guardar-acceso', {
                                 method: 'POST',
@@ -862,8 +815,8 @@ function registrarIngreso() {
                                     throw new Error('Error en la solicitud');
                                 })
                                 .then(data => {
-                                    boton.textContent = 'Activar'; // Cambia el texto del botón
-                                    isActive = false; // Marca que ya no está activo
+                                    boton.textContent = 'Activar';
+                                    isActive = false; 
                                 })
                                 .catch(error => {
                                     console.error('Error al desactivar el acceso:', error);
@@ -886,8 +839,8 @@ function registrarIngreso() {
 // Función para crear un acceso nuevo si no existe
 function crearAcceso(id_usuario) {
     const fecha = new Date().toISOString();
-    const duracionFormato = segundosAHHMMSS(duracion_defecto); // Usar la duración por defecto
-    const tipo_acceso = 'Active'; // Tipo de acceso inicial
+    const duracionFormato = segundosAHHMMSS(duracion_defecto);
+    const tipo_acceso = 'Active';
 
     return fetch('/guardar-acceso', {
         method: 'POST',
@@ -904,7 +857,7 @@ function crearAcceso(id_usuario) {
         })
         .then(data => {
             console.log('Nuevo acceso creado:', data);
-            return { tipo_acceso }; // Devuelve el tipo de acceso que se acaba de crear
+            return { tipo_acceso }; 
         })
         .catch(error => {
             console.error('Error al crear el acceso:', error);
@@ -919,7 +872,7 @@ function assign_coach() {
             if (!response.ok) {
                 throw new Error('Error en la solicitud');
             }
-            return response.json(); // Parsear la respuesta a JSON
+            return response.json(); 
         })
         .then(data => {
             const miembrosActivos = data.filter(info_user =>
@@ -945,14 +898,13 @@ function assign_coach() {
                 apellido.textContent = info_user[2];
                 fila.appendChild(apellido);
 
-                const planTrabajoMiembro = info_user[8]; // Plan de trabajo del miembro
+                const planTrabajoMiembro = info_user[8];
                 const entrenadorAsignado = entrenadoresActivos.find(entrenador => entrenador[8] === planTrabajoMiembro);
                 if (entrenadorAsignado) {
                     const entrenadorCelda = document.createElement('td');
-                    entrenadorCelda.textContent = entrenadorAsignado[1]; // Nombre del entrenador
+                    entrenadorCelda.textContent = entrenadorAsignado[1]; 
                     fila.appendChild(entrenadorCelda);
                 } else {
-                    // Disponibilidad del entrenador
                     const entrenadorCelda = document.createElement('td');
                     entrenadorCelda.textContent = "Sin entrenador disponible";
                     fila.appendChild(entrenadorCelda);
@@ -1008,7 +960,6 @@ function assign_membreship() {
                     const usuarioId = info_user[8];
                     document.getElementById('usuarioId').value = usuarioId;
 
-                    // Abre el modal
                     $('#detallesMembresia').modal('show');
                 };
                 membresiaCelda.appendChild(botonMembresia);
@@ -1036,7 +987,7 @@ function realizarReserva(data) {
                 alert("Error: " + respuesta.error);
             } else {
                 alert(respuesta.mensaje);
-                cargarMaquinas('disponibilidad_horaria'); // Recarga EL calendario CUANDO SE RESERVA
+                cargarMaquinas('disponibilidad_horaria');
             }
         })
         .catch(err => {

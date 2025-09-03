@@ -1,6 +1,9 @@
-{% include 'main.html' %}
-{% include 'member/menu.html' %}
-    <div class="contenedor_opciones">
+{% extends "base.html" %}
+{% block menu %}
+    {% include "member/menu.html" %}
+{% endblock %}
+{% block content %}
+<div class="contenedor_opciones" style="margin-top: -300px;">
         <div class="row">
             <div class="col-lg-3 col-md-6 col-xs-12">
                 <button onclick="window.location.href='machine-reservation'" class="opt_admin" style="background: #3D7BB3; border: none;">
@@ -31,4 +34,4 @@
             </div>
         </div>
     </div> 
-   
+{% endblock %}

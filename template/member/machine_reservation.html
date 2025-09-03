@@ -1,22 +1,32 @@
-{% include 'main.html' %}
-{% include 'member/menu.html' %}
-<h2>Reserva de máquinas</h2>
-<div id="contenedorCalendario"></div>
+{% extends "base.html" %}
 
+{% block menu %}
+    {% include "member/menu.html" %}
+{% endblock %}
+
+{% block content %}
+    <h2 style="margin-top: -360px;">Reserva de máquinas</h2>
+    <div id="contenedorCalendario"></div>
+{% endblock %}
+
+{% block scripts %}
 <script>
-cargarMaquinas('disponibilidad_horaria');
+document.addEventListener("DOMContentLoaded", function() {
+    cargarMaquinas('disponibilidad_horaria');
 
-function reservar(bloqueId, maquinaId) {
-    fetch('/reservar', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            id_maquina: maquinaId,
-            bloque: bloqueId
+    window.reservar = function(bloqueId, maquinaId) {
+        fetch('/reservar', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                id_maquina: maquinaId,
+                bloque: bloqueId
+            })
         })
-    })
-    .then(res => res.json())
-    .then(data => alert(data.mensaje || 'Reserva realizada'))
-    .catch(err => console.error(err));
-}
+        .then(res => res.json())
+        .then(data => alert(data.mensaje || 'Reserva realizada'))
+        .catch(err => console.error(err));
+    }
+});
 </script>
+{% endblock %}

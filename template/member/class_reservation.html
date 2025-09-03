@@ -1,7 +1,9 @@
-{% include 'main.html' %}
-{% include 'member/menu.html' %}
-
-<div class="reserva-container" style="max-width: 900px; margin: 40px auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+{% extends "base.html" %}
+{% block menu %}
+    {% include "member/menu.html" %}
+{% endblock %}
+{% block content %}
+<div class="reserva-container" style="max-width: 900px; margin: -350px auto; background: #fff; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
     <h1 style="text-align: center; color: #2c3e50; margin-bottom: 25px; font-weight: 700;">Clases disponibles</h1>
 
     <table style="width: 100%; border-collapse: collapse; text-align: center; font-size: 1rem;">
@@ -42,13 +44,14 @@
         </tbody>
     </table>
 </div>
+{% endblock %}
 <script>
     document.addEventListener("DOMContentLoaded", function () {
-    console.log("✅ JavaScript cargado correctamente");
+    console.log("cargado correctamente");
 
     document.querySelectorAll(".form-reserva").forEach(function (form) {
         form.addEventListener("submit", function (e) {
-            e.preventDefault(); // ← DETIENE la redirección
+            e.preventDefault();
 
             const formData = new FormData(form);
             const mensajeDiv = form.querySelector(".mensaje-reserva");
@@ -73,7 +76,7 @@
                 }
             })
             .catch(error => {
-                console.error("❌ Error en JS:", error);
+                console.error("Error:", error);
                 mensajeDiv.textContent = "Error al conectar con el servidor.";
                 mensajeDiv.style.color = "red";
             })

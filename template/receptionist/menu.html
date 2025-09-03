@@ -1,24 +1,15 @@
-<header>
-    <div class="container__menu">
-        <div class="menu">
-            <nav>
-                <ul>
-                    <li><a href="{{ url_for('index_member') }}" id="selected">Inicio</a></li>
-                        <li><a href="#">Servicios</a>
-                            <ul>
-                                <li><a href="{{ url_for('profile_member') }}">REGISTROS</a></li>
-                                <li><a href="#">ASIGNAR INSTRUCTOR</a></li>
-                            </ul>
-                        </li>
-                        <li><a href="#">Nosotros</a></li>
-                        <li><a href="#">Contactos</a></li>
-                        <!-- <li class="admin">
-                            <h6>Admin</h6>
-                        </li>
-                        <li class="user"><img src="/static/img/ic_person.png" alt=""></li> -->
-                        <li style="position: absolute; right: 5px; top: 5px; height: 55px;"><a href="{{ url_for('login') }}">Salir</a></li>
-                </ul>
-            </nav>
-        </div>
-    </div>
-</header>
+{% extends "base.html" %}
+
+{% block title %}Panel Recepcionista{% endblock %}
+
+{% block menu %}
+<li><a href="{{ url_for('receptionist') }}" id="selected">Inicio</a></li>
+<li><a href="#">Servicios</a>
+    <ul>
+        <li><a href="{{ url_for('perfil', rol='recepcionista') }}">Perfil</a></li>
+        <li><a href="#">Registrar membresías</a></li>
+        <li><a href="#">Atención al cliente</a></li>
+        <li><a href="#">Gestión de reservas</a></li>
+    </ul>
+</li>
+{% endblock %}

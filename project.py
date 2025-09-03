@@ -15,17 +15,18 @@ import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from query import (validarLogin, check_credentials, login_required_admin, login_required_member,login_required_coach, login_required_receptionist,
                     lista_miembros,lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
-                    conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship,
-                    guardar_membresia, status_membreship, actualizar_membresia, lista_maquinas, listado_empleados, lista_proveedores, search_machine, access_users,
+                    conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship, obtener_membrehip_user,
+                     status_membreship, actualizar_membresia, lista_maquinas, listado_empleados, lista_proveedores, search_machine, access_users,
                     guardar_acceso, obtener_tipo_acceso, cambiar_estado_acceso, asignar_entrenador, obtener_plan_trabajo, obtener_membrehip_user,
                     save_class_to_db, list_class, delete_class, obtener_reservas_maquinas, obtener_maquinas_disponibles, consultar_reservas_de_hoy, cant_maquinas,
                     cant_proveedores, cant_empleados, obtener_maquinas_disponibles_para_reserva, existe_reserva_en_bloque, registrar_reserva,
                     obtener_id_membresia_usuario, consultar_bloques_contiguos, registrar_pago_nomina, obtener_id_usuario_por_identificacion, insertar_proveedor,
                     eliminar_proveedor_id, actualizar_proveedor, obtener_proveedor_por_id,obtener_clases_disponibles, obtener_id_membresia_usuario_activa, insertar_reserva_clase,
                     existe_reserva, obtener_reservas_usuario, obtener_clase_por_id, cancelar_reserva_en_bd, obtener_id_clase_por_nombre, obtener_clientes_sin_avance_hoy, insertar_progreso,
-                    existe_avance_hoy, obtener_historial_avances, datos_entrenador, actualizar_datos_entrenador, hash_password, maquinas_sin_disponibles, insertar_revision,
+                    existe_avance_hoy, obtener_historial_avances,  maquinas_sin_disponibles, insertar_revision,
                     insert_revision_sql, insert_observacion_sql, insertar_revision, reports_machine, actualizar_estado_revision, insertar_observacion, obtener_revision, obtener_observaciones, obtener_revisiones_pendientes,
-                    actualizar_observacion_tecnico, lista_tecnicos, actualizar_usuario)
+                    actualizar_observacion_tecnico, lista_tecnicos, actualizar_usuario, datos_usuario,
+                    actualizar_datos_usuario, hash_password)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -388,23 +389,74 @@ def review_machines():
 #ENVIO DE MAQUINA A REVISION
 
 #LLAMADO AL TEMPLATE MIEMBRO
-@app.route('/profile-member')
-@login_required_member
-def profile_member():
-    identificacion = session.get('identificacion')
-    print(f"Identificación obtenida de la sesión: {identificacion}")
-    if not identificacion:
-        return redirect(url_for('login'))
+# @app.route('/profile-member')
+# @login_required_member
+# def profile_member():
+#     identificacion = session.get('identificacion')
+#     print(f"Identificación obtenida de la sesión: {identificacion}")
+#     if not identificacion :
+#         return redirect(url_for('login'))
     
-    plan_trabajo = obtener_plan_trabajo(identificacion)
-    membresia_asignada = obtener_membrehip_user(identificacion)
-    return render_template('member/profile.html', plan_trabajo=plan_trabajo, membresia = membresia_asignada)
+#     if "id_usuario" not in session:
+#         return redirect(url_for("login"))
+
+#     id_usuario = session["id_usuario"]
+    
+#     plan_trabajo = obtener_plan_trabajo(identificacion)
+#     membresia_asignada = obtener_membrehip_user(identificacion)
+#     miembro = datos_miembro(id_usuario)
+#     print(f"Esto llega de los datos del miembro")
+
+#     if not miembro:
+#         return "No se encontró el perfil del entrenador o no tiene rol 'Entrenador'", 404
+
+
+#     return render_template('member/profile.html', plan_trabajo=plan_trabajo, membresia = membresia_asignada, miembro = miembro)
+
+# @app.route("/editar-profile-member", methods=["GET"])
+# def edit_profile_member():
+#     if "id_usuario" not in session:
+#         return redirect(url_for("login"))
+    
+#     id_usuario = session["id_usuario"]
+#     entrenador = datos_miembro(id_usuario)
+    
+#     if not entrenador:
+#         flash("No se encontró el entrenador.", "error")
+#         return redirect(url_for("profile_member"))
+    
+#     return render_template("edit_profile.html", entrenador=entrenador)
+
+# @app.route('/update-profile-member', methods=['POST'])
+# def update_profile_member():
+#     id_usuario =  session["id_usuario"]
+#     nombre = request.form['nombre']
+#     apellido = request.form['apellido']
+#     identificacion = request.form['identificacion']
+#     edad = request.form['edad']
+#     correo = request.form['correo']
+#     telefono = request.form['telefono']
+#     contrasena = request.form.get('contrasena', '').strip()
+
+#     if contrasena:
+#         contrasena_hash = hash_password(contrasena)
+#     else:
+#         contrasena_hash = None
+
+#     actualizar_datos_miembro(id_usuario, nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash)
+
+#     return redirect(url_for('perfil_entrenador'))
+
+
 
 #TEMPLETE PRINCIPAL DEL MIEMBRO
 @app.route('/inicio')
 def index_member():
     identificacion = session.get('identificacion')
-    return render_template('member/index.html')
+    if "rol" not in session:
+        return redirect(url_for("login"))
+    
+    return render_template('member/index.html', rol=session["rol"])
 
 #RESERVAR MÁQUINAS ***********************************************************
 # 1. Controlador que retorna las máquinas disponibles en JSON
@@ -415,90 +467,90 @@ def api_maquinas_disponibles():
     return jsonify(resultado)
 
 
+
 # *************************************************************************
 
 #LLAMADO AL TEMPLATE ENTRENADOR
-@app.route('/profile-coach')
+@app.route('/index-coach')
 @login_required_coach
-def profile_coach():
-    return render_template('coach/index.html')
+def index_coach():
+    return render_template('coach/index.html', carpeta_rol="coach")
 
-@app.route('/profile-receptionist', methods=['GET', 'POST'])
-@login_required_receptionist
-def profile_receptionist():
-    return render_template('receptionist/profile.html')    
+# @app.route('/profile-receptionist', methods=['GET', 'POST'])
+# @login_required_receptionist
+# def profile_receptionist():
+#     return render_template('receptionist/profile.html')    
 
 #REGISTRAR LOS ACCESOS
-@app.route('/registrar-ingreso', methods=['POST'])
-def registrar_ingreso():
-    cedula = request.json.get('cedula')
-    resultado = access_users(cedula)
+# @app.route('/registrar-ingreso', methods=['POST'])
+# def registrar_ingreso():
+#     cedula = request.json.get('cedula')
+#     resultado = access_users(cedula)
 
-    if resultado:
-        usuario = resultado[0]
-        id_usuario = usuario[0]
-        # Retorna la información del usuario y pero también espera la información del acceso
-        return jsonify({
-            'id_usuario': id_usuario,
-            'nombre': usuario[1],
-            'apellido': usuario[2],
-            'rol': usuario[3]
-        }), 200
-    else:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
+#     if resultado:
+#         usuario = resultado[0]
+#         id_usuario = usuario[0]
+#         return jsonify({
+#             'id_usuario': id_usuario,
+#             'nombre': usuario[1],
+#             'apellido': usuario[2],
+#             'rol': usuario[3]
+#         }), 200
+#     else:
+#         return jsonify({'error': 'Usuario no encontrado'}), 404
 
-@app.route('/guardar-acceso', methods=['POST'])
-def guardar_acceso_route():
-    data = request.json
-    fecha = data.get('fecha')
-    duracion = data.get('duracion')
-    tipo_acceso = data.get('tipo_acceso')
-    id_usuario = data.get('id_usuario')
+# @app.route('/guardar-acceso', methods=['POST'])
+# def guardar_acceso_route():
+#     data = request.json
+#     fecha = data.get('fecha')
+#     duracion = data.get('duracion')
+#     tipo_acceso = data.get('tipo_acceso')
+#     id_usuario = data.get('id_usuario')
 
-    if guardar_acceso(fecha, duracion, tipo_acceso, id_usuario):
-        return jsonify({'message': 'Acceso registrado exitosamente'}), 201
-    else:
-        return jsonify({'error': 'Error al registrar el acceso'}), 500
+#     if guardar_acceso(fecha, duracion, tipo_acceso, id_usuario):
+#         return jsonify({'message': 'Acceso registrado exitosamente'}), 201
+#     else:
+#         return jsonify({'error': 'Error al registrar el acceso'}), 500
 
-@app.route('/obtener-acceso', methods=['GET'])
-def obtener_acceso():
-    id_usuario_str = request.args.get('id_usuario')
+# @app.route('/obtener-acceso', methods=['GET'])
+# def obtener_acceso():
+#     id_usuario_str = request.args.get('id_usuario')
     
-    if not id_usuario_str:
-        return jsonify({'error': 'ID de usuario es requerido'}), 400
+#     if not id_usuario_str:
+#         return jsonify({'error': 'ID de usuario es requerido'}), 400
     
-    try:
-        id_usuario = int(id_usuario_str) 
-    except ValueError:
-        return jsonify({'error': 'ID de usuario debe ser un número válido'}), 400
+#     try:
+#         id_usuario = int(id_usuario_str) 
+#     except ValueError:
+#         return jsonify({'error': 'ID de usuario debe ser un número válido'}), 400
 
-    acceso = obtener_tipo_acceso(id_usuario)
+#     acceso = obtener_tipo_acceso(id_usuario)
     
-    if acceso is None:
-        return jsonify({'error': 'Usuario no encontrado'}), 404
+#     if acceso is None:
+#         return jsonify({'error': 'Usuario no encontrado'}), 404
 
-    return jsonify({'tipo_acceso': acceso}), 200
+#     return jsonify({'tipo_acceso': acceso}), 200
 
 
-@app.route('/cambiar-estado-acceso', methods=['POST'])
-def route_cambiar_estado_acceso():
-    data = request.json
-    id_usuario = data.get('id_usuario')
+# @app.route('/cambiar-estado-acceso', methods=['POST'])
+# def route_cambiar_estado_acceso():
+#     data = request.json
+#     id_usuario = data.get('id_usuario')
 
-    resultado = cambiar_estado_acceso(id_usuario)
+#     resultado = cambiar_estado_acceso(id_usuario)
 
-    if 'error' in resultado:
-        return jsonify(resultado), 404
+#     if 'error' in resultado:
+#         return jsonify(resultado), 404
 
-    return jsonify(resultado), 200
+#     return jsonify(resultado), 200
 
 #ASIGNAR ENTRENADOR
-@app.route('/assign-coach', methods=['POST', 'GET'])
-def assign_coach_route():
-    asignacion = asignar_entrenador()
-    print("datos para asignar entrenador")
-    print(asignacion)
-    return jsonify(asignacion)
+# @app.route('/assign-coach', methods=['POST', 'GET'])
+# def assign_coach_route():
+#     asignacion = asignar_entrenador()
+#     print("datos para asignar entrenador")
+#     print(asignacion)
+#     return jsonify(asignacion)
 
 #MOSTRAR PLAN DE TRABAJO DEL MIEMBRO
 
@@ -799,7 +851,7 @@ def guardar_progreso():
 
     insertar_progreso(peso, descripcion, datetime.now(), id_usuario_miembro, id_entrenador)
 
-    flash("✅ Avance guardado correctamente.", "success")
+    flash("Avance guardado correctamente.", "success")
     return redirect(url_for("mis_clientes"))
 
 @app.route("/historial-avances")
@@ -812,54 +864,54 @@ def historial_avances():
     
     return render_template("coach/historial_avances.html", avances=avances)
 
-@app.route("/perfil-entrenador")
-def perfil_entrenador():
-    if "id_usuario" not in session:
-        return redirect(url_for("login"))
+# @app.route("/perfil-entrenador")
+# def perfil_entrenador():
+#     if "id_usuario" not in session:
+#         return redirect(url_for("login"))
 
-    id_usuario = session["id_usuario"]
+#     id_usuario = session["id_usuario"]
 
-    entrenador = datos_entrenador(id_usuario)
-    print("Entrenador:", entrenador)
+#     entrenador = datos_entrenador(id_usuario)
+#     print("Entrenador:", entrenador)
 
-    if not entrenador:
-        return "No se encontró el perfil del entrenador o no tiene rol 'Entrenador'", 404
+#     if not entrenador:
+#         return "No se encontró el perfil del entrenador o no tiene rol 'Entrenador'", 404
 
-    return render_template('coach/profile.html', entrenador=entrenador) 
+#     return render_template('coach/profile.html', entrenador=entrenador) 
 
-@app.route("/editar-perfil-entrenador", methods=["GET"])
-def editar_perfil_entrenador():
-    if "id_usuario" not in session:
-        return redirect(url_for("login"))
+# @app.route("/editar-perfil-entrenador", methods=["GET"])
+# def editar_perfil_entrenador():
+#     if "id_usuario" not in session:
+#         return redirect(url_for("login"))
     
-    id_usuario = session["id_usuario"]
-    entrenador = datos_entrenador(id_usuario)
+#     id_usuario = session["id_usuario"]
+#     entrenador = datos_entrenador(id_usuario)
     
-    if not entrenador:
-        flash("No se encontró el entrenador.", "error")
-        return redirect(url_for("perfil_entrenador"))
+#     if not entrenador:
+#         flash("No se encontró el entrenador.", "error")
+#         return redirect(url_for("perfil_entrenador"))
     
-    return render_template("coach/edit_profile.html", entrenador=entrenador)
+#     return render_template("edit_profile.html", entrenador=entrenador)
 
-@app.route('/actualizar_perfil_entrenador', methods=['POST'])
-def actualizar_perfil_entrenador():
-    id_usuario =  session["id_usuario"]
-    nombre = request.form['nombre']
-    apellido = request.form['apellido']
-    identificacion = request.form['identificacion']
-    edad = request.form['edad']
-    correo = request.form['correo']
-    telefono = request.form['telefono']
-    contrasena = request.form.get('contrasena', '').strip()
+# @app.route('/actualizar_perfil_entrenador', methods=['POST'])
+# def actualizar_perfil_entrenador():
+#     id_usuario =  session["id_usuario"]
+#     nombre = request.form['nombre']
+#     apellido = request.form['apellido']
+#     identificacion = request.form['identificacion']
+#     edad = request.form['edad']
+#     correo = request.form['correo']
+#     telefono = request.form['telefono']
+#     contrasena = request.form.get('contrasena', '').strip()
 
-    if contrasena:
-        contrasena_hash = hash_password(contrasena)
-    else:
-        contrasena_hash = None
+#     if contrasena:
+#         contrasena_hash = hash_password(contrasena)
+#     else:
+#         contrasena_hash = None
 
-    actualizar_datos_entrenador(id_usuario, nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash)
+#     actualizar_datos_entrenador(id_usuario, nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash)
 
-    return redirect(url_for('perfil_entrenador'))
+#     return redirect(url_for('perfil_entrenador'))
 
 
 #REVISION DE LAS MAQUINAS
@@ -901,7 +953,7 @@ def informes_revision():
 
 @app.route('/profile-technical')
 def profile_technical():
-    revisiones = obtener_revisiones_pendientes()  # revisiones pendientes del tecnico
+    revisiones = obtener_revisiones_pendientes()  
     return render_template('Technical/inspections.html', revisiones=revisiones)
 
 
@@ -916,9 +968,8 @@ def revisar_maquina(id_revision):
             return redirect(url_for('login'))
         actualizar_estado_revision(id_revision, estado)
 
-        # Actualizar observación del técnico en vez de insertar nueva
         actualizar_observacion_tecnico(id_revision, observacion_tecnico)
-        flash("✅ Revisión actualizada correctamente", "success")
+        flash("Revisión actualizada correctamente", "success")
         return redirect(url_for('profile_technical'))
 
     revision = obtener_revision(id_revision)
@@ -927,32 +978,156 @@ def revisar_maquina(id_revision):
     return render_template("Technical/review.html", revision=revision, observaciones=observaciones)
 
 
-@app.route('/profile')
-def profile_tech():
-    datosTec = lista_tecnicos()
-    print(f"esto llega de {datosTec}")
-    return render_template('Technical/profile.html', datos = datosTec)
+# @app.route('/profile')
+# def profile_tech():
+#     datosTec = lista_tecnicos()
+#     print(f"esto llega de {datosTec}")
+#     return render_template('Technical/profile.html', datos = datosTec)
 
-@app.route('/profile/edit/<int:id>', methods=['GET'])
-def edit_profile(id):
-    tecnico = lista_tecnicos(id)
-    return render_template('Technical/edit_profile.html', tecnico=tecnico)
+# @app.route('/profile/edit/<int:id>', methods=['GET'])
+# def edit_profile(id):
+#     tecnico = lista_tecnicos(id)
+#     return render_template('Technical/edit_profile.html', tecnico=tecnico)
 
+# @app.route('/profile/update/<int:id>', methods=['POST'])
+# def update_profile(id):
+#     nombre = request.form['nombre']
+#     apellido = request.form['apellido']
+#     correo = request.form['correo']
+#     edad = request.form['edad']
+#     contrasena = request.form.get('contrasena')
+
+#     actualizado = actualizar_usuario(id, nombre, apellido, correo, edad)
+
+#     if actualizado:
+#         flash("Perfil actualizado correctamente.")
+#     else:
+#         flash(" No se realizaron cambios.")
+
+#     return redirect(url_for('profile_tech'))
+
+# Mapeo de roles a carpetas
+ROL_TO_CARPETA = {
+    "miembro": "member",
+    "administrador": "administrator",
+    "recepcionista": "reception",
+    "tecnico": "Technical",
+    "entrenador": "coach"
+}
+
+@app.route("/profile/<rol>")
+def profile(rol):
+    if "id_usuario" not in session:
+        return redirect(url_for("login"))
+
+    rol_lower = rol.lower()
+    if rol_lower not in ROL_TO_CARPETA:
+        return f"Rol inválido: {rol}", 400
+
+    usuario = datos_usuario(session["id_usuario"], rol_lower)
+
+    membresia = plan_trabajo = None
+    clientes_asignados = []
+
+    if usuario["rol"].lower() == "miembro":
+        membresia = obtener_membrehip_user(usuario["identificacion"])
+        plan_trabajo = obtener_plan_trabajo(usuario["identificacion"])
+    
+    if usuario["rol"].lower() == "entrenador":
+        clientes_asignados = obtener_clientes_sin_avance_hoy(session["id_usuario"]) or []
+        print("CLIENTES:", clientes_asignados)
+
+
+
+    return render_template(
+    "profile.html",  # único template para todos los roles
+    usuario=usuario,
+    membresia=membresia,
+    plan_trabajo=plan_trabajo,
+    clientes_asignados=clientes_asignados,
+    carpeta_rol=ROL_TO_CARPETA[rol_lower]
+)
+
+
+
+@app.route('/profile/edit/<rol>', methods=['GET', 'POST'])
+def edit_profile(rol):
+    if "id_usuario" not in session:
+        return redirect(url_for("login"))
+
+    rol_lower = rol.lower()
+    if rol_lower not in ROL_TO_CARPETA:
+        return f"Rol inválido: {rol}", 400
+
+    carpeta_rol = ROL_TO_CARPETA[rol_lower]
+    usuario = datos_usuario(session["id_usuario"], rol_lower)
+
+    membresia = plan_trabajo = None
+    clientes_asignados = []
+
+    if usuario["rol"].lower() == "miembro":
+        membresia = obtener_membrehip_user(usuario["identificacion"])
+        plan_trabajo = obtener_plan_trabajo(usuario["identificacion"])
+    elif usuario["rol"].lower() == "entrenador":
+        clientes_asignados = obtener_clientes_sin_avance_hoy(usuario["identificacion"])
+
+    if request.method == "POST":
+        # Obtener los datos del formulario
+        nombre = request.form.get("nombre")
+        apellido = request.form.get("apellido")
+        identificacion = request.form.get("identificacion")
+        edad = request.form.get("edad")
+        correo = request.form.get("correo")
+        telefono = request.form.get("telefono")
+        contrasena = request.form.get("contrasena")
+
+        # Si se ingresó contraseña, aplicar hash antes de enviar
+        contrasena_hash = hash_password(contrasena) if contrasena else None
+
+        # Llamar a la función unificada para actualizar datos
+        actualizar_datos_usuario(
+            id_usuario=usuario["id_usuario"],
+            nombre=nombre,
+            apellido=apellido,
+            identificacion=identificacion,
+            edad=edad,
+            correo=correo,
+            telefono=telefono,
+            contrasena_hash=contrasena_hash
+        )
+
+        flash("Perfil actualizado correctamente", "success")
+        return redirect(url_for("profile", rol=rol_lower))
+
+    return render_template(
+        "edit_profile.html",
+        usuario=usuario,
+        rol=rol_lower,
+        carpeta_rol=carpeta_rol,
+        membresia=membresia,
+        plan_trabajo=plan_trabajo,
+        clientes_asignados=clientes_asignados
+    )
 @app.route('/profile/update/<int:id>', methods=['POST'])
 def update_profile(id):
     nombre = request.form['nombre']
     apellido = request.form['apellido']
     correo = request.form['correo']
+    telefono = request.form.get('telefono')
     edad = request.form['edad']
-
-    actualizado = actualizar_usuario(id, nombre, apellido, correo, edad)
-
+    contrasena = request.form.get('contrasena')
+    if not contrasena:
+        usuario = datos_usuario(id)
+        contrasena = usuario['contrasena']
+    actualizado = actualizar_usuario(id, nombre, apellido, correo, edad, telefono, contrasena)
     if actualizado:
-        flash("✅ Perfil actualizado correctamente.")
+        flash("Perfil actualizado correctamente.")
     else:
-        flash("⚠️ No se realizaron cambios.")
+        flash("No se realizaron cambios.")
 
-    return redirect(url_for('profile_tech'))
+    return redirect(url_for('profile', rol=session.get('rol','miembro')))
+
+
 
 if __name__ =='__main__':
     app.run(port =4000, debug =True)

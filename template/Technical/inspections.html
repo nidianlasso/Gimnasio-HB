@@ -1,7 +1,10 @@
-{% include 'main.html' %}
-{% include 'Administrator/menu.html' %}
+{% extends "base.html" %}
+{% block menu %}
+    {% include "Technical/menu.html" %}
+{% endblock %}
+{% block content %}
 
-<h2 style="text-align:center; color:#222; margin-bottom:20px; font-size:1.8rem;">
+<h2 style="text-align:center; color:#222; margin-bottom:20px; font-size:1.8rem; margin-top: -300px;">
   🛠️ Revisiones Pendientes
 </h2>
 
@@ -95,3 +98,4 @@
     padding: 14px;
   }
 </style>
+{% endblock %}

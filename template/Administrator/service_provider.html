@@ -1,11 +1,13 @@
-{% include 'main.html' %}
-{% include 'Administrator/menu.html' %}
-
-<div class="container mt-5">
+{% extends "base.html" %}
+{% block menu %}
+    {% include "administrator/menu.html" %}
+{% endblock %}
+{% block content %}
+<div class="container mt-5" style="margin-top: -340px !important;">
     <h2 class="mb-4 text-center">Listado de Proveedores de Máquinas</h2>
 
     <div class="text-end mb-3">
-        <a href="/proveedores/nuevo" class="btn btn-success">➕ Nuevo Proveedor</a>
+        <a href="/proveedores/nuevo" class="btn btn-success"> <i class="fa-solid fa-plus" style="color: green;"></i> Nuevo Proveedor</a>
     </div>
     {% if proveedor_seleccionado %}
     <div class="card mb-4 mx-auto" style="max-width: 500px;">
@@ -60,3 +62,4 @@
         </tbody>
     </table>
 </div>
+{% endblock %}

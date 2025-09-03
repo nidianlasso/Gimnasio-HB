@@ -1,6 +1,8 @@
-{% include 'main.html' %}
-    {% include 'Administrator/menu.html' %}
-
+{% extends "base.html" %}
+{% block menu %}
+    {% include "administrator/menu.html" %}
+{% endblock %}
+{% block content %}
 
     <div class="col-md-12 p-5 text-white" style="
     background-image: url('/static/img/clase_grupal.jpg');
@@ -13,6 +15,8 @@
     justify-content: center;
     text-align: center;
     overflow: hidden;
+    margin-top: -405px;
+    max-height: 91vh;
 ">
     <div class="container p-4 rounded" style="background: rgba(0, 0, 0, 0.7); max-width: 400px;">
         <h1 class="mb-4">Crear Clase</h1>
@@ -41,6 +45,4 @@
         </form>
     </div>
 </div>
-
-
-   
+{% endblock %}

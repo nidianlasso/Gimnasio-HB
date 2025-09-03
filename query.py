@@ -5,13 +5,13 @@ from flask import Flask, jsonify, render_template, request, redirect, url_for, f
 from datetime import datetime, date, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 
+
 app = Flask(__name__, static_folder='static', template_folder='template')
-# Configura la conexión a la base de datos MySQL
 connection = pymysql.connect(host="localhost", user="root", passwd="12345", database="bd_gimnasio2")
 cursor = connection.cursor()
 
 def hash_password(password):
-    # Genera un hash seguro usando pbkdf2:sha256
+    # Genera un hash
     return generate_password_hash(password)
 
 def verify_password(hashed_password, password):
@@ -21,7 +21,7 @@ def verify_password(hashed_password, password):
 def obtenerUsuarios():
     cursor.execute("SELECT * FROM bd_gimnasio2.usuario")
     rows = cursor.fetchall()
-    cursor.close()  # Asegúrate de cerrar el cursor
+    cursor.close()  
     return rows
 
 
@@ -30,7 +30,6 @@ def validarLogin(identificacion, contrasena):
     info_user = check_credentials(identificacion, contrasena)
     
     if info_user:
-        # Desempaquetar diccionario
         rol = info_user['rol']
         user_identificacion = info_user['identificacion']
         id_usuario = info_user['id_usuario']
@@ -48,7 +47,7 @@ def validarLogin(identificacion, contrasena):
             resp = redirect(url_for('index_member'))
             resp.set_cookie('plan_trabajo', plan_trabajo)
         elif rol.lower() == "entrenador":
-            resp = redirect(url_for('profile_coach'))
+            resp = redirect(url_for('index_coach'))
         elif rol.lower() == "recepcionista":
             resp = redirect(url_for('profile_receptionist'))
         elif rol.lower() == "tecnico":
@@ -65,19 +64,25 @@ def validarLogin(identificacion, contrasena):
 # Función para verificar las credenciales en la base de datos
 def check_credentials(identificacion, contrasena):
     cursor.execute("""
-        SELECT LOWER(r.nombre) AS rol, u.identificacion, u.id_usuario
+        SELECT LOWER(r.nombre) AS rol, u.identificacion, u.id_usuario, u.contrasena
         FROM usuario u
         JOIN rol r ON u.id_rol = r.id_rol
-        WHERE u.identificacion = %s AND u.contrasena = %s
-    """, (identificacion, contrasena))
+        WHERE u.identificacion = %s
+    """, (identificacion,))
 
     row = cursor.fetchone()
     if row:
-        return {
-            'rol': row[0],
-            'identificacion': row[1],
-            'id_usuario': row[2]
-        }
+        rol, identificacion_db, id_usuario, stored_password = row
+
+        # Caso 1: contraseña hasheada
+        if stored_password.startswith("pbkdf2:") or stored_password.startswith("sha256:"):
+            if check_password_hash(stored_password, contrasena):
+                return {'rol': rol, 'identificacion': identificacion_db, 'id_usuario': id_usuario}
+
+        # Caso 2: contraseña en texto plano (no hasheada)
+        elif contrasena == stored_password:
+            return {'rol': rol, 'identificacion': identificacion_db, 'id_usuario': id_usuario}
+
     return None
 
 
@@ -87,17 +92,15 @@ def check_credentials(identificacion, contrasena):
 def login_required_admin(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Verificar si la cookie 'identificacion' está presente
         identificacion = request.cookies.get('identificacion')
         if identificacion:
             cursor.execute("SELECT r.nombre FROM bd_gimnasio2.usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE u.identificacion = %s AND r.nombre ='Administrador'", (identificacion))
             rol_user = cursor.fetchall()
-            if len(rol_user) == 0:  # Si no hay cookie, redirigir al login
+            if len(rol_user) == 0:  
                 print("Usuario no autenticado. Redirigiendo al login.")
                 return redirect(url_for('login'))
         else:
             return redirect(url_for('login'))
-        # Si la cookie existe, proceder a la función protegida
         return f(*args, **kwargs)
     return decorated_function
 
@@ -105,32 +108,29 @@ def login_required_admin(f):
 def login_required_member(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Verificar si la cookie 'identificacion' está presente
+        # Verifica si la cookie 'identificacion' está presente
         identificacion = request.cookies.get('identificacion')
         if identificacion:
             cursor.execute("SELECT r.nombre FROM bd_gimnasio2.usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE u.identificacion = %s AND r.nombre ='Miembro'", (identificacion))
             rol_user = cursor.fetchall()
             print(rol_user, "ROOOOOL DEL USUARIO")
-            if len(rol_user) == 0:  # Si no hay cookie, redirigir al login
+            if len(rol_user) == 0:  # Si no hay cookie, redirige al login
                 print("Usuario no autenticado. Redirigiendo al login.")
                 return redirect(url_for('login'))
         else:
             return redirect(url_for('login'))
-        # Si la cookie existe, proceder a la función protegida
         return f(*args, **kwargs)
     return decorated_function
 
 def login_required_coach(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Verificar si la cookie 'identificacion' está presente
         identificacion = request.cookies.get('identificacion')
         if identificacion:
-            print(f"Identificación de la cookie: {identificacion}")  # Debug: Verifica el valor de la cookie
-            # Realizar la consulta para verificar el rol del usuario
+            print(f"Identificación de la cookie: {identificacion}")  
             cursor.execute("SELECT r.nombre FROM bd_gimnasio2.usuario u INNER JOIN rol r ON u.id_rol = r.id_rol WHERE u.identificacion = %s AND r.nombre = 'Entrenador'", (identificacion))
             rol_user = cursor.fetchall()
-            print(f"Rol del usuario: {rol_user}")  # Debug: Verifica los resultados de la consulta
+            print(f"Rol del usuario: {rol_user}") 
             if len(rol_user) == 0:  # Si no hay rol "Entrenador", redirigir al login
                 print("Usuario no autenticado. Redirigiendo al login.")
                 return redirect(url_for('login'))
@@ -138,14 +138,12 @@ def login_required_coach(f):
             print("Cookie de identificación no encontrada. Redirigiendo al login.")
             return redirect(url_for('login'))
         
-        # Si la cookie existe y el rol es correcto, proceder a la función protegida
         return f(*args, **kwargs)
     return decorated_function
 
 def login_required_receptionist(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        # Verificar si la cookie 'identificacion' está presente
         identificacion = request.cookies.get('identificacion')
         if identificacion:
             print(f"Identificación de la cookie: {identificacion}")
@@ -158,8 +156,6 @@ def login_required_receptionist(f):
         else:
             print("Cookie de identificación no encontrada. Redirigiendo al login.")
             return redirect(url_for('login'))
-        
-        # Si la cookie existe y el rol es correcto, proceder a la función protegida
         return f(*args, **kwargs)
     return decorated_function
 
@@ -230,7 +226,7 @@ def add_user(identificacion, nombre, apellido, edad, correo, telefono, genero, p
     try:
         cursor.execute('INSERT INTO usuario (identificacion, nombre, apellido, edad, correo, telefono, id_genero, id_plan_trabajo, id_rol, contrasena) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', 
                 (identificacion, nombre, apellido, edad, correo, telefono, genero, plan_trab, rol, contrasena))
-        #Guardar la info en la base de datos
+        #Guarda la info en la base de datos
         connection.commit()
         return True
     except Exception as e:
@@ -280,8 +276,8 @@ def guardar_membresia(usuario_id, tipo, fecha_inicio, fecha_fin, estado):
     except Exception as e:
         print("Error al guardar la membresía:", e)
         print("Información que se sube a la base de datos:", usuario_id, tipo, fecha_inicio, fecha_fin, estado)
-        return False  # Retorna False si no se ha procesado el formulario
-
+        return False 
+    
 #ESTADO DE LA MEMBRESIA
 def status_membreship():
     cursor.execute("SELECT id_estado_membresia, nombre FROM estado_membresia")
@@ -344,7 +340,7 @@ def search_machine(nombre):
 def info_machine():
     cursor.execute('''SELECT rm.fecha, rm.hora_inicio, rm.hora_fin, u.nombre, u.apellido, m.nombre FROM reserva_maquina rm INNER JOIN membresia_usuario mu ON rm.id_membresia_usuario = mu.id_membresia_usuario INNER JOIN usuario u ON mu.id_usuario = u.id_usuario INNER JOIN inventario_maquina im ON im.id_inventario_maquina = rm.id_inventario_maquina INNER JOIN maquina m ON m.id_maquina = im.id_maquina ORDER BY rm.fecha, rm.hora_inicio;''')
     result_busqueda = cursor.fetchall()
-    print("Usuario con maquina reservada:", result_busqueda)  # Depuración
+    print("Usuario con maquina reservada:", result_busqueda)
     return result_busqueda
 
 
@@ -416,9 +412,9 @@ def obtener_tipo_acceso(id_usuario):
                 print("Error al crear el acceso.")
                 return None
             
-            return {'tipo_acceso': tipo_acceso}  # Devolver un objeto
+            return {'tipo_acceso': tipo_acceso} 
 
-        return {'tipo_acceso': resultado_acceso[0]}  # Asegúrate de devolver un objeto
+        return {'tipo_acceso': resultado_acceso[0]} 
     except Exception as e:
         raise Exception(f'Error en la consulta: {str(e)}')
 
@@ -462,7 +458,7 @@ def obtener_plan_trabajo(identificacion):
         "SELECT p.nombre FROM usuario u INNER JOIN plan_trabajo p ON u.id_plan_trabajo = p.id_plan_trabajo WHERE u.identificacion = %s", 
         (identificacion,))
     plan = cursor.fetchone()
-    return plan[0] if plan else None  # Retorna el plan o None si no exise
+    return plan[0] if plan else None  
 
 def obtener_membrehip_user(identificacion):
     cursor.execute("SELECT m.tipo, e.nombre FROM membresia_usuario mu INNER JOIN membresia m ON mu.id_membresia = m.id_membresia INNER JOIN estado_membresia e ON mu.id_estado_membresia = e.id_estado_membresia INNER JOIN usuario u ON mu.id_usuario = u.id_usuario WHERE u.identificacion = %s",
@@ -543,7 +539,7 @@ def obtener_reservas_maquinas():
             "nombre_maquina": fila[5],
             "nombre": fila[3],
             "apellido": fila[4],
-            "fecha": str(fila[0]),  # ✅ aquí el cambio
+            "fecha": str(fila[0]),  
             "hora_inicio": str(fila[1]),
             "hora_fin": str(fila[2]),
             "disponibilidad": "Reservada"
@@ -598,10 +594,6 @@ def cant_empleados():
     cursor.execute("SELECT COUNT(*) AS listado_empleados FROM usuario WHERE id_rol <>5")
     result_lista_empleados = cursor.fetchone()[0]
     return result_lista_empleados
-
-
-
-
 
 
 #RESERVAS DE MAQUINAS
@@ -683,17 +675,15 @@ def obtener_id_membresia_usuario(identificacion):
     ''', (identificacion,))
     resultado = cursor.fetchone()
     if resultado:
-        return resultado[0]  # ID de membresía usuario
+        return resultado[0]
     return None
 
 
 #Verificar que no tenga una reserva de la maquina seguida
 def consultar_bloques_contiguos(id_membresia_usuario, hora_inicio):
-    # Asegurarse de que la hora tenga el formato correcto "HH:MM:SS"
     try:
         hora_actual = datetime.strptime(hora_inicio, "%H:%M:%S")
     except ValueError:
-        # Si viene en formato "HH:MM", lo convertimos a "HH:MM:00"
         hora_actual = datetime.strptime(hora_inicio[:5], "%H:%M")
 
     hora_anterior = (hora_actual - timedelta(minutes=15)).strftime("%H:%M:%S")
@@ -862,6 +852,59 @@ def cancelar_reserva_en_bd(id_clase, id_membresia_usuario, fecha, hora):
     """, (id_clase, id_membresia_usuario, fecha, hora))
     connection.commit()
 
+def datos_miembro(id_usuario):
+    cursor.execute('''
+        SELECT 
+            u.id_usuario, 
+            u.identificacion, 
+            u.nombre, 
+            u.apellido, 
+            u.edad, 
+            u.correo, 
+            u.telefono, 
+            u.contrasena, 
+            g.tipo, 
+            u.id_plan_trabajo, 
+            u.id_rol 
+        FROM 
+            usuario u 
+        JOIN 
+            rol r ON u.id_rol = r.id_rol  JOIN genero g ON u.id_genero = g.id_genero
+        WHERE 
+            u.id_usuario = %s AND r.nombre = 'Miembro'
+    ''', (id_usuario,))
+    
+    resultado = cursor.fetchone()
+    return resultado
+
+def actualizar_datos_miembro(id_usuario, nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash=None):
+    if contrasena_hash:
+        cursor.execute("""
+            UPDATE usuario
+            SET nombre = %s,
+                apellido = %s,
+                identificacion = %s,
+                edad = %s,
+                correo = %s,
+                telefono = %s,
+                contrasena = %s
+            WHERE id_usuario = %s
+        """, (nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash, id_usuario))
+    else:
+        cursor.execute("""
+            UPDATE usuario
+            SET nombre = %s,
+                apellido = %s,
+                identificacion = %s,
+                edad = %s,
+                correo = %s,
+                telefono = %s
+            WHERE id_usuario = %s
+        """, (nombre, apellido, identificacion, edad, correo, telefono, id_usuario))
+    connection.commit()
+    return True
+
+
 #FIN RESERVA DE LAS CLASES
 
 #ENTRENADOR
@@ -917,57 +960,57 @@ def obtener_historial_avances(id_entrenador):
     """, (id_entrenador,))
     return cursor.fetchall()
 
-def datos_entrenador(id_usuario):
-    cursor.execute('''
-        SELECT 
-            u.id_usuario, 
-            u.identificacion, 
-            u.nombre, 
-            u.apellido, 
-            u.edad, 
-            u.correo, 
-            u.telefono, 
-            u.contrasena, 
-            g.tipo, 
-            u.id_plan_trabajo, 
-            u.id_rol 
-        FROM 
-            usuario u 
-        JOIN 
-            rol r ON u.id_rol = r.id_rol  JOIN genero g ON u.id_genero = g.id_genero
-        WHERE 
-            u.id_usuario = %s AND r.nombre = 'Entrenador'
-    ''', (id_usuario,))
+# def datos_entrenador(id_usuario):
+#     cursor.execute('''
+#         SELECT 
+#             u.id_usuario, 
+#             u.identificacion, 
+#             u.nombre, 
+#             u.apellido, 
+#             u.edad, 
+#             u.correo, 
+#             u.telefono, 
+#             u.contrasena, 
+#             g.tipo, 
+#             u.id_plan_trabajo, 
+#             u.id_rol 
+#         FROM 
+#             usuario u 
+#         JOIN 
+#             rol r ON u.id_rol = r.id_rol  JOIN genero g ON u.id_genero = g.id_genero
+#         WHERE 
+#             u.id_usuario = %s AND r.nombre = 'Entrenador'
+#     ''', (id_usuario,))
     
-    resultado = cursor.fetchone()
-    return resultado
+#     resultado = cursor.fetchone()
+#     return resultado
 
-def actualizar_datos_entrenador(id_usuario, nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash=None):
-    if contrasena_hash:
-        cursor.execute("""
-            UPDATE usuario
-            SET nombre = %s,
-                apellido = %s,
-                identificacion = %s,
-                edad = %s,
-                correo = %s,
-                telefono = %s,
-                contrasena = %s
-            WHERE id_usuario = %s
-        """, (nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash, id_usuario))
-    else:
-        cursor.execute("""
-            UPDATE usuario
-            SET nombre = %s,
-                apellido = %s,
-                identificacion = %s,
-                edad = %s,
-                correo = %s,
-                telefono = %s
-            WHERE id_usuario = %s
-        """, (nombre, apellido, identificacion, edad, correo, telefono, id_usuario))
-    connection.commit()
-    return True
+# def actualizar_datos_entrenador(id_usuario, nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash=None):
+#     if contrasena_hash:
+#         cursor.execute("""
+#             UPDATE usuario
+#             SET nombre = %s,
+#                 apellido = %s,
+#                 identificacion = %s,
+#                 edad = %s,
+#                 correo = %s,
+#                 telefono = %s,
+#                 contrasena = %s
+#             WHERE id_usuario = %s
+#         """, (nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash, id_usuario))
+#     else:
+#         cursor.execute("""
+#             UPDATE usuario
+#             SET nombre = %s,
+#                 apellido = %s,
+#                 identificacion = %s,
+#                 edad = %s,
+#                 correo = %s,
+#                 telefono = %s
+#             WHERE id_usuario = %s
+#         """, (nombre, apellido, identificacion, edad, correo, telefono, id_usuario))
+#     connection.commit()
+#     return True
 
 
 #ENVIAR LA MAQUINA PARA LA REVISION 
@@ -1000,17 +1043,19 @@ def lista_tecnicos(id_usuario= None):
         resultado = cursor.fetchone()
         return resultado
 
-def actualizar_usuario(id, nombre, apellido, correo, edad):
+def actualizar_usuario(id, nombre, apellido, correo,  edad,  telefono, contrasena):
     cursor.execute("""
         UPDATE usuario 
-        SET nombre=%s, apellido=%s, correo=%s, edad=%s 
+        SET nombre=%s, apellido=%s, correo=%s,  edad=%s, telefono=%s, contrasena=%s
         WHERE id_usuario=%s
-    """, (nombre, apellido, correo, edad, id))
+    """, (nombre, apellido, correo, edad, telefono, contrasena, id))
     connection.commit()
 
 
 
-# ========== CONSULTAS ==========
+
+
+
 def insert_revision_sql():
     return """
         INSERT INTO revision (fecha_revision, id_inventario_maquina, id_estado_revision, id_usuario)
@@ -1027,24 +1072,15 @@ def last_id_sql():
     return "SELECT LAST_INSERT_ID() AS id_revision"
 
 
-# =========================
+
 # FUNCIONES DE INSERCIÓN
-# =========================
 def insertar_revision(id_inventario_maquina, id_usuario, observacion_admin, estado):
     try:
         conn = connection
-
-        # 1. Insertar en revision
         cursor.execute(insert_revision_sql(), (id_inventario_maquina, estado, id_usuario))
-
-        # 2. Obtener ID generado
         cursor.execute(last_id_sql())
         id_revision = cursor.fetchone()[0]
-
-        # 3. Insertar observación inicial del administrador
         cursor.execute(insert_observacion_sql(), (id_revision, id_usuario, observacion_admin))
-
-        # 4. Confirmar cambios
         conn.commit()
 
         return id_revision
@@ -1131,3 +1167,106 @@ def actualizar_observacion_tecnico(id_revision, observacion_tecnico):
         WHERE id_revision = %s
     """, (observacion_tecnico, id_revision))
     connection.commit()
+
+import pymysql.cursors
+
+def datos_usuario(id_usuario, rol=None):
+    cursor = connection.cursor(pymysql.cursors.DictCursor)
+
+    if rol:
+        cursor.execute('''
+            SELECT u.id_usuario, u.identificacion, u.nombre, u.apellido, 
+                   u.edad, u.correo, u.telefono, u.contrasena, 
+                   g.tipo, u.id_plan_trabajo, u.id_rol, r.nombre AS rol
+            FROM usuario u
+            JOIN rol r ON u.id_rol = r.id_rol
+            JOIN genero g ON u.id_genero = g.id_genero
+            WHERE u.id_usuario = %s AND r.nombre = %s
+        ''', (id_usuario, rol))
+    else:
+        cursor.execute('''
+            SELECT u.id_usuario, u.identificacion, u.nombre, u.apellido, 
+                   u.edad, u.correo, u.telefono, u.contrasena, 
+                   g.tipo, u.id_plan_trabajo, u.id_rol, r.nombre AS rol
+            FROM usuario u
+            JOIN rol r ON u.id_rol = r.id_rol
+            JOIN genero g ON u.id_genero = g.id_genero
+            WHERE u.id_usuario = %s
+        ''', (id_usuario,))
+
+    usuario = cursor.fetchone()
+    cursor.close()
+    return usuario
+
+
+def actualizar_datos_usuario(id_usuario, nombre, apellido, identificacion, edad, correo, telefono, contrasena=None):
+    hashed_password = hash_password(contrasena)
+
+    if hashed_password:
+        cursor.execute("""
+            UPDATE usuario
+            SET nombre = %s,
+                apellido = %s,
+                identificacion = %s,
+                edad = %s,
+                correo = %s,
+                telefono = %s,
+                contrasena = %s
+            WHERE id_usuario = %s
+        """, (nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash, id_usuario))
+    else:
+        cursor.execute("""
+            UPDATE usuario
+            SET nombre = %s,
+                apellido = %s,
+                identificacion = %s,
+                edad = %s,
+                correo = %s,
+                telefono = %s
+            WHERE id_usuario = %s
+        """, (nombre, apellido, identificacion, edad, correo, telefono, id_usuario))
+    connection.commit()
+    return True
+
+#CREACION Y ASIGNACION DE LAS RUTINAS
+def insertar_rutina(nombre, descripcion, id_plan, id_maquina, dia_semana):
+    cursor.execute("""
+        INSERT INTO rutina (nombre, descripcion, id_plan_trabajo, id_maquina, dia_semana)
+        VALUES (%s, %s, %s, %s, %s)
+    """, (nombre, descripcion, id_plan, id_maquina, dia_semana))
+    connection.commit()
+    return cursor.lastrowid  # devuelve el id de la nueva rutina
+
+
+def insertar_zona_cuerpo(nombre_zona, id_rutina):
+    cursor.execute("""
+        INSERT INTO zona_cuerpo (nombre, id_rutina)
+        VALUES (%s, %s)
+    """, (nombre_zona, id_rutina))
+    connection.commit()
+
+
+def obtener_rutinas_por_plan(id_plan):
+    cursor.execute("""
+        SELECT r.nombre, r.descripcion, r.dia_semana, z.nombre AS zona, m.nombre AS maquina
+        FROM rutina r
+        LEFT JOIN zona_cuerpo z ON r.id_rutina = z.id_rutina
+        LEFT JOIN maquina m ON r.id_maquina = m.id_maquina
+        WHERE r.id_plan_trabajo = %s
+        ORDER BY FIELD(r.dia_semana, 'Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo')
+    """, (id_plan,))
+    return cursor.fetchall()
+
+def obtener_rutinas_por_plan(id_plan):
+    cursor.execute("""
+        SELECT r.nombre, r.descripcion, r.dia_semana, 
+               z.nombre AS zona, 
+               m.nombre AS maquina
+        FROM rutina r
+        LEFT JOIN zona_cuerpo z ON r.id_rutina = z.id_rutina
+        LEFT JOIN maquina m ON r.id_maquina = m.id_maquina
+        WHERE r.id_plan_trabajo = %s
+        ORDER BY FIELD(r.dia_semana, 
+                       'Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo')
+    """, (id_plan,))
+    return cursor.fetchall()

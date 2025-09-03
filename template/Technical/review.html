@@ -1,7 +1,11 @@
-{% include 'main.html' %}
-<body class="bg-light" style="background: lightgrey;">
+{% extends "base.html" %}
+{% block menu %}
+    {% include "Technical/menu.html" %}
+{% endblock %}
+{% block content %}
+<body class="bg-light">
 
-  <div class="container py-5">
+  <div class="container py-5" style="margin-top: -400px; background: rgb(190, 190, 252);">
     <div class="card shadow-lg rounded-4">
       <div class="card-body p-4">
         <h2 class="text-center mb-4 mt-4">
@@ -24,7 +28,7 @@
 
           <div class="mb-3">
             <label for="observacion" class="form-label fw-semibold"><strong>Nueva observación</strong></label>
-            <textarea name="observacion" id="observacion" class="form-control" rows="4" required></textarea>
+            <textarea name="observacion" id="observacion" class="form-control" rows="4" placeholder="Observación de la revisión" required></textarea>
           </div>
 
           <button type="submit" class="btn btn-warning w-100 fw-bold shadow-sm">
@@ -53,3 +57,4 @@
     </div>
   </div>
 </body>
+{% endblock %}

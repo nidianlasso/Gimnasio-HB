@@ -1,12 +1,9 @@
 <div class="modal-body">
-  <!-- Botones para cambiar tipo -->
   <div class="mb-3">
     <button class="reservadas" onclick="cargarMaquinas('reservadas')">Reservas De <br> Hoy</button>
-    <!-- <button onclick="cargarMaquinas('disponibles')">Ver Disponibles</button> -->
     <button class="disponibilidad-horaria" onclick="cargarMaquinas('disponibilidad_horaria')">Disponibilidad <br> Horaria</button>
   </div>
 
-  <!-- Contenedor tabla (para reservadas y disponibles) -->
   <div id="contenedorTabla">
     <table id="tablaPrincipal">
       <thead id="tablaEncabezado"></thead>
@@ -14,6 +11,5 @@
     </table>
   </div>
 
-  <!-- Contenedor calendario tipo bloques -->
   <div id="contenedorCalendario" class="calendario-grid-container" style="display: none; font-size: 12px; text-align: justify;"></div>
 </div>

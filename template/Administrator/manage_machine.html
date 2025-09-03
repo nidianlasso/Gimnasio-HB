@@ -1,7 +1,10 @@
-{% include 'main.html' %}
-{% include 'Administrator/menu.html' %}
+{% extends "base.html" %}
+{% block menu %}
+    {% include "administrator/menu.html" %}
+{% endblock %}
+{% block content %}
 
-<h3 style="text-align: center; color: #000; margin-top: 3%; font-size: 2rem; font-weight: bold;">
+<h3 style="text-align: center; color: #000; margin-top: 3%; font-size: 2rem; font-weight: bold; margin-top: -300px;">
   GESTIÓN DE MÁQUINAS
 </h3>
 
@@ -32,15 +35,7 @@
       Disponibilidad
     </button>
 
-    <!-- Botón revisión -->
-    <!-- <button style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;"
-            onmouseover="this.style.transform='scale(1.05)'"
-            onmouseout="this.style.transform='scale(1)'"
-            type="button" data-toggle="modal" data-target="#modalRevision">
-      Revisión Maquinaria
-    </button> -->
-
-    <button style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;"
+        <button style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;"
         onmouseover="this.style.transform='scale(1.05)'"
         onmouseout="this.style.transform='scale(1)'"
         type="button"
@@ -68,7 +63,7 @@
   <tbody></tbody>
 </table>
 
-<!-- Flash messages -->
+<!-- Flash -->
 {% with messages = get_flashed_messages(with_categories=True) %}
   {% if messages %}
     <div class="alert-container" style="width: 90%; margin: 2% auto;">
@@ -163,9 +158,9 @@
   </div>
 </div>
 
-<!-- Tabla de informes -->
+<!-- TABLA DE INFORMES -->
 <div id="informes" style="margin-top:20px; display:none;">
-  <h2 style="color:#333;">📋 Informes de Revisión</h2>
+  <h2 style="color:#333;"><i class="fa-solid fa-scroll"></i> Informes de Revisión</h2>
   <table border="1" cellspacing="0" cellpadding="8" style="width:100%; border-collapse:collapse; text-align:center;">
     <thead style="background:#ffc107; color:#000;">
       <tr>
@@ -177,7 +172,7 @@
       </tr>
     </thead>
     <tbody id="tabla-informes">
-      <!-- Se llena dinámicamente -->
     </tbody>
   </table>
 </div>
+{% endblock %}

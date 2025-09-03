@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block menu %}
+    {% include carpeta_rol + '/menu.html' %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="margin-top: -400px;">
+  <div class="row justify-content-center">
+    <div class="col-12 col-md-11 col-lg-8">
+
+      <!-- Card principal -->
+      <div class="card shadow-lg border-0 rounded-4 p-4" 
+           style="background: linear-gradient(145deg, #fffef0, #f9f8e0);">
+
+        <!-- Encabezado -->
+        <div class="d-flex flex-column flex-md-row align-items-center justify-content-between mb-4 gap-3">
+          <div class="d-flex align-items-center">
+            <!-- Imagen decorativa -->
+            <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm"
+                 style="width: 100px; height: 100px; background-color: rgba(247, 243, 15, 0.2);">
+              <i class="fas fa-user fa-3x" style="color: #F1B63C;"></i>
+            </div>
+            <div class="ms-3">
+              <h4 class="fw-bold mb-1" style="padding-left: 15px;">Editar Perfil</h4>
+              <small class="text-muted text-uppercase">{{ usuario.rol }}</small>
+            </div>
+          </div>
+        </div>
+
+        <hr class="mb-4 border-2 border-warning opacity-50">
+
+        <!-- Formulario unificado -->
+        <form method="POST" action="{{ url_for('update_profile', id=usuario.id_usuario) }}">
+          <div class="row g-3 mb-4">
+
+            <!-- Datos generales -->
+            <div class="col-12 col-md-6">
+              <label for="nombre" class="form-label fw-semibold">Nombre</label>
+              <input type="text" class="form-control rounded-pill shadow-sm" 
+                     id="nombre" name="nombre" value="{{ usuario.nombre }}" required>
+            </div>
+            <div class="col-12 col-md-6">
+              <label for="apellido" class="form-label fw-semibold">Apellido</label>
+              <input type="text" class="form-control rounded-pill shadow-sm" 
+                     id="apellido" name="apellido" value="{{ usuario.apellido }}" required>
+            </div>
+            <div class="col-12 col-md-6">
+              <label for="correo" class="form-label fw-semibold">Correo</label>
+              <input type="email" class="form-control rounded-pill shadow-sm" 
+                     id="correo" name="correo" value="{{ usuario.correo }}" required>
+            </div>
+            <div class="col-12 col-md-6">
+              <label for="telefono" class="form-label fw-semibold">Teléfono</label>
+              <input type="text" class="form-control rounded-pill shadow-sm" 
+                     id="telefono" name="telefono" value="{{ usuario.telefono }}">
+            </div>
+            <div class="col-12 col-md-6">
+              <label for="edad" class="form-label fw-semibold">Edad</label>
+              <input type="number" class="form-control rounded-pill shadow-sm" 
+                     id="edad" name="edad" value="{{ usuario.edad }}">
+            </div>
+          </div>
+
+          <!-- Campos dinámicos según rol -->
+          {% if usuario.rol.lower() == "miembro" %}
+          <div class="mb-4">
+            <label for="membresia" class="form-label fw-semibold">Membresía actual</label>
+            <select id="membresia" name="membresia" class="form-select rounded-pill shadow-sm">
+              {% for m in membresias %}
+                <option value="{{ m.id }}" {% if m.id == usuario.id_membresia %}selected{% endif %}>
+                  {{ m.tipo }} - ${{ m.costo }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          
+          
+          {% endif %}
+
+          <!-- Contraseña -->
+          <div class="mb-4">
+            <label for="contrasena" class="form-label fw-semibold">Nueva contraseña</label>
+            <input type="password" class="form-control rounded-pill shadow-sm" 
+                   id="contrasena" name="contrasena" placeholder="Dejar vacío si no cambia">
+          </div>
+
+          <!-- Botones -->
+          <div class="d-flex justify-content-end gap-3">
+            <a href="{{ url_for('profile', rol=usuario.rol|lower) }}" 
+               class="btn btn-outline-secondary rounded-pill px-4 shadow-sm">
+              Cancelar
+            </a>
+            <button type="submit" class="btn" 
+                    style="background-color:#F1B63C; color:#212529; border-radius:50px; padding:0.6rem 1.8rem; transition: all 0.3s;">
+              Guardar cambios
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

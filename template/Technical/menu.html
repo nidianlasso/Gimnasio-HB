@@ -1,0 +1,6 @@
+<li><a href="{{ url_for('profile_technical') }}" id="selected">Inicio</a></li>
+<li><a href="#">Servicios</a>
+    <ul>
+        <li><a href="{{ url_for('profile', rol=session['rol'].lower()) }}">Perfil</a></li>
+    </ul>
+</li>

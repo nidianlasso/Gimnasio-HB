@@ -1,7 +1,11 @@
-{% include 'main.html' %}
-{% include 'member/menu.html' %}
+{% extends "base.html" %}
 
-<div class="container mt-5">
+{% block menu %}
+    {% include "member/menu.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5" style="margin-top: -350px !important; " >
     <h2 class="mb-4 text-center">Mis Clases Reservadas</h2>
 
     <table class="table table-striped table-bordered">
@@ -35,3 +39,4 @@
         </tbody>
     </table>
 </div>
+{% endblock %}

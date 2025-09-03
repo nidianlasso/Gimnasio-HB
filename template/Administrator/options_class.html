@@ -1,6 +1,9 @@
-{% include 'main.html' %}
-{% include 'Administrator/menu.html' %}
-<div class="background-container">
+{% extends "base.html" %}
+{% block menu %}
+    {% include "administrator/menu.html" %}
+{% endblock %}
+{% block content %}
+<div class="background-container" style="margin-top: -410px;">
     <div class="container-class">
         <h2>GESTIÓN DE CLASES</h2>
         <div class="button-group">
@@ -14,3 +17,4 @@
         </div>
     </div>
 </div>
+{% endblock %}

@@ -1,7 +1,10 @@
-{% include 'main.html' %}
-{% include 'Administrator/menu.html' %}
+{% extends "base.html" %}
+{% block menu %}
+    {% include "administrator/menu.html" %}
+{% endblock %}
+{% block content %}
 
-<h3 style="text-align: center; color: #000; margin-top: 3%; font-size: 2rem; font-weight: bold;">
+<h3 style="text-align: center; color: #000; margin-top: 3%; font-size: 2rem; font-weight: bold; margin-top: -300px;">
   GESTIÓN DE USUARIOS
 </h3>
 <div class="contenedor-gestion" style="display: flex; justify-content: center; padding-bottom: 2%; background: #f8f9fa; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin: 2% auto; max-width: 90%;">
@@ -59,7 +62,6 @@ Actualizar Membresía
     </tr>
   </thead>
   <tbody>
-    <!-- Las filas se agregarán dinámicamente aquí -->
   </tbody>
 </table>
 
@@ -75,7 +77,6 @@ Actualizar Membresía
 {% endif %}
 {% endwith %}
 <!--MODAL PARA AGREGAR USUARIOS-->
-<!-- Ejemplo de modal con diseño mejorado -->
 <div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
@@ -97,7 +98,6 @@ Actualizar Membresía
 <div class="modal fade" id="membresiaAsignaciones" tabindex="-1" aria-labelledby="membresiaAsignacionesLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-      <!-- Encabezado del modal -->
       <div class="modal-header" style="background: #343a40; color: white; border-top-left-radius: 10px; border-top-right-radius: 10px;">
         <h5 class="modal-title" style="font-size: 1.5rem; font-weight: bold;">Asignar Membresía</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; background: none; border: none; font-size: 1.5rem;">
@@ -105,13 +105,10 @@ Actualizar Membresía
         </button>
       </div>
 
-      <!-- Cuerpo del modal -->
       <div class="modal-body" style="padding: 20px;">
-        <!-- Aquí se incluye la tabla de asignación de membresías -->
         {% include 'Administrator/assign_memb.html' %}
       </div>
 
-      <!-- Pie del modal -->
       <div class="modal-footer" style="background: #f8f9fa; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; padding: 15px;">
         <button type="button" class="btn btn-secondary" data-dismiss="modal" style="background: #6c757d; border: none; border-radius: 5px; padding: 8px 16px; font-weight: bold; transition: background 0.2s;" 
                 onmouseover="this.style.background='#5a6268'" 
@@ -131,7 +128,6 @@ Actualizar Membresía
 <div class="modal fade" id="membresiaActualizacion" tabindex="-1" aria-labelledby="membresiaActualizacionLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-      <!-- Encabezado del modal -->
       <div class="modal-header" style="background: #343a40; color: white; border-top-left-radius: 10px; border-top-right-radius: 10px;">
         <h5 class="modal-title" style="font-size: 1.5rem; font-weight: bold;">Asignar Membresía</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; background: none; border: none; font-size: 1.5rem;">
@@ -139,13 +135,10 @@ Actualizar Membresía
         </button>
       </div>
 
-      <!-- Cuerpo del modal -->
       <div class="modal-body" style="padding: 20px;">
-        <!-- Aquí se incluye la tabla de asignación de membresías -->
         {% include 'Administrator/update_membreship.html' %}
       </div>
 
-      <!-- Pie del modal -->
       <div class="modal-footer" style="background: #f8f9fa; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; padding: 15px;">
         <button type="button" class="btn btn-secondary" data-dismiss="modal" style="background: #6c757d; border: none; border-radius: 5px; padding: 8px 16px; font-weight: bold; transition: background 0.2s;" 
                 onmouseover="this.style.background='#5a6268'" 
@@ -167,7 +160,6 @@ Actualizar Membresía
 <div class="modal fade" id="searchUser" tabindex="-1" aria-labelledby="searchUserLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-      <!-- Encabezado del modal -->
       <div class="modal-header" style="background: #343a40; color: white; border-top-left-radius: 10px; border-top-right-radius: 10px;">
         <h5 class="modal-title" style="font-size: 1.5rem; font-weight: bold;">Buscar Usuario</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; background: none; border: none; font-size: 1.5rem;">
@@ -175,27 +167,14 @@ Actualizar Membresía
         </button>
       </div>
 
-      <!-- Cuerpo del modal -->
       <div class="modal-body" style="padding: 20px;">
-        <!-- Aquí se incluye el contenido de búsqueda de usuarios -->
+
         {% include 'Administrator/search_user.html' %}
       </div>
 
-      <!-- Pie del modal (opcional, si necesitas agregar botones) -->
-      <!-- <div class="modal-footer" style="background: #f8f9fa; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; padding: 15px;">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal" style="background: #6c757d; border: none; border-radius: 5px; padding: 8px 16px; font-weight: bold; transition: background 0.2s;" 
-                onmouseover="this.style.background='#5a6268'" 
-                onmouseout="this.style.background='#6c757d'">
-          Cerrar
-        </button>
-        <button type="button" class="btn btn-primary" style="background: #007bff; border: none; border-radius: 5px; padding: 8px 16px; font-weight: bold; transition: background 0.2s;" 
-                onmouseover="this.style.background='#0056b3'" 
-                onmouseout="this.style.background='#007bff'">
-          Buscar
-        </button>
-      </div> -->
     </div>
   </div>
 </div>
-<!-- MODAL PARA BUSQUEDA DE USUARIO -->
 
+
+{% endblock %}

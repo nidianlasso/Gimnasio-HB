@@ -10,7 +10,6 @@
             </tr>
         </thead>
         <tbody>
-            <!-- Los datos se cargarán dinámicamente aquí -->
         </tbody>
     </table>
 </div>
@@ -28,7 +27,7 @@
             </div>
             <div class="modal-body">
                 <form id="asignarMembresiaForm" method="POST" action="{{ url_for('save_membreship') }}">
-                    <input type="hidden" name="usuarioId" id="usuarioId"> <!-- Campo oculto -->
+                    <input type="hidden" name="usuarioId" id="usuarioId">
                     <fieldset>
                         <div class="form-group">
                             <label for="tipoMembresia">Tipo de Membresía:</label>

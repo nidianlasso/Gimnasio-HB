@@ -1,4 +1,4 @@
-<!-- Tabla para Actualización -->
+
 <div>
     <h2>Tabla de Actualización</h2>
     <table border="1" id="actualizacionMembresia">
@@ -11,12 +11,12 @@
             </tr>
         </thead>
         <tbody>
-            <!-- Los datos se cargarán dinámicamente aquí -->
+        
         </tbody>
     </table>
 </div>
 
-<!-- Modal para mostrar detalles de la membresía -->
+
 <div class="modal fade" id="updateMembresia" tabindex="-1" aria-labelledby="updateMembresiaLabel"
     aria-hidden="true">
     <div class="modal-dialog">
@@ -29,7 +29,7 @@
             </div>
             <div class="modal-body">
                 <form id="asignarMembresiaForm" method="POST" action="{{ url_for('update_membreship') }}">
-                    <input type="hidden" name="id_user_update" id="id_user_update"> <!-- Campo oculto para usuarioId -->
+                    <input type="hidden" name="id_user_update" id="id_user_update"> <!-- id oculto  -->
                     <input type="hidden" name="id_membresia_usuario" id="id_membresia_usuario"> <!-- Campo oculto para id_membresia_usuario -->
                     <fieldset>
                         <div class="form-group">
