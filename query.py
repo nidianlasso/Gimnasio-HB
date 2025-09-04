@@ -49,7 +49,7 @@ def validarLogin(identificacion, contrasena):
         elif rol.lower() == "entrenador":
             resp = redirect(url_for('index_coach'))
         elif rol.lower() == "recepcionista":
-            resp = redirect(url_for('profile_receptionist'))
+            resp = redirect(url_for('index_receptionist'))
         elif rol.lower() == "tecnico":
             resp = redirect(url_for('profile_technical'))
 
@@ -355,90 +355,139 @@ def access_users(identificacion):
     resultado = cursor.fetchall()
     return resultado
 
-from datetime import datetime, time
-
-def guardar_acceso(fecha, duracion, tipo_acceso, id_usuario):
+def guardar_acceso(tipo_acceso, id_usuario):
     try:
-        print("Intentando guardar acceso...")
-
-        # 1. Convertir fecha de string ISO a formato datetime
-        fecha_dt = datetime.strptime(fecha[:-1], '%Y-%m-%dT%H:%M:%S.%f')  # Elimina la 'Z'
-        fecha_str = fecha_dt.strftime('%Y-%m-%d %H:%M:%S')
-
-        # 2. Convertir duración HH:MM:SS a objeto time
-        h, m, s = map(int, duracion.split(':'))
-        duracion_time = time(hour=h, minute=m, second=s)
-
-        cursor.execute("SELECT * FROM acceso WHERE id_usuario = %s AND tipo_acceso = 'Active'", (id_usuario,))
-        resultado_acceso = cursor.fetchone()
-
-        if resultado_acceso is None:
-            print("No hay acceso activo, creando uno nuevo...")
-            cursor.execute('INSERT INTO acceso (fecha, duracion, tipo_acceso, id_usuario) VALUES (%s, %s, %s, %s)',
-                           (fecha_str, duracion_time, tipo_acceso, id_usuario))
+        if tipo_acceso == "Active":
+            cursor.execute("""
+                INSERT INTO acceso (fecha_inicio, tipo_acceso, id_usuario, duracion)
+                VALUES (NOW(), %s, %s, DEFAULT)
+            """, (tipo_acceso, id_usuario))
         else:
-            print("Actualizando acceso existente...")
-            cursor.execute('UPDATE acceso SET fecha = %s, duracion = %s, tipo_acceso = %s WHERE id_usuario = %s AND tipo_acceso = %s',
-                           (fecha_str, duracion_time, tipo_acceso, id_usuario, 'Active'))
+            # Buscar el último acceso activo de este usuario
+            cursor.execute("""
+                SELECT id_acceso, fecha_inicio 
+                FROM acceso 
+                WHERE id_usuario = %s AND tipo_acceso = 'Active'
+                ORDER BY fecha_inicio DESC LIMIT 1
+            """, (id_usuario,))
+            acceso = cursor.fetchone()
+
+            if acceso:
+                id_acceso, fecha_inicio = acceso
+                cursor.execute("""
+                    UPDATE acceso 
+                    SET fecha_fin = NOW(),
+                        tipo_acceso = %s,
+                        duracion = TIMEDIFF(NOW(), fecha_inicio)
+                    WHERE id_acceso = %s
+                """, (tipo_acceso, id_acceso))
 
         connection.commit()
-        print("Acceso guardado/actualizado exitosamente.")
         return True
-
     except Exception as e:
-        print("Error al guardar el acceso:", e)
+        print("Error al guardar acceso:", e)
         return False
 
 
-def obtener_tipo_acceso(id_usuario):
+# --- Función de servicio (consulta y actualización en la BD) ---
+def finalizar_acceso(id_usuario):
     try:
-        cursor.execute("SELECT * FROM usuario WHERE id_usuario = %s", (id_usuario,))
-        resultado_usuario = cursor.fetchone()
-        
-        if resultado_usuario is None:
-            print(f'El usuario ID: {id_usuario} no existe en la tabla usuarios')
-            return None
-        
-        cursor.execute("SELECT a.tipo_acceso FROM acceso a WHERE a.id_usuario = %s", (id_usuario,))
-        resultado_acceso = cursor.fetchone()
-        
-        if resultado_acceso is None:
-            print(f'No se encontró acceso para el usuario ID: {id_usuario}. Creando acceso por defecto.')
-            fecha = datetime.now().isoformat()
-            duracion = 60
-            tipo_acceso = 'Inactive'
-            
-            if not guardar_acceso(fecha, duracion, tipo_acceso, id_usuario):
-                print("Error al crear el acceso.")
-                return None
-            
-            return {'tipo_acceso': tipo_acceso} 
+        # 1. Buscar el último acceso activo del usuario
+        cursor.execute("""
+            SELECT id_acceso, fecha_inicio 
+            FROM acceso
+            WHERE id_usuario = %s AND tipo_acceso = 'Active'
+            ORDER BY fecha_inicio DESC
+            LIMIT 1
+        """, (id_usuario,))
+        acceso = cursor.fetchone()
 
-        return {'tipo_acceso': resultado_acceso[0]} 
+        if not acceso:
+            cursor.close()
+            return {'error': 'No hay acceso activo para este usuario'}
+
+        id_acceso, fecha_inicio = acceso
+
+        # 2. Actualizar con fecha_fin y duración
+        cursor.execute("""
+            UPDATE acceso
+            SET fecha_fin = NOW(),
+                duracion = TIMEDIFF(NOW(), fecha_inicio),
+                tipo_acceso = 'Inactive'
+            WHERE id_acceso = %s
+        """, (id_acceso,))
+
+        connection.commit()
+        cursor.close()
+
+        return {'message': 'Acceso finalizado correctamente'}
+
     except Exception as e:
-        raise Exception(f'Error en la consulta: {str(e)}')
+        print("Error en finalizar_acceso_db:", e)
+        return {'error': str(e)}
 
-def cambiar_estado_acceso(id_usuario):
+
+def consultar_acceso_usuario(id_usuario):
     try:
-        cursor.execute("SELECT * FROM acceso WHERE id_usuario = %s AND tipo_acceso = 'Active'", (id_usuario,))
+        cursor = connection.cursor(pymysql.cursors.DictCursor)  # DictCursor devuelve diccionario
+
+        cursor.execute("""
+            SELECT tipo_acceso, fecha_inicio, fecha_fin
+            FROM acceso
+            WHERE id_usuario = %s
+            ORDER BY fecha_inicio DESC
+            LIMIT 1
+        """, (id_usuario,))
+        acceso = cursor.fetchone()
+
+        if acceso is None:
+            return {'tipo_acceso': 'Inactive'}
+
+        return acceso
+
+    except Exception as e:
+        return {'error': f'Error al obtener acceso: {str(e)}'}
+
+from pymysql.cursors import DictCursor
+
+def cambiar_estado_acceso_db(id_usuario):
+    try:
+        cursor = connection.cursor(DictCursor)  # ✅ Usar DictCursor en PyMySQL
+
+        # Buscar acceso activo
+        cursor.execute("""
+            SELECT id_acceso, fecha_inicio
+            FROM acceso
+            WHERE id_usuario = %s AND tipo_acceso = 'Active' AND fecha_fin IS NULL
+            ORDER BY fecha_inicio DESC LIMIT 1
+        """, (id_usuario,))
         acceso_actual = cursor.fetchone()
 
         if acceso_actual is None:
             return {'error': f"No se encontró acceso activo para el usuario ID: {id_usuario}."}
 
-        # Calcular la duración
-        fecha_inicio = acceso_actual['fecha']
-        fecha_fin = datetime.now()
-        duracion_seconds = int((fecha_fin - fecha_inicio).total_seconds())
-
-        # Actualizar el acceso a Inactive
-        cursor.execute(
-            "UPDATE acceso SET tipo_acceso = 'Inactive', duracion = %s WHERE id_usuario = %s AND tipo_acceso = 'Active'",
-            (duracion_seconds, id_usuario)
-        )
+        # Cerrar acceso
+        cursor.execute("""
+            UPDATE acceso
+            SET tipo_acceso = 'Inactive', fecha_fin = NOW()
+            WHERE id_acceso = %s
+        """, (acceso_actual['id_acceso'],))
         connection.commit()
+        print("🔄 Filas afectadas:", cursor.rowcount)
 
-        return {'message': 'Estado de acceso cambiado a Inactive exitosamente.', 'duracion': duracion_seconds}
+        # Calcular duración
+        cursor.execute("""
+            SELECT TIMESTAMPDIFF(SECOND, fecha_inicio, fecha_fin) AS duracion_segundos
+            FROM acceso WHERE id_acceso = %s
+        """, (acceso_actual['id_acceso'],))
+        segundos = cursor.fetchone()['duracion_segundos']
+
+        horas = segundos // 3600
+        minutos = (segundos % 3600) // 60
+        segundos = segundos % 60
+        duracion_legible = f"{horas:02}:{minutos:02}:{segundos:02}"
+
+        return {'message': 'Estado de acceso cambiado a Inactive exitosamente.', 'duracion': duracion_legible}
 
     except Exception as e:
         return {'error': f'Error al cambiar el estado del acceso: {str(e)}'}
@@ -1270,3 +1319,13 @@ def obtener_rutinas_por_plan(id_plan):
                        'Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo')
     """, (id_plan,))
     return cursor.fetchall()
+
+def obtener_cliente_por_plan(id_plan):
+    cursor.execute("""
+        SELECT m.id_miembro, m.nombre, m.apellido, u.correo, u.identificacion
+        FROM asignacion_pla_trabajo a
+        JOIN miembros m ON a.id_miembro_plan = m.id_miembro
+        JOIN usuario u ON m.id_usuario = u.id_usuario
+        WHERE a.id_plan = %s
+    """, (id_plan,))
+    return cursor.fetchone()  # Un solo cliente

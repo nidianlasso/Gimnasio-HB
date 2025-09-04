@@ -1,11 +1,16 @@
-{% include 'receptionist/main2.html' %}
-{% include 'receptionist/menu.html' %}
+{% extends "base.html" %}
 
+{% block menu %}
+    {% include carpeta_rol + '/menu.html' %}
+{% endblock %}
 
-<div class="container my-5">
+{% block content %}
+
+<div class="container my-5" style="margin-top: -300px !important;">
   <h3 class="text-center mb-4 text-dark font-weight-bold">Gestión de Accesos e Instructores</h3>
   
   <div class="row justify-content-center">
+    <!-- Card Registro de Accesos -->
     <div class="col-md-4 mb-4">
       <div class="card text-center shadow">
         <div class="card-body">
@@ -18,7 +23,7 @@
       </div>
     </div>
 
-
+    <!-- Card Asignación de Instructores -->
     <div class="col-md-4 mb-4">
       <div class="card text-center shadow">
         <div class="card-body">
@@ -33,6 +38,7 @@
   </div>
 </div>
 
+<!-- Modal Registro de Accesos -->
 <div class="modal fade" id="searchUser" tabindex="-1" aria-labelledby="searchUserLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
@@ -43,12 +49,23 @@
         </button>
       </div>
       <div class="modal-body">
-        {% include 'receptionist/register_access.html' %}
+        
+        <!-- Aquí incluyes el contenido del formulario -->
+        <div class="form-group">
+          <label for="cedula">Ingrese cédula:</label>
+          <input type="text" class="form-control" id="cedula" placeholder="Número de cédula">
+        </div>
+        <button onclick="registrarIngreso()" class="btn btn-warning btn-block mb-3">Buscar</button>
+        
+        <!-- Aquí se pinta el resultado con JS -->
+        <div id="resultadoIngreso" class="mt-3"></div>
+
       </div>
     </div>
   </div>
 </div>
 
+<!-- Modal Asignación de Instructores -->
 <div class="modal fade" id="asignacionEntrenador" tabindex="-1" aria-labelledby="asignacionEntrenadorLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
@@ -68,3 +85,5 @@
     </div>
   </div>
 </div>
+
+{% endblock %}

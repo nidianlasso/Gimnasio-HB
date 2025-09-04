@@ -13,20 +13,22 @@ from reportlab.lib import colors
 from reportlab.lib.styles import getSampleStyleSheet
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
-from query import (validarLogin, check_credentials, login_required_admin, login_required_member,login_required_coach, login_required_receptionist,
-                    lista_miembros,lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
-                    conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship, obtener_membrehip_user,
-                     status_membreship, actualizar_membresia, lista_maquinas, listado_empleados, lista_proveedores, search_machine, access_users,
-                    guardar_acceso, obtener_tipo_acceso, cambiar_estado_acceso, asignar_entrenador, obtener_plan_trabajo, obtener_membrehip_user,
-                    save_class_to_db, list_class, delete_class, obtener_reservas_maquinas, obtener_maquinas_disponibles, consultar_reservas_de_hoy, cant_maquinas,
-                    cant_proveedores, cant_empleados, obtener_maquinas_disponibles_para_reserva, existe_reserva_en_bloque, registrar_reserva,
-                    obtener_id_membresia_usuario, consultar_bloques_contiguos, registrar_pago_nomina, obtener_id_usuario_por_identificacion, insertar_proveedor,
-                    eliminar_proveedor_id, actualizar_proveedor, obtener_proveedor_por_id,obtener_clases_disponibles, obtener_id_membresia_usuario_activa, insertar_reserva_clase,
-                    existe_reserva, obtener_reservas_usuario, obtener_clase_por_id, cancelar_reserva_en_bd, obtener_id_clase_por_nombre, obtener_clientes_sin_avance_hoy, insertar_progreso,
-                    existe_avance_hoy, obtener_historial_avances,  maquinas_sin_disponibles, insertar_revision,
-                    insert_revision_sql, insert_observacion_sql, insertar_revision, reports_machine, actualizar_estado_revision, insertar_observacion, obtener_revision, obtener_observaciones, obtener_revisiones_pendientes,
-                    actualizar_observacion_tecnico, lista_tecnicos, actualizar_usuario, datos_usuario,
-                    actualizar_datos_usuario, hash_password)
+from query import (
+    validarLogin, check_credentials, login_required_admin, login_required_member, login_required_coach, login_required_receptionist,
+    lista_miembros, lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
+    conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship, obtener_membrehip_user,
+    status_membreship, actualizar_membresia, lista_maquinas, listado_empleados, lista_proveedores, search_machine, access_users,
+    guardar_acceso, cambiar_estado_acceso_db, asignar_entrenador, obtener_plan_trabajo, obtener_membrehip_user,
+    save_class_to_db, list_class, delete_class, obtener_reservas_maquinas, obtener_maquinas_disponibles, consultar_reservas_de_hoy, cant_maquinas,
+    cant_proveedores, cant_empleados, obtener_maquinas_disponibles_para_reserva, existe_reserva_en_bloque, registrar_reserva,
+    obtener_id_membresia_usuario, consultar_bloques_contiguos, registrar_pago_nomina, obtener_id_usuario_por_identificacion, insertar_proveedor,
+    eliminar_proveedor_id, actualizar_proveedor, obtener_proveedor_por_id, obtener_clases_disponibles, obtener_id_membresia_usuario_activa, insertar_reserva_clase,
+    existe_reserva, obtener_reservas_usuario, obtener_clase_por_id, cancelar_reserva_en_bd, obtener_id_clase_por_nombre, obtener_clientes_sin_avance_hoy, insertar_progreso,
+    existe_avance_hoy, obtener_historial_avances, maquinas_sin_disponibles, insertar_revision,
+    insert_revision_sql, insert_observacion_sql, insertar_revision, reports_machine, actualizar_estado_revision, insertar_observacion, obtener_revision, obtener_observaciones, obtener_revisiones_pendientes,
+    actualizar_observacion_tecnico, lista_tecnicos, actualizar_usuario, datos_usuario,
+    actualizar_datos_usuario, hash_password, obtener_rutinas_por_plan, insertar_rutina, insertar_zona_cuerpo, obtener_cliente_por_plan, finalizar_acceso,
+    consultar_acceso_usuario)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -476,81 +478,106 @@ def api_maquinas_disponibles():
 def index_coach():
     return render_template('coach/index.html', carpeta_rol="coach")
 
-# @app.route('/profile-receptionist', methods=['GET', 'POST'])
-# @login_required_receptionist
-# def profile_receptionist():
-#     return render_template('receptionist/profile.html')    
+@app.route('/index-receptionist', methods=['GET', 'POST'])
+@login_required_receptionist
+def index_receptionist():
+    return render_template('receptionist/index.html', carpeta_rol="receptionist")    
 
 #REGISTRAR LOS ACCESOS
-# @app.route('/registrar-ingreso', methods=['POST'])
-# def registrar_ingreso():
-#     cedula = request.json.get('cedula')
-#     resultado = access_users(cedula)
+@app.route('/registrar-ingreso', methods=['POST'])
+def registrar_ingreso():
+    cedula = request.json.get('cedula')
+    resultado = access_users(cedula)
+    if resultado:
+        usuario = resultado[0]
+        id_usuario = usuario[0]
+        return jsonify({
+            'id_usuario': id_usuario,
+            'nombre': usuario[1],
+            'apellido': usuario[2],
+            'rol': usuario[3]
+        }), 200
+    else:
+        return jsonify({'error': 'Usuario no encontrado'}), 404
 
-#     if resultado:
-#         usuario = resultado[0]
-#         id_usuario = usuario[0]
-#         return jsonify({
-#             'id_usuario': id_usuario,
-#             'nombre': usuario[1],
-#             'apellido': usuario[2],
-#             'rol': usuario[3]
-#         }), 200
-#     else:
-#         return jsonify({'error': 'Usuario no encontrado'}), 404
+@app.route('/guardar-acceso', methods=['POST'])
+def guardar_acceso_route():
+    data = request.json
+    tipo_acceso = data.get('tipo_acceso')
+    id_usuario = data.get('id_usuario')
 
-# @app.route('/guardar-acceso', methods=['POST'])
-# def guardar_acceso_route():
-#     data = request.json
-#     fecha = data.get('fecha')
-#     duracion = data.get('duracion')
-#     tipo_acceso = data.get('tipo_acceso')
-#     id_usuario = data.get('id_usuario')
+    # Validar parámetros obligatorios
+    if not id_usuario or not tipo_acceso:
+        return jsonify({'error': 'Faltan parámetros (id_usuario o tipo_acceso)'}), 400
 
-#     if guardar_acceso(fecha, duracion, tipo_acceso, id_usuario):
-#         return jsonify({'message': 'Acceso registrado exitosamente'}), 201
-#     else:
-#         return jsonify({'error': 'Error al registrar el acceso'}), 500
-
-# @app.route('/obtener-acceso', methods=['GET'])
-# def obtener_acceso():
-#     id_usuario_str = request.args.get('id_usuario')
-    
-#     if not id_usuario_str:
-#         return jsonify({'error': 'ID de usuario es requerido'}), 400
-    
-#     try:
-#         id_usuario = int(id_usuario_str) 
-#     except ValueError:
-#         return jsonify({'error': 'ID de usuario debe ser un número válido'}), 400
-
-#     acceso = obtener_tipo_acceso(id_usuario)
-    
-#     if acceso is None:
-#         return jsonify({'error': 'Usuario no encontrado'}), 404
-
-#     return jsonify({'tipo_acceso': acceso}), 200
+    # Guardar acceso (la BD pondrá duracion=00:00:00 automáticamente)
+    if guardar_acceso(tipo_acceso, id_usuario):
+        return jsonify({'message': 'Acceso registrado exitosamente'}), 201
+    else:
+        return jsonify({'error': 'Error al registrar el acceso'}), 500
 
 
-# @app.route('/cambiar-estado-acceso', methods=['POST'])
-# def route_cambiar_estado_acceso():
-#     data = request.json
-#     id_usuario = data.get('id_usuario')
+@app.route('/finalizar-acceso', methods=['POST'])
+def finalizar_acceso():
+    data = request.json
+    id_usuario = data.get('id_usuario')
 
-#     resultado = cambiar_estado_acceso(id_usuario)
+    if not id_usuario:
+        return jsonify({'error': 'Falta el id_usuario'}), 400
 
-#     if 'error' in resultado:
-#         return jsonify(resultado), 404
+    resultado = finalizar_acceso(id_usuario)
 
-#     return jsonify(resultado), 200
+    if 'error' in resultado:
+        return jsonify(resultado), 400
+
+    return jsonify(resultado), 200
+
+
+# 🔹 Ruta Flask: recibe petición y usa la función lógica
+@app.route('/obtener-acceso', methods=['GET'])
+def route_obtener_acceso():
+    id_usuario = request.args.get('id_usuario')
+
+    if not id_usuario:
+        return jsonify({'error': 'id_usuario es requerido'}), 400
+
+    resultado = consultar_acceso_usuario(id_usuario)
+
+    if 'error' in resultado:
+        return jsonify(resultado), 500
+
+    return jsonify(resultado), 200
+
+@app.route('/cambiar-estado-acceso', methods=['POST'])
+def cambiar_estado_acceso():
+    try:
+        data = request.json
+        id_usuario = data.get('id_usuario')
+        print("📥 ID recibido en cambiar_estado_acceso:", id_usuario)  # 🔎 DEBUG
+
+        if not id_usuario:
+            return jsonify({'error': 'id_usuario es requerido'}), 400
+
+        resultado = cambiar_estado_acceso_db(id_usuario)
+        print("📤 Resultado función DB:", resultado)  # 🔎 DEBUG
+
+        if 'error' in resultado:
+            return jsonify(resultado), 404
+
+        return jsonify(resultado), 200
+    except Exception as e:
+        print("Error en cambiar_estado_acceso:", e)
+        return jsonify({'error': f'Error al cambiar el estado del acceso: {str(e)}'}), 500
+
+
 
 #ASIGNAR ENTRENADOR
-# @app.route('/assign-coach', methods=['POST', 'GET'])
-# def assign_coach_route():
-#     asignacion = asignar_entrenador()
-#     print("datos para asignar entrenador")
-#     print(asignacion)
-#     return jsonify(asignacion)
+@app.route('/assign-coach', methods=['POST', 'GET'])
+def assign_coach_route():
+    asignacion = asignar_entrenador()
+    print("datos para asignar entrenador")
+    print(asignacion)
+    return jsonify(asignacion)
 
 #MOSTRAR PLAN DE TRABAJO DEL MIEMBRO
 
@@ -825,14 +852,6 @@ def guardar_proveedor():
     return redirect(url_for('view_provider')) 
 
 #OBTENER CLIENTES ASIGNADOS A ENTRENADOR
-@app.route("/mis-clientes")
-def mis_clientes():
-    if "id_usuario" not in session:
-        return redirect(url_for("login"))
-    id_entrenador = session["id_usuario"]
-    clientes = obtener_clientes_sin_avance_hoy(id_entrenador)
-    return render_template('coach/mis_clientes.html', clientes=clientes)
-
 
 
 @app.route("/guardar_progreso", methods=["POST"])
@@ -1127,6 +1146,60 @@ def update_profile(id):
 
     return redirect(url_for('profile', rol=session.get('rol','miembro')))
 
+#ASIGNACION DE LAS RUTINAS Y A LOS MIEMBROS
+@app.route("/mis-clientes")
+def mis_clientes():
+    if "id_usuario" not in session:
+        return redirect(url_for("login"))
+    id_entrenador = session["id_usuario"]
+    clientes = obtener_clientes_sin_avance_hoy(id_entrenador)
+    return render_template('coach/mis_clientes.html', clientes=clientes)
+
+@app.route("/mis-clientes-rutina")
+def mis_clientes_rutina():
+    if "id_usuario" not in session:
+        return redirect(url_for("login"))
+    id_entrenador = session["id_usuario"]
+    clientes = obtener_clientes_sin_avance_hoy(id_entrenador)
+    return render_template('coach/mis_clientes_rutina.html', clientes=clientes)
+
+
+@app.route("/ver-plan/<int:id_plan>", methods=['POST'])
+def ver_plan(id_plan):
+    rutinas = obtener_rutinas_por_plan(id_plan)
+    return render_template("coach/ver_plan.html", rutinas=rutinas)
+
+@app.route("/crear-rutina/<int:id_plan>", methods=["GET", "POST"])
+def crear_rutina(id_plan):
+    if "id_usuario" not in session:
+        return redirect(url_for("login"))
+
+    if request.method == "POST":
+        nombre = request.form["nombre"]
+        descripcion = request.form["descripcion"]
+        id_maquina = request.form["id_maquina"]
+        dia_semana = request.form["dia_semana"]
+        zona_nombre = request.form["zona_nombre"]
+
+        # 1. Insertar rutina
+        id_rutina = insertar_rutina(nombre, descripcion, id_plan, id_maquina, dia_semana)
+
+        # 2. Insertar zona cuerpo
+        insertar_zona_cuerpo(zona_nombre, id_rutina)
+
+        return redirect(url_for("ver_plan", id_plan=id_plan))  # ojo, aquí no necesitas "rutinas.ver_plan"
+
+    # 🔹 Obtener cliente relacionado a ese plan
+    cliente = obtener_cliente_por_plan(id_plan)  # debes implementarla en queries
+    # 🔹 Obtener lista de máquinas
+    # maquinas = obtener_maquinas()  # si ya la tienes hecha
+
+    return render_template(
+        "coach/crear_rutina.html",
+        id_plan=id_plan,
+        cliente=cliente,
+        # maquinas=maquinas
+    )
 
 
 if __name__ =='__main__':

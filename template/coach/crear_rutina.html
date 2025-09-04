@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <h2 class="mb-4 text-primary">
+    <i class="fas fa-dumbbell me-2"></i> Crear Plan de Trabajo para {{ cliente.nombre }} {{ cliente.apellido }}
+  </h2>
+
+  <!-- Formulario para plan de trabajo -->
+  <form method="POST">
+    <div class="card shadow-sm rounded-3 p-4 mb-4">
+      <h5 class="fw-bold mb-3">Información del plan</h5>
+      <div class="mb-3">
+        <label class="form-label">Nombre del plan</label>
+        <input type="text" name="nombre_plan" class="form-control" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Descripción</label>
+        <textarea name="descripcion_plan" class="form-control" rows="3"></textarea>
+      </div>
+    </div>
+
+    <!-- Rutinas por día -->
+    <div id="rutinas-container">
+      <div class="card shadow-sm rounded-3 p-4 mb-3 rutina-item">
+        <h6 class="fw-bold">Rutina - Día 1</h6>
+        <div class="mb-2">
+          <label class="form-label">Nombre</label>
+          <input type="text" name="rutinas[0][nombre]" class="form-control" required>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Descripción</label>
+          <textarea name="rutinas[0][descripcion]" class="form-control"></textarea>
+        </div>
+        <div class="mb-2">
+          <label class="form-label">Máquina</label>
+          <select name="rutinas[0][id_maquina]" class="form-select">
+            {% for maquina in maquinas %}
+            <option value="{{ maquina.id_maquina }}">{{ maquina.nombre }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón para agregar más días -->
+    <button type="button" class="btn btn-outline-secondary mb-3" onclick="agregarRutina()">
+      <i class="fas fa-plus me-1"></i> Agregar rutina
+    </button>
+
+    <!-- Guardar -->
+    <div class="d-flex justify-content-end">
+      <button type="submit" class="btn btn-success px-4 rounded-pill">
+        <i class="fas fa-save me-2"></i> Guardar plan
+      </button>
+    </div>
+  </form>
+</div>
+
+<script>
+let rutinaIndex = 1;
+
+function agregarRutina() {
+  const container = document.getElementById("rutinas-container");
+  const nuevaRutina = document.createElement("div");
+  nuevaRutina.classList.add("card", "shadow-sm", "rounded-3", "p-4", "mb-3", "rutina-item");
+  nuevaRutina.innerHTML = `
+    <h6 class="fw-bold">Rutina - Día ${rutinaIndex + 1}</h6>
+    <div class="mb-2">
+      <label class="form-label">Nombre</label>
+      <input type="text" name="rutinas[${rutinaIndex}][nombre]" class="form-control" required>
+    </div>
+    <div class="mb-2">
+      <label class="form-label">Descripción</label>
+      <textarea name="rutinas[${rutinaIndex}][descripcion]" class="form-control"></textarea>
+    </div>
+    <div class="mb-2">
+      <label class="form-label">Máquina</label>
+      <select name="rutinas[${rutinaIndex}][id_maquina]" class="form-select">
+        {% for maquina in maquinas %}
+        <option value="{{ maquina.id_maquina }}">{{ maquina.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  `;
+  container.appendChild(nuevaRutina);
+  rutinaIndex++;
+}
+</script>
+{% endblock %}

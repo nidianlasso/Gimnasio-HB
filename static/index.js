@@ -1,3 +1,8 @@
+let isActive = false;
+let inicio = null;
+
+
+
 /*MOSTRAR LA INFORMACION DE LOS USUARIOS*/
 function getListUsers() {
     const tablaCuerpo = document.querySelector('#miembrosTabla tbody');
@@ -686,182 +691,107 @@ function getSearchMachine() {
 }
 
 /*RECEPCIONISTA */
-const duracion_defecto = 60;
-
-function segundosAHHMMSS(segundos) {
-    if (isNaN(segundos) || segundos < 0) {
-        console.error('Duración inválida:', segundos);
-        return '00:00:00';
-    }
-    const horas = Math.floor(segundos / 3600);
-    const minutos = Math.floor((segundos % 3600) / 60);
-    const secs = segundos % 60;
-
-    return `${String(horas).padStart(2, '0')}:${String(minutos).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-}
-let inicio;
-let isActive = false;
 
 function registrarIngreso() {
     const cedula = document.getElementById('cedula').value;
 
     fetch('/registrar-ingreso', {
         method: 'POST',
-        body: JSON.stringify({ cedula: cedula }),
-        headers: {
-            'Content-Type': 'application/json'
-        }
+        body: JSON.stringify({ cedula }),
+        headers: { 'Content-Type': 'application/json' }
     })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => { throw new Error(err.error || 'Error en la solicitud'); });
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Datos recibidos:', data);
-            const resultadoIngreso = document.getElementById('resultadoIngreso');
-            resultadoIngreso.innerHTML = '';
-
-            // Mostrar la información del usuario
-            const infoUsuario = document.createElement('div');
-            infoUsuario.innerHTML = `
-            <p>Nombre: ${data.nombre}</p>
-            <p>Apellido: ${data.apellido}</p>
-            <p>Rol: ${data.rol}</p>
-            <button id="activarBtn">Activar</button>
-        `;
-            resultadoIngreso.appendChild(infoUsuario);
-
-            // Obtener el estado actual del acceso
-            fetch(`/obtener-acceso?id_usuario=${data.id_usuario}`, {
-                method: 'GET',
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        if (response.status === 404) {
-                            console.log('No se encontró acceso, creando uno nuevo...');
-                            return crearAcceso(data.id_usuario);
-                        }
-                        throw new Error('Error al obtener el estado de acceso');
-                    }
-                    return response.json();
-                })
-                .then(accesoData => {
-                    // Si accesoData es undefined, crear un nuevo acceso y devolver el tipo de acceso
-                    const boton = document.getElementById('activarBtn');
-                    boton.textContent = accesoData.tipo_acceso === 'Active' ? 'Desactivar' : 'Activar';
-                    isActive = accesoData.tipo_acceso === 'Active'; // Actualiza el estado
-
-                    boton.addEventListener('click', () => {
-                        const nuevoTipoAcceso = boton.textContent === 'Desactivar' ? 'Inactive' : 'Active';
-
-                        if (nuevoTipoAcceso === 'Active') {
-                            // Activar acceso
-                            inicio = new Date(); 
-                            console.log('Inicio establecido:', inicio);
-                            const fecha = inicio.toISOString();
-                            const duracionFormato = segundosAHHMMSS(duracion_defecto);
-
-                            fetch('/guardar-acceso', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({ fecha, duracion: duracionFormato, tipo_acceso: nuevoTipoAcceso, id_usuario: data.id_usuario })
-                            })
-                                .then(response => {
-                                    if (response.ok) {
-                                        return response.json();
-                                    }
-                                    throw new Error('Error en la solicitud');
-                                })
-                                .then(data => {
-                                    console.log('Acceso registrado:', data);
-                                    boton.textContent = 'Desactivar';
-                                    isActive = true;
-                                })
-                                .catch(error => {
-                                    console.error('Error al guardar el acceso:', error);
-                                });
-                        } else {
-                            if (!isActive) {
-                                console.error('No se puede desactivar, el acceso no está activo');
-                                return;
-                            }
-
-                            const fin = new Date();
-                            const duracionSegundos = Math.floor((fin - inicio) / 1000);
-                            console.log('Duración en segundos:', duracionSegundos);
-
-                            if (duracionSegundos < 0) {
-                                console.error('Duración inválida, el tiempo de inicio es posterior al tiempo de fin');
-                                return;
-                            }
-
-                            const duracionFormato = segundosAHHMMSS(duracionSegundos); 
-
-                            fetch('/guardar-acceso', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json'
-                                },
-                                body: JSON.stringify({ fecha: fin.toISOString(), duracion: duracionFormato, tipo_acceso: nuevoTipoAcceso, id_usuario: data.id_usuario })
-                            })
-                                .then(response => {
-                                    if (response.ok) {
-                                        return response.json();
-                                    }
-                                    throw new Error('Error en la solicitud');
-                                })
-                                .then(data => {
-                                    boton.textContent = 'Activar';
-                                    isActive = false; 
-                                })
-                                .catch(error => {
-                                    console.error('Error al desactivar el acceso:', error);
-                                });
-                        }
-                    });
-                })
-                .catch(error => {
-                    console.error('Error al obtener el estado de acceso:', error);
-                    resultadoIngreso.innerHTML = `<p style="color:red;">${error.message}</p>`;
-                });
-        })
-        .catch(error => {
-            console.error('Hubo un problema con la solicitud:', error);
-            const resultadoIngreso = document.getElementById('resultadoIngreso');
-            resultadoIngreso.innerHTML = `<p style="color:red;">${error.message}</p>`;
-        });
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => { 
+                throw new Error(err.error || 'Error en la solicitud'); 
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Datos recibidos:', data);
+        mostrarUsuario(data);  // 👉 Llamamos a otra función para renderizar
+        obtenerAcceso(data.id_usuario); // 👉 Llamamos a la función que consulta acceso
+    })
+    .catch(error => {
+        console.error('Error al registrar ingreso:', error);
+    });
 }
 
-// Función para crear un acceso nuevo si no existe
-function crearAcceso(id_usuario) {
-    const fecha = new Date().toISOString();
-    const duracionFormato = segundosAHHMMSS(duracion_defecto);
-    const tipo_acceso = 'Active';
+// 🔹 Mostrar datos del usuario en pantalla
+function mostrarUsuario(data) {
+    const resultadoIngreso = document.getElementById('resultadoIngreso');
+    resultadoIngreso.innerHTML = '';
 
-    return fetch('/guardar-acceso', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ fecha, duracion: duracionFormato, tipo_acceso, id_usuario })
-    })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error al crear acceso');
-            }
-            return response.json();
+    const infoUsuario = document.createElement('div');
+    infoUsuario.innerHTML = `
+        <p>Nombre: ${data.nombre}</p>
+        <p>Apellido: ${data.apellido}</p>
+        <p>Rol: ${data.rol}</p>
+        <button id="activarBtn">Activar</button>
+    `;
+    resultadoIngreso.appendChild(infoUsuario);
+}
+// 🔹 Obtener estado de acceso y asignar evento al botón
+function obtenerAcceso(id_usuario) {
+    fetch(`/obtener-acceso?id_usuario=${id_usuario}`)
+        .then(r => {
+            if (!r.ok) throw new Error('Error al obtener el estado de acceso');
+            return r.json();
         })
-        .then(data => {
-            console.log('Nuevo acceso creado:', data);
-            return { tipo_acceso }; 
+        .then(accesoData => {
+            let isActive = accesoData.tipo_acceso === 'Active';
+            const boton = document.getElementById('activarBtn');
+            boton.textContent = isActive ? 'Desactivar' : 'Activar';
+
+            boton.addEventListener('click', () => {
+                if (!isActive) {
+                    activarAcceso(id_usuario, boton, () => isActive = true);
+                } else {
+                    desactivarAcceso(id_usuario, boton, () => isActive = false);
+                }
+            });
         })
         .catch(error => {
-            console.error('Error al crear el acceso:', error);
+            console.error('Error al obtener el estado de acceso:', error);
         });
+}
+// 🔹 Activar acceso
+function activarAcceso(id_usuario, boton, callback) {
+    const inicio = new Date();
+    fetch('/guardar-acceso', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            tipo_acceso: 'Active',
+            id_usuario: id_usuario,
+            fecha: inicio.toISOString(),
+            duracion: "00:00:00"
+        })
+    })
+    .then(r => r.json())
+    .then(res => {
+        console.log(res);
+        boton.textContent = 'Desactivar';
+        callback();
+    })
+    .catch(error => console.error('Error al activar acceso:', error));
+}
+
+// 🔹 Desactivar acceso
+function desactivarAcceso(id_usuario, boton, callback) {
+    fetch('/cambiar-estado-acceso', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id_usuario })
+    })
+    .then(r => r.json())
+    .then(res => {
+        console.log(res);
+        boton.textContent = 'Activar';
+        callback();
+    })
+    .catch(error => console.error('Error al desactivar acceso:', error));
 }
 
 //FUNCION PARA ASIGNAR ENTRENADOR A MIEMBRO
