@@ -1,6 +1,6 @@
 <div>
     <h2>Tabla de Registros</h2>
-    <table border="1" id="tablaRegistros">
+    <table id="tablaRegistros">
         <thead>
             <tr>
                 <th>Identificación</th>
@@ -15,8 +15,7 @@
 </div>
 
 <!-- Modal para mostrar detalles de la membresía -->
-<div class="modal fade" id="detallesMembresia" tabindex="-1" aria-labelledby="detallesMembresiaLabel"
-    aria-hidden="true">
+<div class="modal fade" id="detallesMembresia" tabindex="-1" aria-labelledby="detallesMembresiaLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -27,7 +26,9 @@
             </div>
             <div class="modal-body">
                 <form id="asignarMembresiaForm" method="POST" action="{{ url_for('save_membreship') }}">
+                    <!-- Aquí está el input hidden para almacenar el usuarioId -->
                     <input type="hidden" name="usuarioId" id="usuarioId">
+
                     <fieldset>
                         <div class="form-group">
                             <label for="tipoMembresia">Tipo de Membresía:</label>
@@ -59,7 +60,6 @@
                     <button type="submit" class="btn btn-primary btn-block">Guardar</button>
                     <a href="{{ url_for('manage_users') }}" class="btn btn-primary btn-block">Volver</a>
                 </form>
-                
             </div>
         </div>
     </div>

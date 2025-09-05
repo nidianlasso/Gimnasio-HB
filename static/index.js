@@ -848,8 +848,9 @@ function assign_coach() {
 }
 
 function assign_membreship() {
-    const asignacionMembresia = document.getElementById('reserva_maquinas').getElementsByTagName('tbody')[0];
-    fetch('/assign_membreship')
+    const asignacionMembresia = document.getElementById('tablaRegistros').getElementsByTagName('tbody')[0];
+
+    fetch('/assign_membership')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Error en la solicitud');
@@ -859,14 +860,13 @@ function assign_membreship() {
         .then(data => {
             asignacionMembresia.innerHTML = '';
 
-            // Filtrar los datos para mostrar solo aquellos con información incompleta
-            const datosFiltrados = data.filter(info_user => {
-                return !info_user[3] || !info_user[4] || !info_user[5] || !info_user[6]; // costos, tipo, fechaInicio, estadoMembresia
-            });
+            const datosFiltrados = data; // Mostrar todos
+
             datosFiltrados.forEach(info_user => {
                 const fila = document.createElement('tr');
+
                 const id = document.createElement('td');
-                id.textContent = info_user[0];
+                id.textContent = info_user[0]; // identificacion
                 fila.appendChild(id);
 
                 const nombre = document.createElement('td');
@@ -876,6 +876,7 @@ function assign_membreship() {
                 const apellido = document.createElement('td');
                 apellido.textContent = info_user[2];
                 fila.appendChild(apellido);
+
                 const membresiaCelda = document.createElement('td');
                 const botonMembresia = document.createElement('button');
                 botonMembresia.textContent = 'Asignar';
@@ -887,11 +888,12 @@ function assign_membreship() {
                     document.getElementById('fechaFin').value = '';
                     document.getElementById('estadoMembresia').value = '';
 
-                    const usuarioId = info_user[8];
+                    const usuarioId = info_user[3]; // CORRECTO: índice 3
                     document.getElementById('usuarioId').value = usuarioId;
 
                     $('#detallesMembresia').modal('show');
                 };
+
                 membresiaCelda.appendChild(botonMembresia);
                 fila.appendChild(membresiaCelda);
                 asignacionMembresia.appendChild(fila);

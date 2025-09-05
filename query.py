@@ -268,7 +268,7 @@ def search_users(identificacion):
 #ASIGNACION DE MEMBRESIAS
 def assig_membreships():
     try:
-        cursor.execute("SELECT u.identificacion, u.nombre, u.apellido, m.costo, m.tipo, mu.fecha_inicio, mu.fecha_fin, em.nombre AS estado_membresia, u.id_usuario, mu.id_membresia_usuario, m.id_membresia FROM usuario u LEFT JOIN membresia_usuario mu ON mu.id_usuario = u.id_usuario LEFT JOIN membresia m ON mu.id_membresia = m.id_membresia LEFT JOIN estado_membresia em ON mu.id_estado_membresia = em.id_estado_membresia WHERE u.id_rol= '5';")
+        cursor.execute("SELECT u.identificacion, u.nombre, u.apellido, u.id_usuario FROM usuario u LEFT JOIN membresia_usuario mu ON mu.id_usuario = u.id_usuario WHERE u.id_rol = 5 AND mu.id_membresia_usuario IS NULL")
         campos_asignacion = cursor.fetchall()
         print(f'esto es lo que llega de asignacion de membresia')
         return campos_asignacion
