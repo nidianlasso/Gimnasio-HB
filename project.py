@@ -18,7 +18,7 @@ from query import (
     lista_miembros, lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
     conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship, obtener_membrehip_user,
     status_membreship, actualizar_membresia, lista_maquinas, listado_empleados, lista_proveedores, search_machine, access_users,
-    guardar_acceso, cambiar_estado_acceso_db, asignar_entrenador, obtener_plan_trabajo, obtener_membrehip_user,
+    guardar_acceso, cambiar_estado_acceso_db, obtener_plan_trabajo, obtener_membrehip_user,
     save_class_to_db, list_class, delete_class, obtener_reservas_maquinas, obtener_maquinas_disponibles, consultar_reservas_de_hoy, cant_maquinas,
     cant_proveedores, cant_empleados, obtener_maquinas_disponibles_para_reserva, existe_reserva_en_bloque, registrar_reserva,
     obtener_id_membresia_usuario, consultar_bloques_contiguos, registrar_pago_nomina, obtener_id_usuario_por_identificacion, insertar_proveedor,
@@ -28,7 +28,7 @@ from query import (
     insert_revision_sql, insert_observacion_sql, insertar_revision, reports_machine, actualizar_estado_revision, insertar_observacion, obtener_revision, obtener_observaciones, obtener_revisiones_pendientes,
     actualizar_observacion_tecnico, lista_tecnicos, actualizar_usuario, datos_usuario,
     actualizar_datos_usuario, hash_password, obtener_rutinas_por_plan, insertar_rutina, insertar_zona_cuerpo, obtener_cliente_por_plan, finalizar_acceso,
-    consultar_acceso_usuario)
+    consultar_acceso_usuario, obtener_miembros_por_plan, obtener_entrenador, asignar_supervision, asignar_entrenador)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -569,13 +569,36 @@ def cambiar_estado_acceso():
         return jsonify({'error': f'Error al cambiar el estado del acceso: {str(e)}'}), 500
 
 
+@app.route('/asignar_supervision/<int:id_entrenador>', methods=['POST'])
+def asignar_supervision_automatica(id_entrenador):
+    fecha = request.form.get("fecha")  # O la fecha actual si prefieres
+
+    # 1. Traer datos del entrenador
+    entrenador = obtener_entrenador(id_entrenador)
+    if not entrenador:
+        return "Entrenador no encontrado", 404
+
+    # 2. Buscar los miembros con el mismo plan
+    miembros = obtener_miembros_por_plan(entrenador["id_plan"])
+
+    # 3. Insertar la supervisión para cada miembro
+    for m in miembros:
+        asignar_supervision(entrenador["id_usuario"], m["id_usuario"], fecha)
+
+    return f"Supervisión asignada para {len(miembros)} miembros con el entrenador {entrenador['id_usuario']}"
+
+
 #ASIGNAR ENTRENADOR
 @app.route('/assign-coach', methods=['POST', 'GET'])
 def assign_coach_route():
-    asignacion = asignar_entrenador()
-    print("datos para asignar entrenador")
-    print(asignacion)
-    return jsonify(asignacion)
+    try:
+        asignacion = asignar_entrenador()
+        print("📥 Datos para asignar entrenador:", asignacion)  # 👀 DEBUG
+        return jsonify(asignacion), 200
+    except Exception as e:
+        print("❌ Error en assign_coach_route:", e)
+        return jsonify({'error': str(e)}), 500
+
 
 #MOSTRAR PLAN DE TRABAJO DEL MIEMBRO
 
