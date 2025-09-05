@@ -28,7 +28,7 @@ from query import (
     insert_revision_sql, insert_observacion_sql, insertar_revision, reports_machine, actualizar_estado_revision, insertar_observacion, obtener_revision, obtener_observaciones, obtener_revisiones_pendientes,
     actualizar_observacion_tecnico, lista_tecnicos, actualizar_usuario, datos_usuario,
     actualizar_datos_usuario, hash_password, obtener_rutinas_por_plan, insertar_rutina, insertar_zona_cuerpo, obtener_cliente_por_plan, finalizar_acceso,
-    consultar_acceso_usuario, obtener_miembros_por_plan, obtener_entrenador, asignar_supervision, asignar_entrenador)
+    consultar_acceso_usuario, obtener_miembros_por_plan, obtener_entrenador, asignar_supervision, asignar_entrenador, obtener_horario_usuario)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -1078,30 +1078,28 @@ def profile(rol):
 
     usuario = datos_usuario(session["id_usuario"], rol_lower)
 
-    membresia = plan_trabajo = None
+    membresia = plan_trabajo = horario = None
     clientes_asignados = []
 
+    # ✅ Cargar datos específicos por rol
     if usuario["rol"].lower() == "miembro":
         membresia = obtener_membrehip_user(usuario["identificacion"])
         plan_trabajo = obtener_plan_trabajo(usuario["identificacion"])
-    
+    else:
+        horario = obtener_horario_usuario(session["id_usuario"])
+        print(f"horario del rol{ horario}")
+
     if usuario["rol"].lower() == "entrenador":
         clientes_asignados = obtener_clientes_sin_avance_hoy(session["id_usuario"]) or []
-        print("CLIENTES:", clientes_asignados)
-
-
-
     return render_template(
-    "profile.html",  # único template para todos los roles
-    usuario=usuario,
-    membresia=membresia,
-    plan_trabajo=plan_trabajo,
-    clientes_asignados=clientes_asignados,
-    carpeta_rol=ROL_TO_CARPETA[rol_lower]
-)
-
-
-
+        "profile.html",
+        usuario=usuario,
+        membresia=membresia,
+        plan_trabajo=plan_trabajo,
+        clientes_asignados=clientes_asignados,
+        horario=horario,  # ✅ pásalo siempre si existe
+        carpeta_rol=ROL_TO_CARPETA[rol_lower]
+    )
 @app.route('/profile/edit/<rol>', methods=['GET', 'POST'])
 def edit_profile(rol):
     if "id_usuario" not in session:

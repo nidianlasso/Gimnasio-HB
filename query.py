@@ -1418,6 +1418,17 @@ def datos_usuario(id_usuario, rol=None):
     cursor.close()
     return usuario
 
+def obtener_horario_usuario(id_usuario):
+    query = """
+    SELECT h.nombre, h.descripcion
+    FROM horario_entrenador he
+    JOIN horario h ON he.id_horario = h.id_horario
+    WHERE he.id_usuario = %s
+    """
+    cursor.execute(query, (id_usuario,))
+    resultados = cursor.fetchall()
+    return [{"nombre": r[0], "descripcion": r[1]} for r in resultados]
+
 
 def actualizar_datos_usuario(id_usuario, nombre, apellido, identificacion, edad, correo, telefono, contrasena=None):
     hashed_password = hash_password(contrasena)
@@ -1447,6 +1458,8 @@ def actualizar_datos_usuario(id_usuario, nombre, apellido, identificacion, edad,
         """, (nombre, apellido, identificacion, edad, correo, telefono, id_usuario))
     connection.commit()
     return True
+
+
 
 #CREACION Y ASIGNACION DE LAS RUTINAS
 def insertar_rutina(nombre, descripcion, id_plan, id_maquina, dia_semana):

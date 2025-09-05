@@ -62,6 +62,22 @@
           </div>
         </div>
 
+        <!-- ✅ NUEVO: Mostrar horario si no es miembro -->
+        {% if usuario.rol.lower() != "miembro" and horario %}
+        <div class="row g-3 mb-4">
+          <div class="col-12">
+            <div class="card shadow-sm rounded-3 p-3 h-100">
+              <h6 class="fw-semibold mb-2 text-primary">
+                <i class="fas fa-clock" style="color: #6c757d;"></i> Horario asignado
+              </h6>
+              {% for turno in horario %}
+              <p class="mb-1 text-muted fs-5"><strong>{{ turno.nombre }}:</strong> {{ turno.descripcion }}</p>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+        {% endif %}
+
         <!-- Contenido según el rol -->
         {% if usuario.rol.lower() == "miembro" %}
         <div class="row g-3 mb-4">
