@@ -1,46 +1,43 @@
 {% include 'main.html' %}
 
-<div class="content-container" style="background: #f8f9fa; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-  <div class="col-md-80 p-4">
-    <h1 style="text-align: center; color: #343a40; font-size: 2rem; font-weight: bold; margin-bottom: 20px;">Búsqueda de Usuarios</h1>
-    <br>
-    <div class="container">
-      <div class="row">
-        <div class="col-12">
-          <label for="busqueda" style="font-size: 1.1rem; color: #495057; font-weight: bold;">Buscar por Identificación:</label>
-          <br>
-          <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
-            <input inputmode="numeric" id="busqueda_usuario" name="busqueda_usuario" min="0" max="10" required 
-                   style="padding: 8px; border: 1px solid #ced4da; border-radius: 5px; width: 200px; font-size: 1rem;">
-            <button type="submit" onclick="getSearchUsers()" 
-                    style="background: #007bff; border: none; border-radius: 5px; padding: 8px 12px; cursor: pointer; transition: background 0.2s;" 
-                    onmouseover="this.style.background='#0056b3'" 
-                    onmouseout="this.style.background='#007bff'">
-              <img src="../../static/img/buscar.png" alt="Buscar" width="20px">
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    <br>
-    <table style="width: 100%; margin: 20px auto; border-collapse: collapse; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" border="1" id="busquedaUsuarios">
-                    <table style="width: 100%; margin: 20px auto; border-collapse: collapse; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);" border="1" id="busquedaUsuarios">
-                        <thead>
-                          <tr>
-                            <th>Identificación</th>
-                            <th>Nombre</th>
-                            <th>Apellido</th>
-                            <th>Edad</th>
-                            <th>Correo</th>
-                            <th>Telefono</th>
-                            <th>Género</th>
-                            <th>Plan de trabajo</th>
-                            <th>Rol</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                        </tbody>
-                      </table>
-            </div>
-        </div>
+<style>
+  /* Mantener color original del encabezado */
+  #busquedaUsuarios thead tr {
+    background-color: #343a40; /* color oscuro, puedes ajustarlo */
+    color: white;
+  }
+</style>
 
+<div class="container my-4 p-4 bg-light rounded shadow-sm">
+  <h1 class="text-center text-dark font-weight-bold mb-4">Búsqueda de Usuarios</h1>
+
+  <form id="searchForm" class="form-inline justify-content-center mb-4" onsubmit="event.preventDefault(); getSearchUsers();">
+    <label for="busqueda_usuario" class="mr-2 font-weight-bold text-secondary" style="font-size: 1.1rem;">Buscar por Identificación:</label>
+    <input type="number" inputmode="numeric" id="busqueda_usuario" name="busqueda_usuario" min="0" max="9999999999" required
+           class="form-control mr-2" style="max-width: 220px;" placeholder="Ingrese ID">
+    <button type="submit" class="btn btn-primary" aria-label="Buscar">
+      <img src="../../static/img/buscar.png" alt="Buscar" width="20" height="20">
+    </button>
+  </form>
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-hover table-striped rounded" id="busquedaUsuarios">
+      <thead>
+        <tr>
+          <th>Identificación</th>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Edad</th>
+          <th>Correo</th>
+          <th>Teléfono</th>
+          <th>Género</th>
+          <th>Plan de trabajo</th>
+          <th>Rol</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Resultados búsqueda -->
+      </tbody>
+    </table>
+  </div>
+</div>
