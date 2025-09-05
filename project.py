@@ -14,7 +14,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from query import (
-    validarLogin, check_credentials, login_required_admin, login_required_member, login_required_coach, login_required_receptionist,
+    validarLogin, check_credentials,horario_empleado, login_required_admin, login_required_member, login_required_coach, login_required_receptionist,
     lista_miembros, lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
     conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship, obtener_membrehip_user,
     status_membreship, actualizar_membresia, lista_maquinas, listado_empleados, lista_proveedores, search_machine, access_users,
@@ -73,7 +73,8 @@ def manage_users():
     roles = lista_roles()
     membresias = list_membreship()
     estado_membresia = status_membreship()
-    return render_template('Administrator/manage_users.html',  listaGeneros=datosGenero, planes_trabajo=planes_trabajo, roles=roles, membresias = membresias, estado_membresia = estado_membresia)
+    horario = horario_empleado()
+    return render_template('Administrator/manage_users.html',  listaGeneros=datosGenero, planes_trabajo=planes_trabajo, roles=roles, membresias = membresias, estado_membresia = estado_membresia, horario=horario)
 
 #API VISTA LISTADO DE MIEMBROS
 @app.route('/list-members', methods = ['POST', 'GET'])
@@ -97,12 +98,16 @@ def add_users():
         genero = request.form['genero']
         plan_trabajo = request.form['plan_trab']
         rol = request.form['rol']
+        horario = request.form.get('horario')  # ← asegúrate de usar .get()
         contrasena = request.form['contrasena']
-        print(f"llegada de l id {cedula} *****************")
-        if add_user(cedula, nombre, apellido, edad, correo, telefono, genero, plan_trabajo, rol, contrasena):
+
+        print(f"Llegada de la ID {cedula} *****************")
+
+        if add_user(cedula, nombre, apellido, edad, correo, telefono, genero, plan_trabajo, rol, contrasena, horario):
             flash('Registro exitoso!', 'success')
         else:
             flash('Error al registrar el usuario.', 'error')
+
     return manage_users()
     
 

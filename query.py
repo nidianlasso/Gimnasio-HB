@@ -74,13 +74,16 @@ def check_credentials(identificacion, contrasena):
     if row:
         rol, identificacion_db, id_usuario, stored_password = row
 
-        # Caso 1: contraseña hasheada
-        if stored_password.startswith("pbkdf2:") or stored_password.startswith("sha256:"):
+        # Intenta verificar si la contraseña está hasheada
+        try:
             if check_password_hash(stored_password, contrasena):
                 return {'rol': rol, 'identificacion': identificacion_db, 'id_usuario': id_usuario}
+        except ValueError:
+            # Si no es un hash válido (por ejemplo, texto plano), ignora error
+            pass
 
-        # Caso 2: contraseña en texto plano (no hasheada)
-        elif contrasena == stored_password:
+        # Si no es hash válido, intenta comparación directa
+        if contrasena == stored_password:
             return {'rol': rol, 'identificacion': identificacion_db, 'id_usuario': id_usuario}
 
     return None
@@ -222,17 +225,38 @@ def listado_empleados():
 #OBTENER LA CANTIDAD DE ROLES
 
 #--AGREGAR USUARIO
-def add_user(identificacion, nombre, apellido, edad, correo, telefono, genero, plan_trab, rol, contrasena):
+def add_user(identificacion, nombre, apellido, edad, correo, telefono, genero, plan_trab, rol, contrasena, horario):
     try:
-        cursor.execute('INSERT INTO usuario (identificacion, nombre, apellido, edad, correo, telefono, id_genero, id_plan_trabajo, id_rol, contrasena) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)', 
-                (identificacion, nombre, apellido, edad, correo, telefono, genero, plan_trab, rol, contrasena))
-        #Guarda la info en la base de datos
+        # 1. Insertar en la tabla usuario
+        cursor.execute("""
+            INSERT INTO usuario (
+                identificacion, nombre, apellido, edad, correo, telefono, id_genero, id_plan_trabajo, id_rol, contrasena
+            ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """, (identificacion, nombre, apellido, edad, correo, telefono, genero, plan_trab, rol, contrasena))
+        
         connection.commit()
+
+        # 2. Obtener el id del usuario recién insertado
+        cursor.execute("SELECT id_usuario FROM usuario WHERE identificacion = %s", (identificacion,))
+        user = cursor.fetchone()
+
+        if user:
+            id_usuario = user[0]
+
+            # 3. Si se seleccionó un horario y es entrenador (por ejemplo, rol == 2), insertar en horario_entrenador
+            if horario and str(rol) == "2":  # Ajusta el ID del rol si es necesario
+                cursor.execute("""
+                    INSERT INTO horario_entrenador (id_usuario, id_horario) VALUES (%s, %s)
+                """, (id_usuario, horario))
+                connection.commit()
+
         return True
+
     except Exception as e:
-        print("Informacion que se sube a la base")
-        print(identificacion, nombre, apellido, edad, correo, telefono, genero, plan_trab, rol, contrasena)
-        return False 
+        print("Error al agregar usuario:", e)
+        print("Datos recibidos:", identificacion, nombre, apellido, edad, correo, telefono, genero, plan_trab, rol, contrasena, horario)
+        return False
+
 #--AGREGAR USUARIO
 
 #BUSQUEDA DE USUARIOS
@@ -283,6 +307,11 @@ def status_membreship():
     cursor.execute("SELECT id_estado_membresia, nombre FROM estado_membresia")
     status = cursor.fetchall()
     return status
+
+def horario_empleado():
+    cursor.execute("SELECT id_horario, nombre, descripcion FROM horario")
+    horarios = cursor.fetchall()
+    return horarios
 
 #ACTUALIZAR MEMBRESIA
 def actualizar_membresia( tipo, fecha_inicio, fecha_fin, estado, id_membresia_usuario):

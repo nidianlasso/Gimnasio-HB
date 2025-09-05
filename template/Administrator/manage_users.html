@@ -1,55 +1,57 @@
 {% extends "base.html" %}
 {% block menu %}
-    {% include "administrator/menu.html" %}
+{% include "administrator/menu.html" %}
 {% endblock %}
 {% block content %}
 
 <h3 style="text-align: center; color: #000; margin-top: 3%; font-size: 2rem; font-weight: bold; margin-top: -300px;">
   GESTIÓN DE USUARIOS
 </h3>
-<div class="contenedor-gestion" style="display: flex; justify-content: center; padding-bottom: 2%; background: #f8f9fa; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin: 2% auto; max-width: 90%;">
+<div class="contenedor-gestion"
+  style="display: flex; justify-content: center; padding-bottom: 2%; background: #f8f9fa; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin: 2% auto; max-width: 90%;">
   <div style="display: inline-flex; gap: 2vh; margin: 2% auto; flex-wrap: wrap; justify-content: center;">
     <!-- Botón para ir a la lista de usuarios -->
-    <button style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;" 
-            onmouseover="this.style.transform='scale(1.05)'" 
-            onmouseout="this.style.transform='scale(1)'" 
-            onclick="getListUsers()">
+    <button
+      style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;"
+      onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"
+      onclick="getListUsers()">
       Listado Usuarios
     </button>
 
-     <!-- Botón para mostrar el formulario de agregar usuario -->
-     <button style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;" 
-     onmouseover="this.style.transform='scale(1.05)'" 
-     onmouseout="this.style.transform='scale(1)'" 
-     type="button" data-toggle="modal" data-target="#exampleModalLong">
-Añadir Usuario
-</button>
+    <!-- Botón para mostrar el formulario de agregar usuario -->
+    <button
+      style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;"
+      onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" type="button"
+      data-toggle="modal" data-target="#exampleModalLong">
+      Añadir Usuario
+    </button>
 
-      <!-- Botón para ir a la página de Buscar usuario -->
-    <button style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;" 
-    onmouseover="this.style.transform='scale(1.05)'" 
-    onmouseout="this.style.transform='scale(1)'" 
-    type="button" data-toggle="modal" data-target="#searchUser">
-Buscar Usuario
-</button>
+    <!-- Botón para ir a la página de Buscar usuario -->
+    <button
+      style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;"
+      onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" type="button"
+      data-toggle="modal" data-target="#searchUser">
+      Buscar Usuario
+    </button>
 
-     <!-- Botón para ir a la página de Editar usuario -->
-    <button style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;" 
-    onmouseover="this.style.transform='scale(1.05)'" 
-    onmouseout="this.style.transform='scale(1)'" 
-    onclick="assign_membreship()" data-toggle="modal" data-target="#membresiaAsignaciones">
-Asignar Membresía
-</button>
-      <!-- Botón para ir a la página de estado usuario -->
-    <button style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;" 
-    onmouseover="this.style.transform='scale(1.05)'" 
-    onmouseout="this.style.transform='scale(1)'" 
-    onclick="update_membreship()" data-toggle="modal" data-target="#membresiaActualizacion">
-Actualizar Membresía
-</button>
+    <!-- Botón para ir a la página de Editar usuario -->
+    <button
+      style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;"
+      onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"
+      onclick="assign_membreship()" data-toggle="modal" data-target="#membresiaAsignaciones">
+      Asignar Membresía
+    </button>
+    <!-- Botón para ir a la página de estado usuario -->
+    <button
+      style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;"
+      onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"
+      onclick="update_membreship()" data-toggle="modal" data-target="#membresiaActualizacion">
+      Actualizar Membresía
+    </button>
   </div>
 </div>
-<table border="1" id="miembrosTabla" style="width: 90%; margin: 2% auto; border-collapse: collapse; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+<table border="1" id="miembrosTabla"
+  style="width: 90%; margin: 2% auto; border-collapse: collapse; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
   <thead>
     <tr style="background: #343a40; color: white;">
       <th>ID</th>
@@ -77,10 +79,12 @@ Actualizar Membresía
 {% endif %}
 {% endwith %}
 <!--MODAL PARA AGREGAR USUARIOS-->
-<div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle" aria-hidden="true">
+<div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
+  aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-      <div class="modal-header" style="background: #343a40; color: white; border-top-left-radius: 10px; border-top-right-radius: 10px;">
+      <div class="modal-header"
+        style="background: #343a40; color: white; border-top-left-radius: 10px; border-top-right-radius: 10px;">
         <h5 class="modal-title" id="exampleModalLongTitle">Agregar Usuario</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white;">
           <span aria-hidden="true">&times;</span>
@@ -95,12 +99,15 @@ Actualizar Membresía
 <!--MODAL PARA AGREGAR USUARIOS-->
 
 <!--ASIGNAR MEMBRESIA-->
-<div class="modal fade" id="membresiaAsignaciones" tabindex="-1" aria-labelledby="membresiaAsignacionesLabel" aria-hidden="true">
+<div class="modal fade" id="membresiaAsignaciones" tabindex="-1" aria-labelledby="membresiaAsignacionesLabel"
+  aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-      <div class="modal-header" style="background: #343a40; color: white; border-top-left-radius: 10px; border-top-right-radius: 10px;">
+      <div class="modal-header"
+        style="background: #343a40; color: white; border-top-left-radius: 10px; border-top-right-radius: 10px;">
         <h5 class="modal-title" style="font-size: 1.5rem; font-weight: bold;">Asignar Membresía</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; background: none; border: none; font-size: 1.5rem;">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+          style="color: white; background: none; border: none; font-size: 1.5rem;">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -109,15 +116,16 @@ Actualizar Membresía
         {% include 'Administrator/assign_memb.html' %}
       </div>
 
-      <div class="modal-footer" style="background: #f8f9fa; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; padding: 15px;">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal" style="background: #6c757d; border: none; border-radius: 5px; padding: 8px 16px; font-weight: bold; transition: background 0.2s;" 
-                onmouseover="this.style.background='#5a6268'" 
-                onmouseout="this.style.background='#6c757d'">
+      <div class="modal-footer"
+        style="background: #f8f9fa; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; padding: 15px;">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+          style="background: #6c757d; border: none; border-radius: 5px; padding: 8px 16px; font-weight: bold; transition: background 0.2s;"
+          onmouseover="this.style.background='#5a6268'" onmouseout="this.style.background='#6c757d'">
           Cerrar
         </button>
-        <button type="button" class="btn btn-primary" onclick="guardarCambios()" style="background: #007bff; border: none; border-radius: 5px; padding: 8px 16px; font-weight: bold; transition: background 0.2s;" 
-                onmouseover="this.style.background='#0056b3'" 
-                onmouseout="this.style.background='#007bff'">
+        <button type="button" class="btn btn-primary" onclick="guardarCambios()"
+          style="background: #007bff; border: none; border-radius: 5px; padding: 8px 16px; font-weight: bold; transition: background 0.2s;"
+          onmouseover="this.style.background='#0056b3'" onmouseout="this.style.background='#007bff'">
           Guardar cambios
         </button>
       </div>
@@ -125,12 +133,15 @@ Actualizar Membresía
   </div>
 </div>
 <!--MODAL PARA BUSQUEDA DE USUARIO-->
-<div class="modal fade" id="membresiaActualizacion" tabindex="-1" aria-labelledby="membresiaActualizacionLabel" aria-hidden="true">
+<div class="modal fade" id="membresiaActualizacion" tabindex="-1" aria-labelledby="membresiaActualizacionLabel"
+  aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-      <div class="modal-header" style="background: #343a40; color: white; border-top-left-radius: 10px; border-top-right-radius: 10px;">
+      <div class="modal-header"
+        style="background: #343a40; color: white; border-top-left-radius: 10px; border-top-right-radius: 10px;">
         <h5 class="modal-title" style="font-size: 1.5rem; font-weight: bold;">Asignar Membresía</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; background: none; border: none; font-size: 1.5rem;">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+          style="color: white; background: none; border: none; font-size: 1.5rem;">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -139,15 +150,16 @@ Actualizar Membresía
         {% include 'Administrator/update_membreship.html' %}
       </div>
 
-      <div class="modal-footer" style="background: #f8f9fa; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; padding: 15px;">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal" style="background: #6c757d; border: none; border-radius: 5px; padding: 8px 16px; font-weight: bold; transition: background 0.2s;" 
-                onmouseover="this.style.background='#5a6268'" 
-                onmouseout="this.style.background='#6c757d'">
+      <div class="modal-footer"
+        style="background: #f8f9fa; border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; padding: 15px;">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal"
+          style="background: #6c757d; border: none; border-radius: 5px; padding: 8px 16px; font-weight: bold; transition: background 0.2s;"
+          onmouseover="this.style.background='#5a6268'" onmouseout="this.style.background='#6c757d'">
           Cerrar
         </button>
-        <button type="button" class="btn btn-primary" onclick="guardarCambios()" style="background: #007bff; border: none; border-radius: 5px; padding: 8px 16px; font-weight: bold; transition: background 0.2s;" 
-                onmouseover="this.style.background='#0056b3'" 
-                onmouseout="this.style.background='#007bff'">
+        <button type="button" class="btn btn-primary" onclick="guardarCambios()"
+          style="background: #007bff; border: none; border-radius: 5px; padding: 8px 16px; font-weight: bold; transition: background 0.2s;"
+          onmouseover="this.style.background='#0056b3'" onmouseout="this.style.background='#007bff'">
           Guardar cambios
         </button>
       </div>
@@ -160,9 +172,11 @@ Actualizar Membresía
 <div class="modal fade" id="searchUser" tabindex="-1" aria-labelledby="searchUserLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-      <div class="modal-header" style="background: #343a40; color: white; border-top-left-radius: 10px; border-top-right-radius: 10px;">
+      <div class="modal-header"
+        style="background: #343a40; color: white; border-top-left-radius: 10px; border-top-right-radius: 10px;">
         <h5 class="modal-title" style="font-size: 1.5rem; font-weight: bold;">Buscar Usuario</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; background: none; border: none; font-size: 1.5rem;">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+          style="color: white; background: none; border: none; font-size: 1.5rem;">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>

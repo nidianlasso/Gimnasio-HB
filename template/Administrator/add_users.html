@@ -1,59 +1,110 @@
 <form method="POST" action="{{ url_for('add_users') }}">
-  <fieldset>
-    <h3 class="edit_perfil" style="text-align: center; margin-bottom: 30px;">Agregar usuario</h3>
+  <div class="card shadow-lg p-4 rounded">
+    <h3 class="text-center text-primary mb-3">
+      <i class="fas fa-user-plus"></i> Agregar Usuario
+    </h3>
     <hr>
-    <div class="form-group"></div>
-    <label for="usuario">Usuario:</label>
-    <input type="text" id="identificacion" name="identificacion" required class="form-control">
 
-    <label for="nombre">Nombre:</label>
-    <input type="text" id="nombre" name="nombre" required class="form-control">
+    <div class="row">
+      <!-- Identificación -->
+      <div class="col-md-6 mb-3">
+        <label for="identificacion">Usuario / Identificación</label>
+        <input type="text" id="identificacion" name="identificacion" required class="form-control">
+      </div>
 
-    <label for="apellido">Apellido:</label>
-    <input type="text" id="apellido" name="apellido" class="form-control">
+      <!-- Nombre -->
+      <div class="col-md-6 mb-3">
+        <label for="nombre">Nombre</label>
+        <input type="text" id="nombre" name="nombre" required class="form-control">
+      </div>
 
-    <label for="edad">Edad:</label>
-    <input type="number" id="edad" name="edad" class="form-control">
+      <!-- Apellido -->
+      <div class="col-md-6 mb-3">
+        <label for="apellido">Apellido</label>
+        <input type="text" id="apellido" name="apellido" class="form-control">
+      </div>
 
-    <label for="correo">Correo:</label>
-    <input type="email" id="correo" name="correo" class="form-control">
+      <!-- Edad -->
+      <div class="col-md-6 mb-3">
+        <label for="edad">Edad</label>
+        <input type="number" id="edad" name="edad" class="form-control">
+      </div>
 
-    <label for="telefono">Teléfono:</label>
-    <input type="text" id="telefono" name="telefono" class="form-control">
+      <!-- Correo -->
+      <div class="col-md-6 mb-3">
+        <label for="correo">Correo</label>
+        <input type="email" id="correo" name="correo" class="form-control">
+      </div>
 
-    <label for="genero">Género:</label>
-    <select class="form-select" name="genero" id="genero" required>
-        <option value="">Seleccione...</option>
-        {%for generos in listaGeneros%}
-        <option value="{{ generos[0] }}">{{ generos[1]}}</option>
-        {% endfor %}
-    </select>
-    
-    <label for="plan_trab">Plan de trabajo:</label>
-    <select class="form-select" name="plan_trab" id="plan_trab" required>
-      <option value="">Seleccione...</option>
-        {%for planes_trabajo in planes_trabajo%}
-        <option value="{{planes_trabajo[0]}}">{{planes_trabajo[1]}}</option>
-        {% endfor %}
-    </select>
+      <!-- Teléfono -->
+      <div class="col-md-6 mb-3">
+        <label for="telefono">Teléfono</label>
+        <input type="text" id="telefono" name="telefono" class="form-control">
+      </div>
 
-    <label for="rol">Rol:</label>
-    <select class="form-select" name="rol" id="rol" required>
-      <option value="">Seleccione...</option>
-        {% for roles in roles %}
-        <option value="{{roles[0]}}">{{roles[1]}}</option>
-        {% endfor %}
-        
-    </select>
+      <!-- Género -->
+      <div class="col-md-6 mb-3">
+        <label for="genero">Género</label>
+        <select class="form-control" name="genero" id="genero" required>
+          <option value="">Seleccione...</option>
+          {% for generos in listaGeneros %}
+          <option value="{{ generos[0] }}">{{ generos[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
 
-    <label for="contrasena">Contraseña:</label>
-    <input type="password" id="contrasena" name="contrasena" required class="form-control">
+      <!-- Plan de trabajo -->
+      <div class="col-md-6 mb-3">
+        <label for="plan_trab">Plan de trabajo</label>
+        <select class="form-control" name="plan_trab" id="plan_trab" required>
+          <option value="">Seleccione...</option>
+          {% for planes_trabajo in planes_trabajo %}
+          <option value="{{ planes_trabajo[0] }}">{{ planes_trabajo[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Rol -->
+      <div class="col-md-6 mb-3">
+        <label for="rol">Rol</label>
+        <select class="form-control" name="rol" id="rol" required>
+          <option value="">Seleccione...</option>
+          {% for roles in roles %}
+          <option value="{{ roles[0] }}">{{ roles[1] }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Horario (entrenadores) -->
+      <!-- Campo horario (solo se usa si el rol es entrenador) -->
+      <div class="col-md-6 mb-3">
+        <label for="horario">Horario de trabajo</label>
+        <select class="form-control" name="horario" id="horario">
+          <option value="">Seleccione...</option>
+          {% for h in horario %}
+          <option value="{{ h[0] }}">{{ h[1] }} - {{ h[2] }}</option>
+          {% endfor %}
+        </select>
+        <small class="text-muted">* Solo para entrenadores</small>
+      </div>
 
 
-    <hr>
-</fieldset>
+      <!-- Contraseña -->
+      <div class="col-md-6 mb-3">
+        <label for="contrasena">Contraseña</label>
+        <input type="password" id="contrasena" name="contrasena" required class="form-control">
+      </div>
+    </div>
 
-    <button type="submit" class="btn btn-primary btn-block">Añadir Usuario</button>
-    <a href="{{ url_for('manage_users') }}" class="btn btn-primary btn-block">Volver</a>
+    <hr class="my-4">
+
+    <div class="d-flex justify-content-between">
+      <button type="submit" class="btn btn-success">
+        <i class="fas fa-user-plus"></i> Añadir Usuario
+      </button>
+      <a href="{{ url_for('manage_users') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Volver
+      </a>
+    </div>
   </div>
 </form>
