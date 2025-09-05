@@ -452,9 +452,9 @@ from pymysql.cursors import DictCursor
 
 def cambiar_estado_acceso_db(id_usuario):
     try:
-        cursor = connection.cursor(DictCursor)  # ✅ Usar DictCursor en PyMySQL
+        cursor = connection.cursor(DictCursor)
 
-        # Buscar acceso activo
+        # 1️⃣ Buscar acceso activo
         cursor.execute("""
             SELECT id_acceso, fecha_inicio
             FROM acceso
@@ -466,28 +466,39 @@ def cambiar_estado_acceso_db(id_usuario):
         if acceso_actual is None:
             return {'error': f"No se encontró acceso activo para el usuario ID: {id_usuario}."}
 
-        # Cerrar acceso
+        # 2️⃣ Cerrar acceso (cambia estado y fecha_fin)
         cursor.execute("""
             UPDATE acceso
             SET tipo_acceso = 'Inactive', fecha_fin = NOW()
             WHERE id_acceso = %s
         """, (acceso_actual['id_acceso'],))
         connection.commit()
-        print("🔄 Filas afectadas:", cursor.rowcount)
 
-        # Calcular duración
+        # 3️⃣ Calcular duración en segundos
         cursor.execute("""
             SELECT TIMESTAMPDIFF(SECOND, fecha_inicio, fecha_fin) AS duracion_segundos
             FROM acceso WHERE id_acceso = %s
         """, (acceso_actual['id_acceso'],))
         segundos = cursor.fetchone()['duracion_segundos']
 
+        # 4️⃣ Convertir duración a HH:MM:SS
         horas = segundos // 3600
         minutos = (segundos % 3600) // 60
         segundos = segundos % 60
         duracion_legible = f"{horas:02}:{minutos:02}:{segundos:02}"
 
-        return {'message': 'Estado de acceso cambiado a Inactive exitosamente.', 'duracion': duracion_legible}
+        # 5️⃣ Guardar duración en la tabla
+        cursor.execute("""
+            UPDATE acceso
+            SET duracion = %s
+            WHERE id_acceso = %s
+        """, (duracion_legible, acceso_actual['id_acceso']))
+        connection.commit()
+
+        return {
+            'message': 'Estado de acceso cambiado a Inactive exitosamente.',
+            'duracion': duracion_legible
+        }
 
     except Exception as e:
         return {'error': f'Error al cambiar el estado del acceso: {str(e)}'}

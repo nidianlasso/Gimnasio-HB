@@ -553,22 +553,20 @@ def cambiar_estado_acceso():
     try:
         data = request.json
         id_usuario = data.get('id_usuario')
-        print("📥 ID recibido en cambiar_estado_acceso:", id_usuario)  # 🔎 DEBUG
 
         if not id_usuario:
             return jsonify({'error': 'id_usuario es requerido'}), 400
 
         resultado = cambiar_estado_acceso_db(id_usuario)
-        print("📤 Resultado función DB:", resultado)  # 🔎 DEBUG
 
         if 'error' in resultado:
             return jsonify(resultado), 404
 
         return jsonify(resultado), 200
+
     except Exception as e:
         print("Error en cambiar_estado_acceso:", e)
         return jsonify({'error': f'Error al cambiar el estado del acceso: {str(e)}'}), 500
-
 
 
 #ASIGNAR ENTRENADOR
