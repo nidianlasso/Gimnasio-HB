@@ -524,10 +524,34 @@ function cargarMaquinas(tipo) {
 
                         if (b.estado === 'disponible') {
                             bloque.style.cursor = 'pointer';
-
                             bloque.addEventListener('click', () => {
                                 console.log('Click detectado en:', maquina.id_maquina, b.hora);
                                 reservarBloque(maquina.id_maquina, b.hora);
+                            });
+                        }
+
+                        if (b.estado === 'reservado') {
+                            bloque.style.cursor = 'pointer';
+                            bloque.title += ' (Haz clic para cancelar)';
+                            bloque.addEventListener('click', () => {
+                                if (confirm("¿Deseas cancelar esta reserva?")) {
+                                    fetch('/cancelar-reserva-maquina', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({ id_maquina: maquina.id_maquina, hora: b.hora })
+                                    })
+                                    .then(res => res.json())
+                                    .then(data => {
+                                        alert(data.message);
+                                        if (data.success) {
+                                            cargarMaquinas('disponibilidad_horaria'); // recarga la vista para reflejar cambios
+                                        }
+                                    })
+                                    .catch(err => {
+                                        alert('Error al cancelar la reserva');
+                                        console.error(err);
+                                    });
+                                }
                             });
                         }
 
@@ -536,13 +560,13 @@ function cargarMaquinas(tipo) {
 
                     calendarioContainer.appendChild(fila);
                 });
-
             }
         })
         .catch(err => {
             console.error('Error:', err);
         });
 }
+
 
 function reservarBloque(id_maquina, hora_inicio) {
     console.log('Reservando máquina:', id_maquina, 'a las', hora_inicio);

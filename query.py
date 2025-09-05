@@ -877,21 +877,10 @@ def existe_reserva_en_bloque(id_maquina, hora_inicio):
     return cursor.fetchone() is not None
 
 
-
-
-
-
-
-
 #Obtener membresia del usuario
 def obtener_id_membresia_usuario(identificacion):
     cursor.execute('''
-        SELECT mu.id_membresia_usuario
-        FROM usuario u
-        JOIN membresia_usuario mu ON u.id_usuario = mu.id_usuario
-        WHERE u.identificacion = %s AND mu.id_estado_membresia = 1
-        ORDER BY mu.fecha_inicio DESC
-        LIMIT 1
+        SELECT mu.id_membresia_usuario FROM membresia_usuario mu INNER JOIN usuario u ON mu.id_usuario = u.id_usuario WHERE u.identificacion = %s AND mu.id_estado_membresia = 1;
     ''', (identificacion,))
     resultado = cursor.fetchone()
     if resultado:
@@ -915,6 +904,21 @@ def consultar_bloques_contiguos(id_membresia_usuario, hora_inicio):
     """, (id_membresia_usuario, hora_anterior, hora_siguiente))
 
     return cursor.fetchone()
+
+def eliminar_reservaMaquina(id_membresia_usuario, id_maquina, hora_inicio):
+    try:
+        cursor.execute('''
+            DELETE FROM reserva_maquina
+            WHERE id_membresia_usuario = %s AND id_inventario_maquina = %s AND hora_inicio = %s
+        ''', (id_membresia_usuario, id_maquina, hora_inicio))
+        connection.commit()
+        return True
+    except Exception as e:
+        print(">>> ERROR al cancelar la reserva:", e)
+        return False
+
+
+
 
 def registrar_pago_nomina(datos):
     try:

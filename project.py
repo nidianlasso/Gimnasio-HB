@@ -21,7 +21,7 @@ from query import (
     guardar_acceso, cambiar_estado_acceso_db, obtener_plan_trabajo, obtener_membrehip_user,
     save_class_to_db, list_class, delete_class, obtener_reservas_maquinas, obtener_maquinas_disponibles, consultar_reservas_de_hoy, cant_maquinas,
     cant_proveedores, cant_empleados, obtener_maquinas_disponibles_para_reserva, existe_reserva_en_bloque, registrar_reserva,
-    obtener_id_membresia_usuario, consultar_bloques_contiguos, registrar_pago_nomina, obtener_id_usuario_por_identificacion, insertar_proveedor,
+    obtener_id_membresia_usuario, consultar_bloques_contiguos, eliminar_reservaMaquina, registrar_pago_nomina, obtener_id_usuario_por_identificacion, insertar_proveedor,
     eliminar_proveedor_id, actualizar_proveedor, obtener_proveedor_por_id, obtener_clases_disponibles, obtener_id_membresia_usuario_activa, insertar_reserva_clase,
     existe_reserva, obtener_reservas_usuario, obtener_clase_por_id, cancelar_reserva_en_bd, obtener_id_clase_por_nombre, obtener_clientes_sin_avance_hoy, insertar_progreso,
     existe_avance_hoy, obtener_historial_avances, maquinas_sin_disponibles, insertar_revision,
@@ -327,6 +327,37 @@ def existe_reserva_contigua(id_membresia_usuario, hora_inicio):
     resultado = consultar_bloques_contiguos(id_membresia_usuario, hora_inicio)
     return resultado is not None
 
+
+@app.route('/cancelar-reserva-maquina', methods=['POST'])
+def cancelar_reserva_maquina():
+    if 'id_usuario' not in session or session.get('rol') != 'miembro':
+        return jsonify({'success': False, 'message': 'Acceso no autorizado'}), 403
+
+    datos = request.get_json()
+    id_maquina = datos.get('id_maquina')
+    hora_inicio = datos.get('hora')
+
+    if not id_maquina or not hora_inicio:
+        return jsonify({'success': False, 'message': 'Datos incompletos'}), 400
+
+    if len(hora_inicio) == 5:
+        hora_inicio += ":00"
+
+    identificacion = session['identificacion']
+    id_membresia_usuario = obtener_id_membresia_usuario(identificacion)
+
+    if not id_membresia_usuario:
+        return jsonify({'success': False, 'message': 'No se encontró membresía activa'}), 404
+
+    resultado = eliminar_reservaMaquina(id_membresia_usuario, id_maquina, hora_inicio)
+
+    if resultado:
+        return jsonify({'success': True, 'message': 'Reserva cancelada correctamente'})
+    else:
+        return jsonify({'success': False, 'message': 'Error al cancelar la reserva'}), 500
+
+
+
 #*************************************************************************
 
 #RESERVAR CLASES
@@ -479,6 +510,7 @@ def api_maquinas_disponibles():
     maquinas = obtener_maquinas_disponibles_para_reserva()
     resultado = [{"id": m[0], "nombre": m[1]} for m in maquinas]
     return jsonify(resultado)
+
 
 
 

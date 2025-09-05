@@ -28,42 +28,53 @@
 .calendario-grid-container {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 1rem;
     margin-top: 20px;
+    overflow-x: auto;
+    width: 100%;
 }
 
 /* Cada fila por máquina */
 .maquina-grid {
     display: grid;
-    grid-template-columns: 120px repeat(64, 1fr);
-    /* 1 columna fija + 64 bloques */
+    grid-template-columns: 220px repeat(64, minmax(16px, 1fr)); /* Aumentamos espacio para nombres */
     gap: 2px;
     align-items: center;
-    overflow-x: auto;
-}
-
-.bloque {
-    height: 25px;
-    border-radius: 3px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.bloque.disponible {
-    background-color: #d4edda;
-}
-
-.bloque.reservado {
-    background-color: #f8d7da;
+    min-width: 1400px; /* Fuerza scroll horizontal si hay muchos bloques */
 }
 
 .nombre-maquina {
     font-weight: bold;
-    padding-right: 8px;
-    text-align: right;
+    padding-left: 10px;
+    text-align: left;
     white-space: nowrap;
+    background-color: #ffffff;
+    position: sticky;
+    left: 0;
+    z-index: 1;
 }
 
+/* Bloques */
+.bloque {
+    height: 25px;
+    border-radius: 3px;
+    transition: background-color 0.2s ease;
+    border: 1px solid #ccc;
+}
+
+.bloque.disponible {
+    background-color: #d4edda;
+    cursor: pointer;
+}
+
+.bloque.disponible:hover {
+    background-color: #c3e6cb;
+}
+
+.bloque.reservado {
+    background-color: #f8d7da;
+    cursor: not-allowed;
+}
 
 .formformulario_reserva {
     margin-bottom: 20px;
