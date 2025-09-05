@@ -314,6 +314,26 @@ def horario_empleado():
     return horarios
 
 #ACTUALIZAR MEMBRESIA
+def obtener_usuarios_con_membresia():
+    cursor.execute("""
+        SELECT 
+            u.identificacion, 
+            u.nombre, 
+            u.apellido, 
+            mu.id_membresia, 
+            mu.fecha_inicio, 
+            mu.fecha_fin, 
+            mu.id_estado_membresia, 
+            mu.id_membresia_usuario,
+            u.id_usuario
+        FROM usuario u
+        INNER JOIN membresia_usuario mu ON mu.id_usuario = u.id_usuario
+        WHERE u.id_rol = 5 AND mu.id_membresia_usuario IS NOT NULL
+    """)
+    resultados = cursor.fetchall()
+    return [list(row) for row in resultados]
+
+
 def actualizar_membresia( tipo, fecha_inicio, fecha_fin, estado, id_membresia_usuario):
     try:
         cursor.execute('UPDATE membresia_usuario SET id_membresia=%s, fecha_inicio=%s, fecha_fin=%s, id_estado_membresia=%s WHERE id_membresia_usuario=%s',

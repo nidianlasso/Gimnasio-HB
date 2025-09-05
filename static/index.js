@@ -199,7 +199,7 @@ function assign_membreship() {
 }
 function update_membreship() {
     const asignacionMembresia = document.getElementById('actualizacionMembresia').getElementsByTagName('tbody')[0];
-    fetch('/assign_membreship')
+    fetch('/get_assigned_memberships')
         .then(response => {
             if (!response.ok) {
                 throw new Error('Error en la solicitud');
@@ -238,27 +238,17 @@ function update_membreship() {
                 botonMembresia.className = 'btn btn-primary';
 
                 botonMembresia.onclick = function () {
-                    document.getElementById('tipoMembresia').value = '';
-                    document.getElementById('tipoMembresia').value = info_user[10];
-                    console.log(info_user[10]);
-                    document.getElementById('fechaInicio').value = '';
-                    document.getElementById('fechaInicio').value = info_user[5];
-                    console.log(info_user[5]);
-                    document.getElementById('fechaFin').value = '';
-                    document.getElementById('fechaFin').value = info_user[6];
-                    console.log(info_user[6]);
-                    document.getElementById('estadoMembresia').value = '';
-                    document.getElementById('estadoMembresia').value = info_user[7];
-                    console.log("USUARIO QUE LLEGA");
-                    console.log(info_user[8]);
-                    console.log(info_user[9]);
+    document.getElementById('tipoMembresia').value = info_user[3]; // id_membresia
+    document.getElementById('fechaInicio').value = info_user[4];
+    document.getElementById('fechaFin').value = info_user[5];
+    document.getElementById('estadoMembresia').value = info_user[6];
 
-                    const usuarioId = info_user[8];
-                    const membresiaUsuario = info_user[9];
-                    document.getElementById('id_user_update').value = usuarioId;
-                    document.getElementById('id_membresia_usuario').value = membresiaUsuario;
-                    $('#updateMembresia').modal('show');
-                };
+    document.getElementById('id_user_update').value = info_user[0]; // id usuario
+    document.getElementById('id_membresia_usuario').value = info_user[7]; // id membresia_usuario
+
+    $('#updateMembresia').modal('show');
+};
+
                 membresiaCelda.appendChild(botonMembresia);
                 fila.appendChild(membresiaCelda);
 

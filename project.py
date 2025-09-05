@@ -14,7 +14,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 import os
 from werkzeug.security import generate_password_hash, check_password_hash
 from query import (
-    validarLogin, check_credentials,horario_empleado, login_required_admin, login_required_member, guardar_membresia, login_required_coach, login_required_receptionist,
+    validarLogin, check_credentials,horario_empleado, login_required_admin, login_required_member,obtener_usuarios_con_membresia, guardar_membresia, login_required_coach, login_required_receptionist,
     lista_miembros, lista_genero, plan_trabajo_lista, lista_roles, cant_miembros, cant_entrenadores,
     conteo_clases_reservadas, add_user, search_users, assig_membreships, list_membreship, obtener_membrehip_user,
     status_membreship, actualizar_membresia, lista_maquinas, listado_empleados, lista_proveedores, search_machine, access_users,
@@ -147,6 +147,11 @@ def save_membreship():
             flash('Error al registrar el usuario.', 'error')
     return manage_users()
 
+@app.route('/get_assigned_memberships', methods=['GET'])
+@login_required_admin
+def get_assigned_memberships():
+    data = obtener_usuarios_con_membresia()
+    return jsonify(data)
 
 @app.route('/update_membreship', methods=['POST'])
 @login_required_admin

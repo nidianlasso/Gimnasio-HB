@@ -1,66 +1,71 @@
-<div>
-    <h2>Tabla de Registros</h2>
-    <table id="tablaRegistros">
-        <thead>
-            <tr>
-                <th>Identificación</th>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Membresia</th>
-            </tr>
-        </thead>
-        <tbody>
-        </tbody>
+<div class="container my-4">
+  <h2 class="mb-4 text-center">Tabla de Registros</h2>
+  <div class="table-responsive">
+    <table id="tablaRegistros" class="table table-striped table-hover table-bordered align-middle">
+      <thead class="table-dark">
+        <tr>
+          <th scope="col">Identificación</th>
+          <th scope="col">Nombre</th>
+          <th scope="col">Apellido</th>
+          <th scope="col">Membresía</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
     </table>
+  </div>
 </div>
 
 <!-- Modal para mostrar detalles de la membresía -->
 <div class="modal fade" id="detallesMembresia" tabindex="-1" aria-labelledby="detallesMembresiaLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Detalles de la Membresía</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <form id="asignarMembresiaForm" method="POST" action="{{ url_for('save_membreship') }}">
-                    <!-- Aquí está el input hidden para almacenar el usuarioId -->
-                    <input type="hidden" name="usuarioId" id="usuarioId">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content shadow">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title" id="detallesMembresiaLabel">Detalles de la Membresía</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <form id="asignarMembresiaForm" method="POST" action="{{ url_for('save_membreship') }}">
+          <input type="hidden" name="usuarioId" id="usuarioId">
 
-                    <fieldset>
-                        <div class="form-group">
-                            <label for="tipoMembresia">Tipo de Membresía:</label>
-                            <select class="form-select" name="tipoMembresia" id="id_membresia" required>
-                                <option value="">Seleccione...</option>
-                                {% for tipo in membresias %}
-                                <option value="{{ tipo[2] }}" data-costo="{{ tipo[1] }}">{{ tipo[0] }} - {{ tipo[1] }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="fechaInicio">Fecha Inicio:</label>
-                            <input type="date" class="form-control" name="fechaInicio" id="fechaInicio" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="fechaFin">Fecha Fin:</label>
-                            <input type="date" class="form-control" name="fechaFin" id="fechaFin" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="estadoMembresia">Estado:</label>
-                            <select class="form-control" name="estadoMembresia" id="estadoMembresia" required>
-                                <option value="">Seleccione...</option>
-                                {% for estado in estado_membresia %}
-                                <option value="{{ estado[0] }}">{{ estado[1] }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                    </fieldset>
-                    <button type="submit" class="btn btn-primary btn-block">Guardar</button>
-                    <a href="{{ url_for('manage_users') }}" class="btn btn-primary btn-block">Volver</a>
-                </form>
+          <fieldset>
+            <div class="mb-3">
+              <label for="id_membresia" class="form-label">Tipo de Membresía:</label>
+              <select class="form-select" name="tipoMembresia" id="id_membresia" required>
+                <option value="" selected>Seleccione...</option>
+                {% for tipo in membresias %}
+                <option value="{{ tipo[2] }}" data-costo="{{ tipo[1] }}">{{ tipo[0] }} - {{ tipo[1] }}</option>
+                {% endfor %}
+              </select>
             </div>
-        </div>
+
+            <div class="mb-3">
+              <label for="fechaInicio" class="form-label">Fecha Inicio:</label>
+              <input type="date" class="form-control" name="fechaInicio" id="fechaInicio" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="fechaFin" class="form-label">Fecha Fin:</label>
+              <input type="date" class="form-control" name="fechaFin" id="fechaFin" required>
+            </div>
+
+            <div class="mb-3">
+              <label for="estadoMembresia" class="form-label">Estado:</label>
+              <select class="form-select" name="estadoMembresia" id="estadoMembresia" required>
+                <option value="" selected>Seleccione...</option>
+                {% for estado in estado_membresia %}
+                <option value="{{ estado[0] }}">{{ estado[1] }}</option>
+                {% endfor %}
+              </select>
+            </div>
+          </fieldset>
+
+          <div class="d-flex justify-content-between">
+            <button type="submit" class="btn btn-success px-4">Guardar</button>
+            <a href="{{ url_for('manage_users') }}" class="btn btn-secondary px-4">Volver</a>
+          </div>
+        </form>
+      </div>
     </div>
+  </div>
 </div>
