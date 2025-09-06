@@ -436,7 +436,7 @@ document.getElementById('btnGuardarCambios').addEventListener('click', function(
         if (data.success) {
             alert('Máquina actualizada con éxito');
 
-            // Cerrar modal usando Bootstrap 4 y jQuery
+            // Cerrar modal usando jQuery de Bootstrap 4
             $('#modalEditarMaquina').modal('hide');
 
             // Refrescar la lista de máquinas
@@ -450,6 +450,7 @@ document.getElementById('btnGuardarCambios').addEventListener('click', function(
         alert('Error al actualizar la máquina');
     });
 });
+
 
 
 
