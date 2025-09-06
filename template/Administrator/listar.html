@@ -1,0 +1,61 @@
+<!-- Modal Editar Máquina -->
+<div class="modal fade" id="modalEditarMaquina" tabindex="-1" aria-labelledby="modalEditarMaquinaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalEditarMaquinaLabel">Editar Máquina</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      
+      <div class="modal-body">
+        <form id="formEditarMaquina">
+          <input type="hidden" id="editarIdInventario" name="id_inventario">
+
+          <div class="mb-3">
+            <label for="editarNombre" class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="editarNombre" name="nombre" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="editarSerial" class="form-label">Serial</label>
+            <input type="text" class="form-control" id="editarSerial" name="serial" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="editarFechaCompra" class="form-label">Fecha de compra</label>
+            <input type="date" class="form-control" id="editarFechaCompra" name="fecha_compra" required>
+          </div>
+
+          <div class="mb-3">
+            <label for="editarPrecio" class="form-label">Precio</label>
+            <input type="number" class="form-control" id="editarPrecio" name="precio" required>
+          </div>
+
+          <div class="mb-3">
+  <label for="editarProveedor" class="form-label">Proveedor</label>
+  <select class="form-control" id="editarProveedor" name="proveedor" required>
+    {% for proveedor in proveedores %}
+      <option value="{{ proveedor[0] }}">{{ proveedor[1] }}</option>
+    {% endfor %}
+  </select>
+</div>
+
+
+          <div class="mb-3">
+            <label for="editarDisponibilidad" class="form-label">Disponibilidad</label>
+            <select class="form-control" id="editarDisponibilidad" name="disponibilidad">
+              <option value="1">Disponible</option>
+              <option value="0">No Disponible</option>
+            </select>
+          </div>
+        </form>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-success" id="btnGuardarCambios">Guardar cambios</button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -598,38 +598,45 @@ function reservarBloque(id_maquina, hora_inicio) {
 
 document.addEventListener('DOMContentLoaded', () => {
     const select = document.getElementById('maquina');
+    const form = document.getElementById('formReservaMaquina');
 
-    fetch('/api/maquinas_disponibles')
-        .then(res => res.json())
-        .then(data => {
-            data.forEach(maquina => {
-                const opt = document.createElement('option');
-                opt.value = maquina.id;
-                opt.textContent = maquina.nombre;
-                select.appendChild(opt);
-            });
-        });
-
-    document.getElementById('formReservaMaquina').addEventListener('submit', e => {
-        e.preventDefault();
-
-        const data = {
-            id_inventario_maquina: select.value,
-            hora_inicio: document.getElementById('hora_inicio').value,
-            hora_fin: document.getElementById('hora_fin').value
-        };
-
-        fetch('/reservar_maquina', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-        })
+    // Si el formulario y el select existen en esta página
+    if (form && select) {
+        // Llenar el select con máquinas disponibles
+        fetch('/api/maquinas_disponibles')
             .then(res => res.json())
-            .then(res => {
-                document.getElementById('mensaje').textContent = res.mensaje || res.error;
+            .then(data => {
+                data.forEach(maquina => {
+                    const opt = document.createElement('option');
+                    opt.value = maquina.id;
+                    opt.textContent = maquina.nombre;
+                    select.appendChild(opt);
+                });
             });
-    });
+
+        // Escuchar el envío del formulario
+        form.addEventListener('submit', e => {
+            e.preventDefault();
+
+            const data = {
+                id_inventario_maquina: select.value,
+                hora_inicio: document.getElementById('hora_inicio').value,
+                hora_fin: document.getElementById('hora_fin').value
+            };
+
+            fetch('/reservar_maquina', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            })
+                .then(res => res.json())
+                .then(res => {
+                    document.getElementById('mensaje').textContent = res.mensaje || res.error;
+                });
+        });
+    }
 });
+
 
 //*******************************************************/
 
@@ -754,7 +761,7 @@ function obtenerAcceso(id_usuario) {
             return r.json();
         })
         .then(accesoData => {
-            let isActive = accesoData.tipo_acceso === 'Active';
+            isActive = accesoData.tipo_acceso === 'Active';
             const boton = document.getElementById('activarBtn');
             boton.textContent = isActive ? 'Desactivar' : 'Activar';
 

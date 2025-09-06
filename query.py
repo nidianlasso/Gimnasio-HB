@@ -750,7 +750,6 @@ def insert_maquina(nombre_maquina):
     cursor.execute("INSERT INTO maquina (nombre) VALUES (%s)", (nombre_maquina,))
     connection.commit()
     id_maquina = cursor.lastrowid
-    cursor.close()
     return id_maquina
 
 
