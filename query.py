@@ -799,11 +799,32 @@ def actualizar_inventario_maquina(id_inventario_maquina, serial, fecha_compra, p
 
 def eliminar_maquina_bd(id_inventario):
     try:
+        # 1. Obtener el id_maquina asociado al inventario
+        cursor.execute("SELECT id_maquina FROM inventario_maquina WHERE id_inventario_maquina = %s", (id_inventario,))
+        resultado = cursor.fetchone()
+        if not resultado:
+            return False, "No se encontró el inventario con ese ID"
+        
+        id_maquina = resultado[0]
+
+        # 2. Eliminar el registro de inventario
         cursor.execute("DELETE FROM inventario_maquina WHERE id_inventario_maquina = %s", (id_inventario,))
         connection.commit()
+
+        # 3. Verificar si existen más registros de inventario para esa máquina
+        cursor.execute("SELECT COUNT(*) FROM inventario_maquina WHERE id_maquina = %s", (id_maquina,))
+        count = cursor.fetchone()[0]
+
+        # 4. Si no hay más inventarios, eliminar la máquina de la tabla maquina
+        if count == 0:
+            cursor.execute("DELETE FROM maquina WHERE id_maquina = %s", (id_maquina,))
+            connection.commit()
+
         return True, None
+
     except Exception as e:
         return False, str(e)
+
 
 
 
