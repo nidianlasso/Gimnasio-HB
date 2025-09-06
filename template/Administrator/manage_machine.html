@@ -11,7 +11,13 @@
 <div class="contenedor-gestion" style="display: flex; justify-content: center; padding-bottom: 2%; background: #f8f9fa; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); margin: 2% auto; max-width: 90%;">
   <div style="display: inline-flex; gap: 2vh; margin: 2% auto; flex-wrap: wrap; justify-content: center;">
 
-    <!-- Botón para listado -->
+   <button
+      style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;"
+      onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" type="button"
+      data-toggle="modal" data-target="#exampleModalLong">
+      Añadir Máquina
+    </button>
+
     <button style="width: 30vh; height: 10vh; background: #ffc107; border: none; border-radius: 8px; color: #000; font-weight: bold; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); transition: transform 0.2s;"
             onmouseover="this.style.transform='scale(1.05)'"
             onmouseout="this.style.transform='scale(1)'"
@@ -77,6 +83,23 @@
 {% endwith %}
 
 
+<div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content" style="border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+      <div class="modal-header"
+        style="background: #343a40; color: white; border-top-left-radius: 10px; border-top-right-radius: 10px;">
+        <h5 class="modal-title" id="exampleModalLongTitle">Agregar Usuario</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white;">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>  
+      <div class="modal-body">
+        {% include 'Administrator/add_machine.html' %}
+      </div>
+    </div>
+  </div>
+</div>
 
 <!--MODAL PARA REVISION DE MAQUINAS-->
 <div class="modal fade" id="modalRevision" tabindex="-1" aria-labelledby="modalRevisionLabel" aria-hidden="true">

@@ -28,7 +28,7 @@ from query import (
     insert_revision_sql, insert_observacion_sql, insertar_revision, reports_machine, actualizar_estado_revision, insertar_observacion, obtener_revision, obtener_observaciones, obtener_revisiones_pendientes,
     actualizar_observacion_tecnico, lista_tecnicos, actualizar_usuario, datos_usuario,
     actualizar_datos_usuario, hash_password, obtener_rutinas_por_plan, insertar_rutina, insertar_zona_cuerpo, obtener_cliente_por_plan, finalizar_acceso,
-    consultar_acceso_usuario, obtener_miembros_por_plan, obtener_entrenador, asignar_supervision, asignar_entrenador, obtener_horario_usuario)
+    consultar_acceso_usuario, obtener_miembros_por_plan, obtener_entrenador, asignar_supervision, asignar_entrenador, obtener_horario_usuario, get_maquina_by_nombre, insert_maquina,insert_inventario_maquina, get_proveedores)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -176,7 +176,37 @@ def update_membreship():
 @app.route('/manage-machine')
 @login_required_admin
 def manage_machine():
-    return render_template('Administrator/manage_machine.html')
+    proveedores = get_proveedores()
+    return render_template('Administrator/manage_machine.html', proveedores=proveedores)
+
+
+@app.route('/add_maquina', methods=['GET', 'POST'])
+def add_maquina():
+    if request.method == 'POST':
+        nombre_maquina = request.form['nombre_maquina']
+        fecha_compra = request.form['fecha_compra']
+        precio = request.form['precio']
+        serial = request.form['serial']
+        id_proveedor = request.form['proveedor']
+        disponibilidad = request.form['disponibilidad']
+
+        # Verificar si la máquina ya existe
+        maquina = get_maquina_by_nombre(nombre_maquina)
+        if not maquina:
+            id_maquina = insert_maquina(nombre_maquina)
+        else:
+            id_maquina = maquina[0]
+
+        # Insertar inventario
+        insert_inventario_maquina(fecha_compra, precio, serial, id_proveedor, id_maquina, disponibilidad)
+
+        flash("Máquina registrada con éxito", "success")
+        return redirect(url_for('list_machine'))
+
+    
+    return render_template('maquinas/add_maquina.html')
+
+
 
 @app.route('/list-machine', methods = ['POST', 'GET'])
 @login_required_admin

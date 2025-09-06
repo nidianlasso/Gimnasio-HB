@@ -741,6 +741,59 @@ def get_maquinas():
     maquinas = [{'id': row[0], 'nombre': row[1]} for row in cursor.fetchall()]
     return jsonify(maquinas)
 
+def get_maquina_by_nombre(nombre_maquina):
+    cursor.execute("SELECT id_maquina FROM maquina WHERE nombre = %s", (nombre_maquina,))
+    maquina = cursor.fetchone()
+    return maquina
+
+def insert_maquina(nombre_maquina):
+    cursor.execute("INSERT INTO maquina (nombre) VALUES (%s)", (nombre_maquina,))
+    connection.commit()
+    id_maquina = cursor.lastrowid
+    cursor.close()
+    return id_maquina
+
+
+def insert_inventario_maquina(fecha_compra, precio, serial, id_proveedor, id_maquina, disponibilidad):
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                INSERT INTO inventario_maquina 
+                (fecha_compra, precio, serial, id_proveedor, id_maquina, disponibilidad)
+                VALUES (%s, %s, %s, %s, %s, %s)
+            """, (fecha_compra, precio, serial, id_proveedor, id_maquina, disponibilidad))
+        connection.commit()
+        return True
+    except Exception as e:
+        print("Error insert_inventario_maquina:", e)
+        return False
+
+
+def get_proveedores():
+    try:
+        cursor.execute("SELECT id_proveedor, nombre FROM proveedor")
+        return cursor.fetchall()
+    except Exception as e:
+        print(f"Error en get_proveedores: {e}")
+        return []
+
+
+
+#REGISTRAR LAS MAQUINAS
+# def registrar_maquina_inventario(fecha_compra, precio, serial, id_proveedor, id_maquina, disponibilidad):
+#     try:
+#         cursor = connection.cursor()
+#         query = """
+#             INSERT INTO inventario_maquina (fecha_compra, precio, serial, id_proveedor, id_maquina, disponibilidad)
+#             VALUES (%s, %s, %s, %s, %s, %s)
+#         """
+#         cursor.execute(query, (fecha_compra, precio, serial, id_proveedor, id_maquina, disponibilidad))
+#         connection.commit()
+#         return {"message": "Máquina registrada en inventario exitosamente."}
+#     except Exception as e:
+#         return {"error": f"Error al registrar máquina: {str(e)}"}
+
+
 #Obtener las reservas de las maquinas de hoy
 def obtener_reservas_maquinas():
     cursor.execute('''

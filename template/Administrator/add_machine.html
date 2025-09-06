@@ -1,0 +1,49 @@
+<form method="POST" action="{{ url_for('add_maquina') }}" class="p-4 border rounded shadow-sm bg-light">
+  <h3 class="text-center mb-4">Registrar Máquina</h3>
+  <hr>
+
+  <div class="mb-3">
+    <label for="nombre_maquina" class="form-label">Nombre de la máquina:</label>
+    <input type="text" id="nombre_maquina" name="nombre_maquina" class="form-control" required>
+  </div>
+
+  <div class="row">
+    <div class="col-md-6 mb-3">
+      <label for="fecha_compra" class="form-label">Fecha de compra:</label>
+      <input type="date" id="fecha_compra" name="fecha_compra" class="form-control" required>
+    </div>
+    <div class="col-md-6 mb-3">
+      <label for="precio" class="form-label">Precio:</label>
+      <input type="number" id="precio" name="precio" step="0.01" class="form-control" required>
+    </div>
+  </div>
+
+  <div class="mb-3">
+    <label for="serial" class="form-label">Serial:</label>
+    <input type="text" id="serial" name="serial" class="form-control" required>
+  </div>
+
+  <div class="mb-3">
+    <label for="proveedor" class="form-label">Proveedor:</label>
+    <select class="form-select" name="proveedor" id="proveedor" required>
+      <option value="">Seleccione...</option>
+      {% for prov in proveedores %}
+        <option value="{{ prov[0] }}">{{ prov[1] }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div class="mb-3">
+    <label for="disponibilidad" class="form-label">Disponibilidad:</label>
+    <select class="form-select" name="disponibilidad" id="disponibilidad" required>
+      <option value="">Seleccione...</option>
+      <option value="1">Disponible</option>
+      <option value="0">No disponible</option>
+    </select>
+  </div>
+
+  <div class="d-grid gap-2">
+    <button type="submit" class="btn btn-primary">Registrar Máquina</button>
+    
+  </div>
+</form>
