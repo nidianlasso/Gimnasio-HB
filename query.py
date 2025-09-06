@@ -797,6 +797,15 @@ def actualizar_inventario_maquina(id_inventario_maquina, serial, fecha_compra, p
     connection.commit()
     return True
 
+def eliminar_maquina_bd(id_inventario):
+    try:
+        cursor.execute("DELETE FROM inventario_maquina WHERE id_inventario_maquina = %s", (id_inventario,))
+        connection.commit()
+        return True, None
+    except Exception as e:
+        return False, str(e)
+
+
 
 #REGISTRAR LAS MAQUINAS
 # def registrar_maquina_inventario(fecha_compra, precio, serial, id_proveedor, id_maquina, disponibilidad):

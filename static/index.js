@@ -280,6 +280,42 @@ function initModalRevision() {
     }
 }
 
+function eliminarMaquina(idInventario) {
+    return fetch('/delete-maquina', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ id_inventario: idInventario })
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Error en la solicitud');
+        return response.json();
+    });
+}
+
+function manejarEliminacion(idInventario) {
+    fetch('/delete-maquina', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ id_inventario: idInventario })
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Error en la solicitud');
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            alert('Máquina eliminada con éxito');
+            getListMachine(); // Refrescar lista
+        } else {
+            alert('Error al eliminar: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al eliminar la máquina');
+    });
+}
+
 function getListMachine() {
     const tablaCuerpo = document.querySelector('#listaMaquinas tbody');
     const tabla = document.getElementById('listaMaquinas');
@@ -292,7 +328,6 @@ function getListMachine() {
             return response.json();
         })
         .then(data => {
-            console.log(data);
             data.forEach(user => {
                 const fila = document.createElement('tr');
 
@@ -359,32 +394,25 @@ function getListMachine() {
                 btnEditar.textContent = 'Editar';
                 btnEditar.classList.add('btn', 'btn-primary', 'btn-sm');
 
-                // PASA LOS DATOS CORRECTOS:
                 btnEditar.dataset.idInventario = user[6];
                 btnEditar.dataset.nombre = user[0];
                 btnEditar.dataset.serial = user[1];
                 btnEditar.dataset.fechaCompra = user[2];
                 btnEditar.dataset.precio = user[3];
-
-                // ESTE ES EL ID DEL PROVEEDOR (IMPORTANTE)
-                btnEditar.dataset.proveedor = user[7]; // <-- Asegúrate que user[7] sea id_proveedor
-
+                btnEditar.dataset.proveedor = user[7]; // id_proveedor
                 btnEditar.dataset.disponibilidad = user[5];
 
                 btnEditar.addEventListener('click', function () {
-                    // Asegúrate que el modal existe
                     const modalEl = document.getElementById('modalEditarMaquina');
                     if (!modalEl) {
                         console.error('Modal no encontrado');
                         return;
                     }
 
-                    // Cargar datos en el formulario del modal
                     document.getElementById('editarIdInventario').value = this.dataset.idInventario;
                     document.getElementById('editarNombre').value = this.dataset.nombre;
                     document.getElementById('editarSerial').value = this.dataset.serial;
 
-                    // Fecha en formato yyyy-mm-dd
                     const fechaCompleta = new Date(this.dataset.fechaCompra);
                     const yyyy = fechaCompleta.getFullYear();
                     const mm = String(fechaCompleta.getMonth() + 1).padStart(2, '0');
@@ -393,23 +421,33 @@ function getListMachine() {
 
                     document.getElementById('editarPrecio').value = this.dataset.precio;
 
-                    // Seleccionar proveedor
                     const proveedorSelect = document.getElementById('editarProveedor');
-                    if (proveedorSelect) {
-                        proveedorSelect.value = this.dataset.proveedor;
-                    }
+                    if (proveedorSelect) proveedorSelect.value = this.dataset.proveedor;
 
-                    // Disponibilidad
                     document.getElementById('editarDisponibilidad').value = this.dataset.disponibilidad;
 
-                    // Mostrar el modal
                     const modal = new bootstrap.Modal(modalEl);
                     modal.show();
                 });
 
-
                 columnaEditar.appendChild(btnEditar);
                 fila.appendChild(columnaEditar);
+
+                // Botón Eliminar
+                const columnaEliminar = document.createElement('td');
+                const btnEliminar = document.createElement('button');
+                btnEliminar.textContent = '❌';
+                btnEliminar.classList.add('btn',  'btn-sm');
+                btnEliminar.dataset.idInventario = user[6];
+
+                btnEliminar.addEventListener('click', () => {
+                    if (confirm('¿Estás seguro de que quieres eliminar esta máquina?')) {
+                        manejarEliminacion(btnEliminar.dataset.idInventario);
+                    }
+                });
+
+                columnaEliminar.appendChild(btnEliminar);
+                fila.appendChild(columnaEliminar);
 
                 tablaCuerpo.appendChild(fila);
             });
