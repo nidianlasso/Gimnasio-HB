@@ -28,7 +28,8 @@ from query import (
     insert_revision_sql, insert_observacion_sql, insertar_revision, reports_machine, actualizar_estado_revision, insertar_observacion, obtener_revision, obtener_observaciones, obtener_revisiones_pendientes,
     actualizar_observacion_tecnico, lista_tecnicos, actualizar_usuario, datos_usuario,
     actualizar_datos_usuario, hash_password, obtener_rutinas_por_plan, insertar_rutina, insertar_zona_cuerpo, obtener_cliente_por_plan, finalizar_acceso,
-    consultar_acceso_usuario, obtener_miembros_por_plan, obtener_entrenador, asignar_supervision, asignar_entrenador, obtener_horario_usuario, get_maquina_by_nombre, insert_maquina,insert_inventario_maquina, get_proveedores)
+    consultar_acceso_usuario, obtener_miembros_por_plan, obtener_entrenador, asignar_supervision, asignar_entrenador, obtener_horario_usuario, get_maquina_by_nombre, insert_maquina,insert_inventario_maquina, get_proveedores,
+    actualizar_maquina, actualizar_inventario_maquina)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -213,6 +214,24 @@ def add_maquina():
 def list_machine():
     maquinas_gym = lista_maquinas()
     return jsonify(maquinas_gym)
+
+@app.route('/update-maquina', methods=['POST'])
+def update_maquina():
+    try:
+        id_inventario = request.form['id_inventario']
+        nombre = request.form['nombre']
+        serial = request.form['serial']
+        fecha_compra = request.form['fecha_compra']
+        precio = request.form['precio']
+        proveedor = request.form['proveedor']
+        disponibilidad = request.form['disponibilidad']
+
+        actualizar_maquina(id_inventario, nombre)
+        actualizar_inventario_maquina(id_inventario, serial, fecha_compra, precio, proveedor, disponibilidad)
+        return jsonify({'success': True})
+    except Exception as e:
+        print("Error al actualizar máquina:", e)
+        return jsonify({'success': False, 'message': str(e)})
 
 @app.route('/search-machine', methods=['POST'])
 @login_required_admin

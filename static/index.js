@@ -238,16 +238,16 @@ function update_membreship() {
                 botonMembresia.className = 'btn btn-primary';
 
                 botonMembresia.onclick = function () {
-    document.getElementById('tipoMembresia').value = info_user[3]; // id_membresia
-    document.getElementById('fechaInicio').value = info_user[4];
-    document.getElementById('fechaFin').value = info_user[5];
-    document.getElementById('estadoMembresia').value = info_user[6];
+                    document.getElementById('tipoMembresia').value = info_user[3]; // id_membresia
+                    document.getElementById('fechaInicio').value = info_user[4];
+                    document.getElementById('fechaFin').value = info_user[5];
+                    document.getElementById('estadoMembresia').value = info_user[6];
 
-    document.getElementById('id_user_update').value = info_user[0]; // id usuario
-    document.getElementById('id_membresia_usuario').value = info_user[7]; // id membresia_usuario
+                    document.getElementById('id_user_update').value = info_user[0]; // id usuario
+                    document.getElementById('id_membresia_usuario').value = info_user[7]; // id membresia_usuario
 
-    $('#updateMembresia').modal('show');
-};
+                    $('#updateMembresia').modal('show');
+                };
 
                 membresiaCelda.appendChild(botonMembresia);
                 fila.appendChild(membresiaCelda);
@@ -265,8 +265,8 @@ function abrirModalRevision(idInventario) {
     const observacionInput = document.getElementById("observacionInput");
     document.getElementById("idMaquinaRevision").value = idInventario;
 
-    observacionInput.value = ""; 
-    modalRevision.style.display = "block"; 
+    observacionInput.value = "";
+    modalRevision.style.display = "block";
 }
 
 
@@ -275,11 +275,10 @@ function initModalRevision() {
 
     if (btnCancelar) {
         btnCancelar.addEventListener("click", function () {
-            $('#modalRevision').modal('hide'); 
+            $('#modalRevision').modal('hide');
         });
     }
 }
-
 
 function getListMachine() {
     const tablaCuerpo = document.querySelector('#listaMaquinas tbody');
@@ -296,45 +295,51 @@ function getListMachine() {
             console.log(data);
             data.forEach(user => {
                 const fila = document.createElement('tr');
-                const nombreMaquina = document.createElement('td');
-                nombreMaquina.textContent = user[0];
-                fila.appendChild(nombreMaquina);
 
-                const serialMaquina = document.createElement('td');
-                serialMaquina.textContent = user[1];
-                fila.appendChild(serialMaquina);
+                // Nombre
+                const nombre = document.createElement('td');
+                nombre.textContent = user[0];
+                fila.appendChild(nombre);
 
-                const fechaCompleta = new Date(user[2]);
-                const dia = fechaCompleta.getUTCDate();
-                const mes = fechaCompleta.getUTCMonth() + 1;
-                const anio = fechaCompleta.getUTCFullYear();
-                const fechaFormateada = `${dia}/${mes}/${anio}`;
+                // Serial
+                const serial = document.createElement('td');
+                serial.textContent = user[1];
+                fila.appendChild(serial);
+
+                // Fecha de compra formateada
                 const fechaCompra = document.createElement('td');
-                fechaCompra.textContent = fechaFormateada;
+                const fecha = new Date(user[2]);
+                const dia = fecha.getUTCDate().toString().padStart(2, '0');
+                const mes = (fecha.getUTCMonth() + 1).toString().padStart(2, '0');
+                const anio = fecha.getUTCFullYear();
+                fechaCompra.textContent = `${dia}/${mes}/${anio}`;
                 fila.appendChild(fechaCompra);
 
-                const precioMaquina = document.createElement('td');
-                precioMaquina.textContent = user[3];
-                fila.appendChild(precioMaquina);
+                // Precio
+                const precio = document.createElement('td');
+                precio.textContent = user[3];
+                fila.appendChild(precio);
 
-                const proveedorMaquina = document.createElement('td');
-                proveedorMaquina.textContent = user[4];
-                fila.appendChild(proveedorMaquina);
+                // Proveedor (nombre visible)
+                const proveedor = document.createElement('td');
+                proveedor.textContent = user[4];
+                fila.appendChild(proveedor);
 
-                const disponibilidadMaquina = document.createElement('td');
-                disponibilidadMaquina.textContent = user[5] === 1 ? 'Disponible' : 'No Disponible';
-                fila.appendChild(disponibilidadMaquina);
+                // Disponibilidad
+                const disponibilidad = document.createElement('td');
+                disponibilidad.textContent = user[5] === 1 ? 'Disponible' : 'No Disponible';
+                fila.appendChild(disponibilidad);
 
-                const columnaBoton = document.createElement('td');
+                // Botón "Enviar a revisión"
+                const columnaRevision = document.createElement('td');
                 if (user[5] !== 1) {
                     const btnRevision = document.createElement('button');
                     btnRevision.textContent = 'Enviar a revisión';
                     btnRevision.classList.add('btn', 'btn-warning', 'btn-sm');
-                    btnRevision.dataset.idInventario = user[6]; 
-
+                    btnRevision.dataset.idInventario = user[6];
                     if (user[7] === 1) {
                         btnRevision.textContent = 'En revisión';
-                        btnRevision.disabled = true; 
+                        btnRevision.disabled = true;
                         btnRevision.classList.remove('btn-warning');
                         btnRevision.classList.add('btn-secondary');
                     } else {
@@ -342,12 +347,69 @@ function getListMachine() {
                             abrirModalRevision(this.dataset.idInventario);
                         });
                     }
-
-                    columnaBoton.appendChild(btnRevision);
+                    columnaRevision.appendChild(btnRevision);
                 } else {
-                    columnaBoton.textContent = '-';
+                    columnaRevision.textContent = '-';
                 }
-                fila.appendChild(columnaBoton);
+                fila.appendChild(columnaRevision);
+
+                // Botón Editar
+                const columnaEditar = document.createElement('td');
+                const btnEditar = document.createElement('button');
+                btnEditar.textContent = 'Editar';
+                btnEditar.classList.add('btn', 'btn-primary', 'btn-sm');
+
+                // PASA LOS DATOS CORRECTOS:
+                btnEditar.dataset.idInventario = user[6];
+                btnEditar.dataset.nombre = user[0];
+                btnEditar.dataset.serial = user[1];
+                btnEditar.dataset.fechaCompra = user[2];
+                btnEditar.dataset.precio = user[3];
+
+                // ESTE ES EL ID DEL PROVEEDOR (IMPORTANTE)
+                btnEditar.dataset.proveedor = user[7]; // <-- Asegúrate que user[7] sea id_proveedor
+
+                btnEditar.dataset.disponibilidad = user[5];
+
+                btnEditar.addEventListener('click', function () {
+                    // Asegúrate que el modal existe
+                    const modalEl = document.getElementById('modalEditarMaquina');
+                    if (!modalEl) {
+                        console.error('Modal no encontrado');
+                        return;
+                    }
+
+                    // Cargar datos en el formulario del modal
+                    document.getElementById('editarIdInventario').value = this.dataset.idInventario;
+                    document.getElementById('editarNombre').value = this.dataset.nombre;
+                    document.getElementById('editarSerial').value = this.dataset.serial;
+
+                    // Fecha en formato yyyy-mm-dd
+                    const fechaCompleta = new Date(this.dataset.fechaCompra);
+                    const yyyy = fechaCompleta.getFullYear();
+                    const mm = String(fechaCompleta.getMonth() + 1).padStart(2, '0');
+                    const dd = String(fechaCompleta.getDate()).padStart(2, '0');
+                    document.getElementById('editarFechaCompra').value = `${yyyy}-${mm}-${dd}`;
+
+                    document.getElementById('editarPrecio').value = this.dataset.precio;
+
+                    // Seleccionar proveedor
+                    const proveedorSelect = document.getElementById('editarProveedor');
+                    if (proveedorSelect) {
+                        proveedorSelect.value = this.dataset.proveedor;
+                    }
+
+                    // Disponibilidad
+                    document.getElementById('editarDisponibilidad').value = this.dataset.disponibilidad;
+
+                    // Mostrar el modal
+                    const modal = new bootstrap.Modal(modalEl);
+                    modal.show();
+                });
+
+
+                columnaEditar.appendChild(btnEditar);
+                fila.appendChild(columnaEditar);
 
                 tablaCuerpo.appendChild(fila);
             });
@@ -356,6 +418,41 @@ function getListMachine() {
             console.error('Hubo un problema con la solicitud:', error);
         });
 }
+
+// Listener para guardar cambios en el modal editar
+document.getElementById('btnGuardarCambios').addEventListener('click', function() {
+    const form = document.getElementById('formEditarMaquina');
+    const formData = new FormData(form);
+
+    fetch('/update-maquina', {
+        method: 'POST',
+        body: formData,
+    })
+    .then(response => {
+        if (!response.ok) throw new Error('Error al actualizar');
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            alert('Máquina actualizada con éxito');
+
+            // Cerrar modal usando Bootstrap 4 y jQuery
+            $('#modalEditarMaquina').modal('hide');
+
+            // Refrescar la lista de máquinas
+            getListMachine();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Error al actualizar la máquina');
+    });
+});
+
+
+
 
 
 function abrirModalRevision(idInventario) {
@@ -393,33 +490,33 @@ function enviarRevision(event) {
             const btn = document.querySelector(`button[data-id-inventario="${idInventario}"]`);
             if (btn) {
                 btn.textContent = 'En revisión';
-                btn.disabled = true;                          
+                btn.disabled = true;
                 btn.classList.remove('btn-warning');
-                btn.classList.add('btn-secondary');   
+                btn.classList.add('btn-secondary');
             }
-            $('#modalRevision').modal('hide'); 
+            $('#modalRevision').modal('hide');
             getListMachine();
         })
         .catch(error => console.error("Error al enviar revisión:", error));
 }
 
 function mostrarInformes() {
-  document.getElementById("informes").style.display = "block";
+    document.getElementById("informes").style.display = "block";
 
-  
-  let tabla = document.getElementById("tabla-informes");
-  tabla.innerHTML = "";
 
-  informes.forEach(informe => {
-    let fila = `
+    let tabla = document.getElementById("tabla-informes");
+    tabla.innerHTML = "";
+
+    informes.forEach(informe => {
+        let fila = `
       <tr>
         <td>${informe.maquina}</td>
         <td>${informe.fecha}</td>
         <td>
           <span style="padding:4px 8px; border-radius:6px; 
-            ${informe.estado === "Pendiente" ? "background:#ffc107; color:#000;" : 
-              informe.estado === "En revisión" ? "background:#17a2b8; color:#fff;" : 
-              "background:#28a745; color:#fff;"}">
+            ${informe.estado === "Pendiente" ? "background:#ffc107; color:#000;" :
+                informe.estado === "En revisión" ? "background:#17a2b8; color:#fff;" :
+                    "background:#28a745; color:#fff;"}">
             ${informe.estado}
           </span>
         </td>
@@ -431,8 +528,8 @@ function mostrarInformes() {
         </td>
       </tr>
     `;
-    tabla.innerHTML += fila;
-  });
+        tabla.innerHTML += fila;
+    });
 }
 
 
@@ -540,17 +637,17 @@ function cargarMaquinas(tipo) {
                                         headers: { 'Content-Type': 'application/json' },
                                         body: JSON.stringify({ id_maquina: maquina.id_maquina, hora: b.hora })
                                     })
-                                    .then(res => res.json())
-                                    .then(data => {
-                                        alert(data.message);
-                                        if (data.success) {
-                                            cargarMaquinas('disponibilidad_horaria'); // recarga la vista para reflejar cambios
-                                        }
-                                    })
-                                    .catch(err => {
-                                        alert('Error al cancelar la reserva');
-                                        console.error(err);
-                                    });
+                                        .then(res => res.json())
+                                        .then(data => {
+                                            alert(data.message);
+                                            if (data.success) {
+                                                cargarMaquinas('disponibilidad_horaria'); // recarga la vista para reflejar cambios
+                                            }
+                                        })
+                                        .catch(err => {
+                                            alert('Error al cancelar la reserva');
+                                            console.error(err);
+                                        });
                                 }
                             });
                         }
@@ -668,7 +765,7 @@ function getSearchMachine() {
         },
     })
         .then(response => {
-            if (!response.ok) { throw new Error('Error en la solicitud'); } return response.json(); 
+            if (!response.ok) { throw new Error('Error en la solicitud'); } return response.json();
         })
         .then(data => {
             console.log("Informacion!!!!");
@@ -721,22 +818,22 @@ function registrarIngreso() {
         body: JSON.stringify({ cedula }),
         headers: { 'Content-Type': 'application/json' }
     })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(err => { 
-                throw new Error(err.error || 'Error en la solicitud'); 
-            });
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Datos recibidos:', data);
-        mostrarUsuario(data);  // 👉 Llamamos a otra función para renderizar
-        obtenerAcceso(data.id_usuario); // 👉 Llamamos a la función que consulta acceso
-    })
-    .catch(error => {
-        console.error('Error al registrar ingreso:', error);
-    });
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => {
+                    throw new Error(err.error || 'Error en la solicitud');
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Datos recibidos:', data);
+            mostrarUsuario(data);  // 👉 Llamamos a otra función para renderizar
+            obtenerAcceso(data.id_usuario); // 👉 Llamamos a la función que consulta acceso
+        })
+        .catch(error => {
+            console.error('Error al registrar ingreso:', error);
+        });
 }
 
 // 🔹 Mostrar datos del usuario en pantalla
@@ -790,13 +887,13 @@ function activarAcceso(id_usuario, boton, callback) {
             duracion: "00:00:00"
         })
     })
-    .then(r => r.json())
-    .then(res => {
-        console.log(res);
-        boton.textContent = 'Desactivar';
-        callback();
-    })
-    .catch(error => console.error('Error al activar acceso:', error));
+        .then(r => r.json())
+        .then(res => {
+            console.log(res);
+            boton.textContent = 'Desactivar';
+            callback();
+        })
+        .catch(error => console.error('Error al activar acceso:', error));
 }
 
 // 🔹 Desactivar acceso
@@ -806,13 +903,13 @@ function desactivarAcceso(id_usuario, boton, callback) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id_usuario })
     })
-    .then(r => r.json())
-    .then(res => {
-        console.log(res);
-        boton.textContent = 'Activar';
-        callback();
-    })
-    .catch(error => console.error('Error al desactivar acceso:', error));
+        .then(r => r.json())
+        .then(res => {
+            console.log(res);
+            boton.textContent = 'Activar';
+            callback();
+        })
+        .catch(error => console.error('Error al desactivar acceso:', error));
 }
 
 //FUNCION PARA ASIGNAR ENTRENADOR A MIEMBRO
@@ -823,7 +920,7 @@ function assign_coach() {
             if (!response.ok) {
                 throw new Error('Error en la solicitud');
             }
-            return response.json(); 
+            return response.json();
         })
         .then(data => {
             const miembrosActivos = data.filter(info_user =>
@@ -853,7 +950,7 @@ function assign_coach() {
                 const entrenadorAsignado = entrenadoresActivos.find(entrenador => entrenador[8] === planTrabajoMiembro);
                 if (entrenadorAsignado) {
                     const entrenadorCelda = document.createElement('td');
-                    entrenadorCelda.textContent = entrenadorAsignado[1]; 
+                    entrenadorCelda.textContent = entrenadorAsignado[1];
                     fila.appendChild(entrenadorCelda);
                 } else {
                     const entrenadorCelda = document.createElement('td');

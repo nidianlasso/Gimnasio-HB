@@ -1,14 +1,3 @@
-<!-- Modal Editar Máquina -->
-<div class="modal fade" id="modalEditarMaquina" tabindex="-1" aria-labelledby="modalEditarMaquinaLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      
-      <div class="modal-header">
-        <h5 class="modal-title" id="modalEditarMaquinaLabel">Editar Máquina</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
-      </div>
-      
-      <div class="modal-body">
         <form id="formEditarMaquina">
           <input type="hidden" id="editarIdInventario" name="id_inventario">
 
@@ -33,29 +22,19 @@
           </div>
 
           <div class="mb-3">
-  <label for="editarProveedor" class="form-label">Proveedor</label>
-  <select class="form-control" id="editarProveedor" name="proveedor" required>
-    {% for proveedor in proveedores %}
-      <option value="{{ proveedor[0] }}">{{ proveedor[1] }}</option>
-    {% endfor %}
-  </select>
-</div>
-
+            <label for="editarProveedor" class="form-label">Proveedor</label>
+            <select class="form-control" id="editarProveedor" name="proveedor" required>
+              {% for proveedor in proveedores %}
+                <option value="{{ proveedor[0] }}">{{ proveedor[1] }}</option>
+              {% endfor %}
+            </select>
+          </div>
 
           <div class="mb-3">
             <label for="editarDisponibilidad" class="form-label">Disponibilidad</label>
-            <select class="form-control" id="editarDisponibilidad" name="disponibilidad">
+            <select class="form-control" id="editarDisponibilidad" name="disponibilidad" required>
               <option value="1">Disponible</option>
               <option value="0">No Disponible</option>
             </select>
           </div>
         </form>
-      </div>
-      
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-        <button type="button" class="btn btn-success" id="btnGuardarCambios">Guardar cambios</button>
-      </div>
-    </div>
-  </div>
-</div>

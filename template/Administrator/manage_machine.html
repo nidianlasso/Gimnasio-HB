@@ -57,15 +57,18 @@
 <!-- Tabla -->
 <table border="1" id="listaMaquinas" style="width: 90%; margin: 2% auto; border-collapse: collapse; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
   <thead>
-    <tr style="background: #343a40; color: white;">
-      <th style="padding: 12px;">Nombre</th>
-      <th style="padding: 12px;">Serial</th>
-      <th style="padding: 12px;">Fecha de compra</th>
-      <th style="padding: 12px;">Precio</th>
-      <th style="padding: 12px;">Proveedor</th>
-      <th style="padding: 12px;">Disponibilidad</th>
-    </tr>
-  </thead>
+  <tr style="background: #343a40; color: white;">
+    <th style="padding: 12px;">Nombre</th>
+    <th style="padding: 12px;">Serial</th>
+    <th style="padding: 12px;">Fecha de compra</th>
+    <th style="padding: 12px;">Precio</th>
+    <th style="padding: 12px;">Proveedor</th>
+    <th style="padding: 12px;">Disponibilidad</th>
+    <th style="padding: 12px;">Revisión</th>
+    <th style="padding: 12px;">Editar</th>  
+  </tr>
+</thead>
+
   <tbody></tbody>
 </table>
 
@@ -81,6 +84,29 @@
     </div>
   {% endif %}
 {% endwith %}
+
+<!-- Modal Editar Máquina -->
+<div class="modal fade" id="modalEditarMaquina" tabindex="-1" aria-labelledby="modalEditarMaquinaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalEditarMaquinaLabel">Editar Máquina</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+
+      <div class="modal-body">
+        {% include 'Administrator/listar.html' %}
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-success" id="btnGuardarCambios">Guardar cambios</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
 
 
 <div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"

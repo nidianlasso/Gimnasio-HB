@@ -776,6 +776,26 @@ def get_proveedores():
         print(f"Error en get_proveedores: {e}")
         return []
 
+def actualizar_maquina(id_inventario, nombre):
+    cursor.execute(
+        "UPDATE maquina m JOIN inventario_maquina i ON m.id_maquina = i.id_maquina "
+        "SET m.nombre = %s WHERE i.id_inventario_maquina = %s",
+        (nombre, id_inventario)
+    )
+
+
+def actualizar_inventario_maquina(id_inventario_maquina, serial, fecha_compra, precio, proveedor, disponibilidad):
+    cursor.execute("""
+        UPDATE inventario_maquina
+        SET serial = %s,
+            fecha_compra = %s,
+            precio = %s,
+            id_proveedor = %s,
+            disponibilidad = %s
+        WHERE id_inventario_maquina = %s
+    """, (serial, fecha_compra, precio, proveedor, disponibilidad, id_inventario_maquina))
+    connection.commit()
+    return True
 
 
 #REGISTRAR LAS MAQUINAS
