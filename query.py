@@ -634,42 +634,142 @@ def obtener_miembros_por_plan(id_plan, cursor):
     cursor.execute(query, (id_plan,))
     return cursor.fetchall()  # Lista de miembros
 
-
-# Insertar la supervisión (relación entrenador - miembro)
-def asignar_supervision(id_entrenador, id_miembro, fecha, cursor, connection):
-    query = """
-        INSERT INTO supervision (id_entrenador, id_miembro, fecha)
-        VALUES (%s, %s, %s)
+def asignar_entrenador_a_miembro(id_miembro, id_entrenador, id_estado=1):
     """
-    cursor.execute(query, (id_entrenador, id_miembro, fecha))
-    connection.commit()
+    Asigna un entrenador a un miembro si no tiene ya una rutina.
+    Retorna un dict con resultado o error.
+    """
+    if not id_miembro or not id_entrenador:
+        return {'error': 'Faltan parámetros obligatorios'}
 
-def obtener_usuarios_activos(cursor):
+    try:
+        # Verificar si ya tiene una rutina asignada
+        resultado = cursor.execute("""
+            SELECT 1 FROM rutina WHERE id_usuario_miembro = :id_miembro
+        """, {'id_miembro': id_miembro}).fetchone()
+
+        if resultado:
+            return {'error': 'Este miembro ya tiene una rutina asignada'}
+
+        # Insertar nueva rutina
+        cursor.execute("""
+            INSERT INTO rutina (id_usuario_miembro, id_usuario_entrenador, fecha_asignacion, id_estado_rutina)
+            VALUES (:id_miembro, :id_entrenador, CURRENT_DATE, :estado)
+        """, {
+            'id_miembro': id_miembro,
+            'id_entrenador': id_entrenador,
+            'estado': id_estado
+        })
+
+        connection.commit()
+        return {'message': 'Entrenador asignado con éxito'}
+
+    except Exception as e:
+        db.session.rollback()
+        return {'error': str(e)}
+
+def obtener_usuarios_activos():
     query = """
-        SELECT u.id_usuario, u.nombre, u.apellido, u.correo, a.tipo_acceso, a.fecha_inicio, u.rol, u.estado, u.id_plan
+        SELECT u.id_usuario, u.nombre, u.apellido, a.tipo_acceso, r.nombre AS rol, u.id_plan_trabajo
         FROM usuario u
-        LEFT JOIN acceso a ON u.id_usuario = a.id_usuario
-        WHERE a.tipo_acceso = 'Active' AND u.estado = 'Activo'
+        JOIN acceso a ON u.id_usuario = a.id_usuario
+        JOIN rol r ON u.id_rol = r.id_rol
+        WHERE a.tipo_acceso = 'Active'
     """
     cursor.execute(query)
     return cursor.fetchall()
 
-def asignar_entrenador():
+
+# Insertar la supervisión (relación entrenador - miembro)
+# def insertar_supervision(id_miembro, id_entrenador, cursor, connection):
+#     try:
+#         cursor.execute("""
+#             INSERT INTO supervision (id_acceso_miembro, id_acceso_entrenador)
+#             VALUES (%s, %s)
+#         """, (id_miembro, id_entrenador))
+#         connection.commit()
+#         return True, "Entrenador asignado correctamente."
+#     except Exception as e:
+#         connection.rollback()
+#         return False, f"Error al asignar entrenador: {str(e)}"
+
+# def consultar_miembros_y_entrenadores():
+#     try:
+#         cursor.execute("""
+#            SELECT 
+#     u.id_usuario,
+#     u.nombre,
+#     u.apellido,
+#     acc.tipo_acceso,
+#     r2.nombre AS rol,
+#     r.id_rutina,
+#     r.id_usuario_entrenador,
+#     ent.nombre AS nombre_entrenador,
+#     ent.apellido AS apellido_entrenador,
+#     r.id_plan_trabajo
+# FROM usuario u
+# LEFT JOIN rol r2 ON u.id_rol = r2.id_rol
+# INNER JOIN (
+#     SELECT a1.*
+#     FROM acceso a1
+#     INNER JOIN (
+#         SELECT id_usuario, MAX(fecha_inicio) AS ultima_fecha
+#         FROM acceso
+#         GROUP BY id_usuario
+#     ) a2 ON a1.id_usuario = a2.id_usuario AND a1.fecha_inicio = a2.ultima_fecha
+#     WHERE a1.tipo_acceso = 'Active' AND (a1.duracion IS NULL OR a1.duracion = '00:00:00')
+# ) AS acc ON acc.id_usuario = u.id_usuario
+# LEFT JOIN rutina r ON u.id_usuario = r.id_usuario_miembro
+# LEFT JOIN usuario ent ON ent.id_usuario = r.id_usuario_entrenador
+# WHERE u.id_rol IN (2, 5);
+#         """)
+#         resultado = cursor.fetchall()  # Trae todos los registros
+#         print("Datos obtenidos:", resultado)
+#         return resultado  # <-- Aquí debes retornar el resultado
+#     except Exception as e:
+#         print("Error al ejecutar consulta:", e)
+#         return []
+
+
+def obtener_usuarios_activos_por_rol(rol_nombre):
+    query = """
+        SELECT u.id_usuario, u.nombre, u.apellido, a.tipo_acceso, r.nombre AS rol, u.id_plan_trabajo
+        FROM usuario u
+        JOIN acceso a ON u.id_usuario = a.id_usuario
+        JOIN rol r ON u.id_rol = r.id_rol
+        WHERE a.tipo_acceso = 'Active'
+          AND r.nombre = %s
+    """
+    cursor.execute(query, (rol_nombre,))
+    return cursor.fetchall()
+
+
+
+def asignar_entrenador_a_miembro(id_miembro, id_entrenador):
     try:
-        cursor = connection.cursor()
-        query = """
-            SELECT u.id_usuario, u.nombre, u.apellido, u.correo,
-                   a.tipo_acceso, a.fecha_inicio, r.nombre AS rol, u.id_plan_trabajo
-            FROM usuario u
-            LEFT JOIN acceso a ON u.id_usuario = a.id_usuario
-            JOIN rol r ON u.id_rol = r.id_rol
-            WHERE a.tipo_acceso = 'Active'
-        """
-        cursor.execute(query)
-        resultados = cursor.fetchall()
-        return [list(row) for row in resultados]
+        # Verificar si ambos tienen el mismo plan de trabajo
+        cursor.execute("""
+            SELECT u1.id_plan_trabajo = u2.id_plan_trabajo AS mismo_plan
+            FROM usuario u1, usuario u2
+            WHERE u1.id_usuario = %s AND u2.id_usuario = %s
+        """, (id_miembro, id_entrenador))
+
+        resultado = cursor.fetchone()
+        if not resultado or resultado[0] != 1:
+            raise ValueError(f"El miembro {id_miembro} y el entrenador {id_entrenador} no tienen el mismo plan de trabajo")
+
+        # Insertar o actualizar asignación
+        cursor.execute("""
+            INSERT INTO cliente_entrenador (id_cliente, id_entrenador)
+            VALUES (%s, %s)
+            ON DUPLICATE KEY UPDATE id_entrenador = VALUES(id_entrenador)
+        """, (id_miembro, id_entrenador))
+
+        connection.commit()
+
     except Exception as e:
-        return {'error': f'Error en asignar_entrenador: {str(e)}'}
+        print("❌ Error en asignar_entrenador_a_miembro:", e)
+        raise  # Para que el error también sea capturado arriba si se desea
 
 #MIEMBRO
 #OBTENER PLAN DE TRABAJO DEL MIEMBRO

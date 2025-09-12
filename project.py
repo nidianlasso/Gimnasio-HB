@@ -28,8 +28,8 @@ from query import (
     insert_revision_sql, insert_observacion_sql, insertar_revision, reports_machine, actualizar_estado_revision, insertar_observacion, obtener_revision, obtener_observaciones, obtener_revisiones_pendientes,
     actualizar_observacion_tecnico, lista_tecnicos, actualizar_usuario, datos_usuario,
     actualizar_datos_usuario, hash_password, obtener_rutinas_por_plan, insertar_rutina, insertar_zona_cuerpo, obtener_cliente_por_plan, finalizar_acceso,
-    consultar_acceso_usuario, obtener_miembros_por_plan, obtener_entrenador, asignar_supervision, asignar_entrenador, obtener_horario_usuario, get_maquina_by_nombre, insert_maquina,insert_inventario_maquina, get_proveedores,
-    actualizar_maquina, actualizar_inventario_maquina, eliminar_maquina_bd)
+    consultar_acceso_usuario, obtener_miembros_por_plan, obtener_entrenador, obtener_horario_usuario, get_maquina_by_nombre, insert_maquina,insert_inventario_maquina, get_proveedores,
+    actualizar_maquina, actualizar_inventario_maquina, eliminar_maquina_bd, obtener_usuarios_activos_por_rol, obtener_usuarios_activos_por_rol, asignar_entrenador_a_miembro, obtener_usuarios_activos)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -606,6 +606,27 @@ def registrar_ingreso():
     else:
         return jsonify({'error': 'Usuario no encontrado'}), 404
 
+@app.route('/accesos-activos', methods=['GET'])
+def accesos_activos():
+    try:
+        resultados = obtener_usuarios_activos()
+        accesos = [
+            {
+                'id_usuario': row[0],
+                'nombre': row[1],
+                'apellido': row[2],
+                'tipo_acceso': row[3],
+                'rol': row[4],
+                'id_plan_trabajo': row[5]
+            } for row in resultados
+        ]
+        print(f"esto llega de los accesos {accesos}")
+        return jsonify(accesos), 200
+    except Exception as e:
+        print("Error obteniendo accesos activos:", e)
+        return jsonify({'error': str(e)}), 500
+
+
 @app.route('/guardar-acceso', methods=['POST'])
 def guardar_acceso_route():
     data = request.json
@@ -637,6 +658,7 @@ def finalizar_acceso():
         return jsonify(resultado), 400
 
     return jsonify(resultado), 200
+
 
 
 # 🔹 Ruta Flask: recibe petición y usa la función lógica
@@ -675,38 +697,58 @@ def cambiar_estado_acceso():
         return jsonify({'error': f'Error al cambiar el estado del acceso: {str(e)}'}), 500
 
 
-@app.route('/asignar_supervision/<int:id_entrenador>', methods=['POST'])
-def asignar_supervision_automatica(id_entrenador):
-    fecha = request.form.get("fecha")  # O la fecha actual si prefieres
+@app.route('/asignar-entrenador-rutina', methods=['POST'])
+def route_asignar_entrenador_rutina():
+    data = request.json
+    id_miembro = data.get('id_miembro')
+    id_entrenador = data.get('id_entrenador')
 
-    # 1. Traer datos del entrenador
-    entrenador = obtener_entrenador(id_entrenador)
-    if not entrenador:
-        return "Entrenador no encontrado", 404
+    resultado = asignar_entrenador_a_miembro(id_miembro, id_entrenador)
 
-    # 2. Buscar los miembros con el mismo plan
-    miembros = obtener_miembros_por_plan(entrenador["id_plan"])
+    if 'error' in resultado:
+        return jsonify(resultado), 400
 
-    # 3. Insertar la supervisión para cada miembro
-    for m in miembros:
-        asignar_supervision(entrenador["id_usuario"], m["id_usuario"], fecha)
+    return jsonify(resultado), 201 
 
-    return f"Supervisión asignada para {len(miembros)} miembros con el entrenador {entrenador['id_usuario']}"
-
-
-#ASIGNAR ENTRENADOR
-@app.route('/assign-coach', methods=['POST', 'GET'])
-def assign_coach_route():
+@app.route('/assign-coach', methods=['GET'])
+def route_obtener_miembros_y_entrenadores():
     try:
-        asignacion = asignar_entrenador()
-        print("📥 Datos para asignar entrenador:", asignacion)  # 👀 DEBUG
-        return jsonify(asignacion), 200
+        miembros = obtener_usuarios_activos_por_rol('Miembro')
+        entrenadores = obtener_usuarios_activos_por_rol('Entrenador')
+        print("Miembros activos:", miembros)
+        print("Entrenadores activos:", entrenadores)
+
+        return jsonify({
+            'miembros': [list(m) for m in miembros],
+            'entrenadores': [list(e) for e in entrenadores]
+        })
+
     except Exception as e:
-        print("❌ Error en assign_coach_route:", e)
+        print("Error al ejecutar consulta:", e)
         return jsonify({'error': str(e)}), 500
 
 
-#MOSTRAR PLAN DE TRABAJO DEL MIEMBRO
+@app.route('/save-assignments', methods=['POST'])
+def save_assignments():
+    try:
+        asignaciones = request.get_json()
+        print("Asignaciones recibidas:", asignaciones)
+
+        for asignacion in asignaciones:
+            id_miembro = asignacion['id_miembro']
+            id_entrenador = asignacion['id_entrenador']
+            asignar_entrenador_a_miembro(id_miembro, id_entrenador)
+
+        return jsonify({'mensaje': 'Asignaciones guardadas correctamente'}), 200
+
+    except ValueError as ve:
+        return jsonify({'error': str(ve)}), 400  # Respuesta controlada si no coinciden planes
+
+    except Exception as e:
+        print("❌ Error al guardar asignaciones:", e)
+        return jsonify({'error': 'Error al guardar asignaciones'}), 500
+
+
 
 #MOSTRAR OPCIONES PARA CLASES
 @app.route('/acciones-clase')

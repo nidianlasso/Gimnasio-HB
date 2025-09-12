@@ -850,110 +850,161 @@ function getSearchMachine() {
 /*RECEPCIONISTA */
 
 function registrarIngreso() {
-    const cedula = document.getElementById('cedula').value;
+  const cedula = document.getElementById('cedula').value;
 
-    fetch('/registrar-ingreso', {
-        method: 'POST',
-        body: JSON.stringify({ cedula }),
-        headers: { 'Content-Type': 'application/json' }
-    })
-        .then(response => {
-            if (!response.ok) {
-                return response.json().then(err => {
-                    throw new Error(err.error || 'Error en la solicitud');
-                });
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Datos recibidos:', data);
-            mostrarUsuario(data);  // 👉 Llamamos a otra función para renderizar
-            obtenerAcceso(data.id_usuario); // 👉 Llamamos a la función que consulta acceso
-        })
-        .catch(error => {
-            console.error('Error al registrar ingreso:', error);
-        });
+  fetch('/registrar-ingreso', {
+    method: 'POST',
+    body: JSON.stringify({ cedula }),
+    headers: { 'Content-Type': 'application/json' }
+  })
+  .then(response => {
+    if (!response.ok) {
+      return response.json().then(err => { throw new Error(err.error || 'Error en la solicitud'); });
+    }
+    return response.json();
+  })
+  .then(data => {
+    mostrarUsuario(data);
+    obtenerAcceso(data.id_usuario);
+    cargarAccesosActivos();  // 🚀 Carga usuarios con acceso activo al mostrar usuario
+  })
+  .catch(error => {
+    console.error('Error al registrar ingreso:', error);
+    document.getElementById('resultadoIngreso').innerHTML = `<p class="text-danger">${error.message}</p>`;
+  });
 }
 
-// 🔹 Mostrar datos del usuario en pantalla
+function cargarAccesosActivos() {
+  fetch('/accesos-activos')
+    .then(res => {
+      if (!res.ok) throw new Error('Error al cargar accesos activos');
+      return res.json();
+    })
+    .then(datos => {
+      const tbody = document.querySelector('#tablaAccesosActivos tbody');
+      tbody.innerHTML = ''; // limpiar tabla
+
+      datos.forEach(usuario => {
+        // usuario = {id_usuario, nombre, apellido, rol}
+        const tr = document.createElement('tr');
+
+        tr.innerHTML = `
+          <td>${usuario.id_usuario}</td>
+          <td>${usuario.nombre}</td>
+          <td>${usuario.apellido}</td>
+          <td>${usuario.rol}</td>
+          <td><button class="btn btn-danger btn-sm" onclick="desactivarAcceso(${usuario.id_usuario}, null, () => cargarAccesosActivos())">Desactivar</button></td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    })
+    .catch(error => {
+      console.error('Error al cargar accesos activos:', error);
+    });
+}
 function mostrarUsuario(data) {
-    const resultadoIngreso = document.getElementById('resultadoIngreso');
-    resultadoIngreso.innerHTML = '';
-
-    const infoUsuario = document.createElement('div');
-    infoUsuario.innerHTML = `
-        <p>Nombre: ${data.nombre}</p>
-        <p>Apellido: ${data.apellido}</p>
-        <p>Rol: ${data.rol}</p>
-        <button id="activarBtn">Activar</button>
-    `;
-    resultadoIngreso.appendChild(infoUsuario);
+  const resultadoIngreso = document.getElementById('resultadoIngreso');
+  resultadoIngreso.innerHTML = `
+    <p><strong>Nombre:</strong> ${data.nombre}</p>
+    <p><strong>Apellido:</strong> ${data.apellido}</p>
+    <p><strong>Rol:</strong> ${data.rol}</p>
+    <button id="activarBtn" class="btn btn-primary"></button>
+  `;
 }
-// 🔹 Obtener estado de acceso y asignar evento al botón
+
 function obtenerAcceso(id_usuario) {
-    fetch(`/obtener-acceso?id_usuario=${id_usuario}`)
-        .then(r => {
-            if (!r.ok) throw new Error('Error al obtener el estado de acceso');
-            return r.json();
-        })
-        .then(accesoData => {
-            isActive = accesoData.tipo_acceso === 'Active';
-            const boton = document.getElementById('activarBtn');
-            boton.textContent = isActive ? 'Desactivar' : 'Activar';
-
-            boton.addEventListener('click', () => {
-                if (!isActive) {
-                    activarAcceso(id_usuario, boton, () => isActive = true);
-                } else {
-                    desactivarAcceso(id_usuario, boton, () => isActive = false);
-                }
-            });
-        })
-        .catch(error => {
-            console.error('Error al obtener el estado de acceso:', error);
-        });
-}
-// 🔹 Activar acceso
-function activarAcceso(id_usuario, boton, callback) {
-    const inicio = new Date();
-    fetch('/guardar-acceso', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            tipo_acceso: 'Active',
-            id_usuario: id_usuario,
-            fecha: inicio.toISOString(),
-            duracion: "00:00:00"
-        })
+  fetch(`/obtener-acceso?id_usuario=${id_usuario}`)
+    .then(res => {
+      if (!res.ok) throw new Error('Error al obtener el estado de acceso');
+      return res.json();
     })
-        .then(r => r.json())
-        .then(res => {
-            console.log(res);
-            boton.textContent = 'Desactivar';
-            callback();
-        })
-        .catch(error => console.error('Error al activar acceso:', error));
-}
+    .then(accesoData => {
+      const boton = document.getElementById('activarBtn');
+      let isActive = accesoData.tipo_acceso === 'Active';
 
-// 🔹 Desactivar acceso
-function desactivarAcceso(id_usuario, boton, callback) {
-    fetch('/cambiar-estado-acceso', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id_usuario })
-    })
-        .then(r => r.json())
-        .then(res => {
-            console.log(res);
+      boton.textContent = isActive ? 'Desactivar' : 'Activar';
+      boton.classList.toggle('btn-danger', isActive);
+      boton.classList.toggle('btn-success', !isActive);
+
+      boton.onclick = () => {
+        if (isActive) {
+          desactivarAcceso(id_usuario, boton, () => {
+            isActive = false;
             boton.textContent = 'Activar';
-            callback();
-        })
-        .catch(error => console.error('Error al desactivar acceso:', error));
+            boton.classList.replace('btn-danger', 'btn-success');
+          });
+        } else {
+          activarAcceso(id_usuario, boton, () => {
+            isActive = true;
+            boton.textContent = 'Desactivar';
+            boton.classList.replace('btn-success', 'btn-danger');
+          });
+        }
+      };
+    })
+    .catch(error => {
+      console.error('Error al obtener el estado de acceso:', error);
+      document.getElementById('resultadoIngreso').innerHTML += `<p class="text-danger">${error.message}</p>`;
+    });
 }
+
+function activarAcceso(id_usuario, boton, callback) {
+  const inicio = new Date();
+  fetch('/guardar-acceso', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      tipo_acceso: 'Active',
+      id_usuario,
+      fecha: inicio.toISOString(),
+      duracion: "00:00:00"
+    })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('Error al activar acceso');
+    return res.json();
+  })
+  .then(() => {
+    callback();
+  })
+  .catch(error => {
+    console.error('Error al activar acceso:', error);
+    alert('No se pudo activar el acceso');
+  });
+}
+
+function desactivarAcceso(id_usuario, boton, callback) {
+  fetch('/cambiar-estado-acceso', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id_usuario })
+  })
+  .then(res => {
+    if (!res.ok) throw new Error('Error al desactivar acceso');
+    return res.json();
+  })
+  .then(() => {
+    callback();
+  })
+  .catch(error => {
+    console.error('Error al desactivar acceso:', error);
+    alert('No se pudo desactivar el acceso');
+  });
+}
+
+// Esperar a que el DOM esté listo y se abra el modal
+document.addEventListener('DOMContentLoaded', () => {
+  $('#searchUser').on('shown.bs.modal', function () {
+    cargarAccesosActivos();
+  });
+});
+
 
 //FUNCION PARA ASIGNAR ENTRENADOR A MIEMBRO
 function assign_coach() {
-    const asignacionEntrenador = document.querySelector('#tablaAsignacionEntrenador tbody');
+    const asignacionEntrenador = document.querySelector('#asignacionEntrenador tbody');
+
     fetch('/assign-coach')
         .then(response => {
             if (!response.ok) {
@@ -962,40 +1013,59 @@ function assign_coach() {
             return response.json();
         })
         .then(data => {
-            const miembrosActivos = data.filter(info_user =>
-                info_user[4] === 'Active' && info_user[6] === 'Miembro' // info_user[4] es el tipo de acceso y info_user[6] es el rol
-            );
-            const entrenadoresActivos = data.filter(info_user =>
-                info_user[4] === 'Active' && info_user[6] === 'Entrenador'
-            );
-            asignacionEntrenador.innerHTML = '';
+            // Asumimos que el backend envía:
+            // data.miembros y data.entrenadores
+            // Cada elemento: [id_usuario, nombre, apellido, tipo_acceso, rol, id_plan_trabajo]
 
-            miembrosActivos.forEach(info_user => {
+            const miembrosActivos = data.miembros;
+            const entrenadoresActivos = data.entrenadores;
+
+            asignacionEntrenador.innerHTML = ''; // Limpiar tabla
+
+            miembrosActivos.forEach(miembro => {
                 const fila = document.createElement('tr');
 
+                // ID del miembro
                 const id = document.createElement('td');
-                id.textContent = info_user[0];
+                id.textContent = miembro[0];
                 fila.appendChild(id);
 
+                // Nombre
                 const nombre = document.createElement('td');
-                nombre.textContent = info_user[1];
+                nombre.textContent = miembro[1];
                 fila.appendChild(nombre);
 
+                // Apellido
                 const apellido = document.createElement('td');
-                apellido.textContent = info_user[2];
+                apellido.textContent = miembro[2];
                 fila.appendChild(apellido);
 
-                const planTrabajoMiembro = info_user[8];
-                const entrenadorAsignado = entrenadoresActivos.find(entrenador => entrenador[8] === planTrabajoMiembro);
-                if (entrenadorAsignado) {
-                    const entrenadorCelda = document.createElement('td');
-                    entrenadorCelda.textContent = entrenadorAsignado[1];
-                    fila.appendChild(entrenadorCelda);
+                // Dropdown de entrenadores disponibles, filtrando por plan de trabajo
+                const tdSelect = document.createElement('td');
+                const selectEntrenador = document.createElement('select');
+                selectEntrenador.classList.add('form-control');
+                selectEntrenador.name = `entrenador_para_${miembro[0]}`;
+
+                // Filtrar entrenadores con el mismo id_plan_trabajo
+                const entrenadoresCompatibles = entrenadoresActivos.filter(entrenador => entrenador[5] === miembro[5]);
+
+                if (entrenadoresCompatibles.length === 0) {
+                    const option = document.createElement('option');
+                    option.text = 'No hay entrenadores compatibles';
+                    option.disabled = true;
+                    selectEntrenador.appendChild(option);
                 } else {
-                    const entrenadorCelda = document.createElement('td');
-                    entrenadorCelda.textContent = "Sin entrenador disponible";
-                    fila.appendChild(entrenadorCelda);
+                    entrenadoresCompatibles.forEach(entrenador => {
+                        const option = document.createElement('option');
+                        option.value = entrenador[0]; // id_entrenador
+                        option.text = `${entrenador[1]} ${entrenador[2]}`;
+                        selectEntrenador.appendChild(option);
+                    });
                 }
+
+                tdSelect.appendChild(selectEntrenador);
+                fila.appendChild(tdSelect);
+
                 asignacionEntrenador.appendChild(fila);
             });
         })
@@ -1003,6 +1073,42 @@ function assign_coach() {
             console.error('Hubo un problema con la solicitud:', error);
         });
 }
+
+
+function guardarCambios() {
+    const asignaciones = [];
+
+    // Recolectar asignaciones de los selects
+    document.querySelectorAll('select[name^="entrenador_para_"]').forEach(select => {
+        const id_miembro = select.name.replace('entrenador_para_', '');
+        const id_entrenador = select.value;
+
+        asignaciones.push({
+            id_miembro: parseInt(id_miembro),
+            id_entrenador: parseInt(id_entrenador)
+        });
+    });
+
+    console.log('Asignaciones a guardar:', asignaciones); // Verifica en consola
+
+    fetch('/save-assignments', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json' // <-- importante
+        },
+        body: JSON.stringify(asignaciones)
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Respuesta del servidor:', data);
+        alert('Asignaciones guardadas correctamente.');
+    })
+    .catch(error => {
+        console.error('Error al guardar:', error);
+    });
+}
+
+
 
 function assign_membreship() {
     const asignacionMembresia = document.getElementById('tablaRegistros').getElementsByTagName('tbody')[0];

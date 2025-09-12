@@ -35,6 +35,16 @@
         </div>
       </div>
     </div>
+
+    <div class="col-md-4 mb-4">
+      <div class="card text-center shadow">
+        <div class="card-body">
+          <i class="fas fa-door-open fa-3x text-warning mb-3"></i>
+          <h5 class="card-title">Registrar salidas</h5>
+          <button onclick="cargarAccesosActivos()" data-toggle="modal" data-target="#modalUsuariosActivos" class="btn btn-warning btn-block mt-2">Desactivar</button>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -85,5 +95,23 @@
     </div>
   </div>
 </div>
+
+<!-- Modal Usuarios Activos -->
+<div class="modal fade" id="modalUsuariosActivos" tabindex="-1" aria-labelledby="modalUsuariosActivosLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-warning text-white">
+        <h5 class="modal-title">Usuarios con Acceso Activo</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Cerrar">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        {% include 'receptionist/list_access.html' %}
+      </div>
+    </div>
+  </div>
+</div>
+
 
 {% endblock %}
