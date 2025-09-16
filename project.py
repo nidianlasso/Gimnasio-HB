@@ -27,9 +27,11 @@ from query import (
     existe_avance_hoy, obtener_historial_avances, maquinas_sin_disponibles, insertar_revision,
     insert_revision_sql, insert_observacion_sql, insertar_revision, reports_machine, actualizar_estado_revision, insertar_observacion, obtener_revision, obtener_observaciones, obtener_revisiones_pendientes,
     actualizar_observacion_tecnico, lista_tecnicos, actualizar_usuario, datos_usuario,
-    actualizar_datos_usuario, hash_password, obtener_rutinas_por_plan, insertar_rutina, insertar_zona_cuerpo, obtener_cliente_por_plan, finalizar_acceso,
-    consultar_acceso_usuario, obtener_miembros_por_plan, obtener_entrenador, obtener_horario_usuario, get_maquina_by_nombre, insert_maquina,insert_inventario_maquina, get_proveedores,
-    actualizar_maquina, actualizar_inventario_maquina, eliminar_maquina_bd, obtener_usuarios_activos_por_rol, obtener_usuarios_activos_por_rol, asignar_entrenador_a_miembro, obtener_usuarios_activos)
+    actualizar_datos_usuario, hash_password,  finalizar_acceso,
+    consultar_acceso_usuario, obtener_entrenador, obtener_horario_usuario, get_maquina_by_nombre, insert_maquina,insert_inventario_maquina, get_proveedores,
+    actualizar_maquina, actualizar_inventario_maquina, eliminar_maquina_bd, obtener_usuarios_activos_por_rol, obtener_usuarios_activos_por_rol, asignar_entrenador_a_miembro, obtener_usuarios_activos,
+    obtener_clientes_asignados, insertar_asignacion_rutina, obtener_rutinas_asignadas_por_cliente, actualizar_estado_rutina_asignada, eliminar_rutina_asignada,
+    obtener_dias_semana, obtener_ejercicios, obtener_ejercicios_por_zona, obtener_zonas_cuerpo)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -1021,8 +1023,6 @@ def guardar_proveedor():
     return redirect(url_for('view_provider')) 
 
 #OBTENER CLIENTES ASIGNADOS A ENTRENADOR
-
-
 @app.route("/guardar_progreso", methods=["POST"])
 def guardar_progreso():
     if "id_usuario" not in session:
@@ -1320,6 +1320,7 @@ def mis_clientes():
         return redirect(url_for("login"))
     id_entrenador = session["id_usuario"]
     clientes = obtener_clientes_sin_avance_hoy(id_entrenador)
+    
     return render_template('coach/mis_clientes.html', clientes=clientes)
 
 @app.route("/mis-clientes-rutina")
@@ -1327,46 +1328,153 @@ def mis_clientes_rutina():
     if "id_usuario" not in session:
         return redirect(url_for("login"))
     id_entrenador = session["id_usuario"]
-    clientes = obtener_clientes_sin_avance_hoy(id_entrenador)
-    return render_template('coach/mis_clientes_rutina.html', clientes=clientes)
+    clientes = obtener_clientes_asignados(id_entrenador)
+    print(f"Clientes enviados a plantilla: {clientes}")  # Para debug
+
+    return render_template('coach/crear_rutina.html', clientes=clientes)
 
 
-@app.route("/ver-plan/<int:id_plan>", methods=['POST'])
-def ver_plan(id_plan):
-    rutinas = obtener_rutinas_por_plan(id_plan)
-    return render_template("coach/ver_plan.html", rutinas=rutinas)
+@app.route("/clientes-entrenador-asignado", methods=["POST"])
+def clientes_entrenador_asignado():
+    data = request.get_json()
+    id_entrenador = data.get("id_entrenador")
 
-@app.route("/crear-rutina/<int:id_plan>", methods=["GET", "POST"])
-def crear_rutina(id_plan):
+    if not id_entrenador:
+        return jsonify([])  # o return jsonify({"error": "ID no válido"}), 400
+
+    clientes = obtener_clientes_asignados(id_entrenador)
+    return jsonify(clientes)
+
+
+# @app.route("/ver-plan/<int:id_plan>", methods=['POST'])
+# def ver_plan(id_plan):
+#     rutinas = obtener_rutinas_por_plan(id_plan)
+#     return render_template("coach/ver_plan.html", rutinas=rutinas)
+@app.route("/asignar-rutina", methods=["POST"])
+def asignar_rutina():
+    id_rutina = request.form["id_rutina"]
+    id_cliente = request.form["id_cliente"]
+    id_entrenador = session["id_usuario"]  # Coach logueado
+    id_dia = request.form["id_dia"]
+
+    try:
+        insertar_asignacion_rutina( id_rutina, id_cliente, id_entrenador, id_dia)
+        return "✅ Rutina asignada correctamente"
+
+    except Exception as e:
+        return f"❌ Error al asignar rutina: {str(e)}"
+
+@app.route('/rutinas-asignadas', methods=['POST'])
+def rutinas_asignadas():
+    data = request.get_json()
+    id_usuario_miembro = data.get('id_usuario_miembro')
+
+    if not id_usuario_miembro:
+        return jsonify([])
+
+    rutinas = obtener_rutinas_asignadas_por_cliente(id_usuario_miembro)
+    return jsonify(rutinas)
+
+@app.route("/actualizar-rutina/<int:id_usuario_miembro>", methods=["GET", "POST"])
+def actualizar_rutina(id_usuario_miembro):
     if "id_usuario" not in session:
         return redirect(url_for("login"))
 
+    id_entrenador = session["id_usuario"]
+
     if request.method == "POST":
-        nombre = request.form["nombre"]
-        descripcion = request.form["descripcion"]
-        id_maquina = request.form["id_maquina"]
-        dia_semana = request.form["dia_semana"]
-        zona_nombre = request.form["zona_nombre"]
+        datos = request.form.to_dict(flat=False)
+        id_cliente = datos.get("id_cliente")[0]
+        id_entrenador = datos.get("id_entrenador")[0]
 
-        # 1. Insertar rutina
-        id_rutina = insertar_rutina(nombre, descripcion, id_plan, id_maquina, dia_semana)
+        try:
+            # Aquí primero elimina las asignaciones previas para este cliente (opcional pero recomendable)
+            eliminar_rutina_asignada(id_cliente)
 
-        # 2. Insertar zona cuerpo
-        insertar_zona_cuerpo(zona_nombre, id_rutina)
+            # Guardar nuevas asignaciones
+            for dia_id, ejercicios in datos.items():
+                if dia_id.startswith("rutinas["):
+                    id_dia = dia_id.split("[")[1].split("]")[0]
+                    for id_ejercicio in ejercicios:
+                        insertar_asignacion_rutina(id_ejercicio, id_cliente, id_entrenador, id_dia)
 
-        return redirect(url_for("ver_plan", id_plan=id_plan))  # ojo, aquí no necesitas "rutinas.ver_plan"
+            flash("✅ Rutina actualizada correctamente", "success")
+            return redirect(url_for("mis_clientes_rutina"))
 
-    # 🔹 Obtener cliente relacionado a ese plan
-    cliente = obtener_cliente_por_plan(id_plan)  # debes implementarla en queries
-    # 🔹 Obtener lista de máquinas
-    # maquinas = obtener_maquinas()  # si ya la tienes hecha
+        except Exception as e:
+            flash(f"❌ Error al actualizar rutina: {str(e)}", "danger")
+            # Puedes también retornar render_template con error
+
+    # GET → Cargar datos para el formulario
+    dias = obtener_dias_semana()
+    ejercicios = obtener_ejercicios()
+    rutinas_asignadas = obtener_rutinas_asignadas_por_cliente(id_usuario_miembro)
 
     return render_template(
-        "coach/crear_rutina.html",
-        id_plan=id_plan,
-        cliente=cliente,
-        # maquinas=maquinas
+        "coach/actualizar_rutina.html",
+        id_usuario_miembro=id_usuario_miembro,
+        id_entrenador=id_entrenador,
+        dias=dias,
+        ejercicios=ejercicios,
+        rutinas_asignadas=rutinas_asignadas
     )
+
+@app.route('/eliminar-rutina', methods=['DELETE'])
+def eliminar_rutina():
+    data = request.get_json()
+    id_rutina_asignada = data.get('id_rutina_asignada')
+
+    if not id_rutina_asignada:
+        return jsonify({"error": "ID no válido"}), 400
+
+    eliminar_rutina_asignada(id_rutina_asignada)
+    return jsonify({"message": "Rutina eliminada correctamente"})
+
+
+@app.route("/crear-rutina/<int:id_usuario_miembro>", methods=["GET", "POST"])
+def crear_rutina(id_usuario_miembro):
+    if "id_usuario" not in session:
+        return redirect(url_for("login"))
+
+    id_entrenador = session["id_usuario"]
+
+    if request.method == "POST":
+        datos = request.form.to_dict(flat=False)
+        id_cliente = datos.get("id_cliente")[0]
+        id_entrenador = datos.get("id_entrenador")[0]
+
+        print("📌 Datos recibidos en POST:", datos)
+
+        try:
+            # Recorremos los días seleccionados
+            for dia_id, ejercicios in datos.items():
+                if dia_id.startswith("rutinas["):
+                    id_dia = dia_id.split("[")[1].split("]")[0]  # Ej: "1" de rutinas[1][]
+                    for id_ejercicio in ejercicios:
+                        print(f"➡️ Guardar: Cliente {id_cliente}, Entrenador {id_entrenador}, Día {id_dia}, Ejercicio {id_ejercicio}")
+                        insertar_asignacion_rutina(id_ejercicio, id_cliente, id_entrenador, id_dia)
+
+            # ✅ Mostrar mensaje y redirigir
+            flash("✅ Rutina guardada en DB correctamente", "success")
+            return redirect(url_for("mis_clientes_rutina"))
+
+        except Exception as e:
+            return f"❌ Error al guardar la rutina: {str(e)}"
+
+    # GET → cargar formulario
+    dias = obtener_dias_semana()
+    ejercicios = obtener_ejercicios()
+    zonas = obtener_zonas_cuerpo()
+
+    return render_template(
+        "coach/asignar_rutina.html",
+        id_usuario_miembro=id_usuario_miembro,
+        id_entrenador=id_entrenador,
+        dias=dias,
+        ejercicios=ejercicios,
+        zonas=zonas
+    )
+
 
 
 if __name__ =='__main__':

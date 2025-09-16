@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block menu %}
+  {% include "coach/menu.html" %}
+{% endblock %}
+
+{% block content %}
+<style>
+  .card-dia {
+    transition: all 0.3s ease;
+  }
+
+  .card-dia:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .select-ejercicios {
+    border-radius: 12px;
+  }
+
+  .badge-dia {
+    font-size: 0.75rem;
+    background-color: #f0f0f0;
+    color: #333;
+  }
+
+  .card-header-dia {
+    color: white;
+    font-weight: bold;
+    padding: 0.75rem 1.25rem;
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+  }
+</style>
+
+<div class="container py-5" style="margin-top: -400px;">
+  <div class="card shadow border-0 rounded-4 overflow-hidden">
+    <!-- Header Principal -->
+    <div class="card-header text-white text-center py-4"
+         style="background: #17a2b8">
+      <h2 class="mb-0 fw-bold" style="color: white;">📝 Asignar Rutina al Cliente</h2>
+      <p class="mb-0 small text-light">Organiza los ejercicios para cada día de la semana</p>
+    </div>
+
+    <div class="card-body px-4 px-md-5 py-5 bg-light">
+      <form method="POST" action="{{ url_for('crear_rutina', id_usuario_miembro=id_usuario_miembro) }}">
+        <input type="hidden" name="id_cliente" value="{{ id_usuario_miembro }}">
+        <input type="hidden" name="id_entrenador" value="{{ id_entrenador }}">
+
+        <!-- Colores por día -->
+        {% set colores = ['#007bff', '#6610f2', '#6f42c1', '#e83e8c', '#fd7e14', '#28a745', '#20c997'] %}
+
+        <div class="row gy-4">
+          {% for dia in dias %}
+          <div class="col-md-6" style="margin-top: 20px;">
+            <div class="card card-dia h-100 border-0 rounded-4 shadow-sm">
+              <div class="card-header-dia" style="background-color: orange">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span>📅 {{ dia[1] }}</span>
+                </div>
+              </div>
+              <div class="card-body">
+                <label class="form-label mb-2 fw-semibold">Ejercicios:</label>
+                <select name="rutinas[{{ dia[0] }}][]" class="form-select select-ejercicios shadow-sm" multiple size="7">
+                  {% for ejercicio in ejercicios %}
+                    <option value="{{ ejercicio[0] }}">{{ ejercicio[1] }}</option>
+                  {% endfor %}
+                </select>
+                <small class="form-text text-muted mt-2 d-block text-center">
+                  Presiona <b>Ctrl</b> para selección múltiple.
+                </small>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+        <hr class="my-5">
+        <div class="text-center">
+          <button type="submit"
+                  class="btn btn-lg px-5 py-3 rounded-pill fw-bold text-white"
+                  style="background: linear-gradient(135deg, #28a745, #218838); border: none;">
+            ✅ Guardar Rutina Completa
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

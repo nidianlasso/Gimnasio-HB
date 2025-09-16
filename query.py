@@ -1334,6 +1334,31 @@ def actualizar_datos_miembro(id_usuario, nombre, apellido, identificacion, edad,
 #FIN RESERVA DE LAS CLASES
 
 #ENTRENADOR
+#OBTENER LOS CLIENTES PARA ASIGNARLES LA RUTINA
+def obtener_clientes_asignados(id_entrenador):
+    query = """
+        SELECT u.id_usuario, u.nombre, u.apellido,
+               EXISTS (
+                   SELECT 1 FROM asignacion_rutina ar WHERE ar.id_cliente = u.id_usuario
+               ) AS tieneRutina
+        FROM cliente_entrenador ce
+        JOIN usuario u ON ce.id_cliente = u.id_usuario
+        WHERE ce.id_entrenador = %s;
+    """
+    cursor.execute(query, (id_entrenador,))
+    resultado = cursor.fetchall()
+
+    clientes = []
+    for row in resultado:
+        clientes.append({
+            "id_usuario": row[0],
+            "nombre": row[1],
+            "apellido": row[2],
+            "tieneRutina": bool(row[3])  # convierte 0/1 a True/False
+        })
+
+    return clientes
+
 def obtener_clientes_sin_avance_hoy(id_entrenador):
     hoy = date.today()
     cursor.execute("""
@@ -1476,11 +1501,6 @@ def actualizar_usuario(id, nombre, apellido, correo,  edad,  telefono, contrasen
         WHERE id_usuario=%s
     """, (nombre, apellido, correo, edad, telefono, contrasena, id))
     connection.commit()
-
-
-
-
-
 
 def insert_revision_sql():
     return """
@@ -1667,55 +1687,80 @@ def actualizar_datos_usuario(id_usuario, nombre, apellido, identificacion, edad,
 
 
 
-#CREACION Y ASIGNACION DE LAS RUTINAS
-def insertar_rutina(nombre, descripcion, id_plan, id_maquina, dia_semana):
+# CREACION Y ASIGNACION DE LAS RUTINAS
+def insertar_asignacion_rutina(id_rutina, id_cliente, id_entrenador, id_dia):
     cursor.execute("""
-        INSERT INTO rutina (nombre, descripcion, id_plan_trabajo, id_maquina, dia_semana)
-        VALUES (%s, %s, %s, %s, %s)
-    """, (nombre, descripcion, id_plan, id_maquina, dia_semana))
+        INSERT INTO asignacion_rutina 
+        (id_rutina, id_cliente, id_entrenador, id_dia, fecha_asignacion, id_estado_rutina)
+        VALUES (%s, %s, %s, %s, CURDATE(), 1)
+    """, (id_rutina, id_cliente, id_entrenador, id_dia))
+    
     connection.commit()
-    return cursor.lastrowid  # devuelve el id de la nueva rutina
+    return True
 
 
-def insertar_zona_cuerpo(nombre_zona, id_rutina):
+
+def obtener_rutinas_asignadas_por_cliente(id_cliente):
+    cursor.execute( """
+    SELECT ar.id_asignacion, ar.id_rutina, r.nombre AS nombre_rutina, esr.nombre AS estado_rutina, ds.id_dia, ds.nombre AS dia_semana
+    FROM asignacion_rutina ar
+    JOIN rutina r ON ar.id_rutina = r.id_rutina
+    JOIN estado_rutina esr ON ar.id_estado_rutina = esr.id_estado_rutina
+    JOIN dia_semana ds ON ar.id_dia = ds.id_dia
+    WHERE ar.id_cliente = %s;
+    """(id_cliente,))
+    resultado = cursor.fetchall()
+    return resultado
+
+
+
+def actualizar_estado_rutina_asignada(id_estado_rutina, id_asignacion):
+    query = """
+    UPDATE asignacion_rutina
+    SET id_estado_rutina = %s
+    WHERE id_asignacion = %s;
+    """
+    params = (id_estado_rutina, id_asignacion)
+    return query, params
+
+
+def eliminar_rutina_asignada(id_asignacion):
+    query = """
+    DELETE FROM asignacion_rutina
+    WHERE id_asignacion = %s;
+    """
+    params = (id_asignacion,)
+    return query, params
+
+def obtener_dias_semana():
+    cursor.execute("SELECT id_dia, nombre FROM dia_semana;")
+    resultado = cursor.fetchall()
+    return resultado
+
+def obtener_ejercicios():
+    cursor.execute(" SELECT id_ejercicio_rutina, nombre FROM ejercicio_rutina;")
+    resultado = cursor.fetchall()
+    return resultado
+
+def obtener_ejercicios_por_zona(id_zona):
+    cursor.execute("SELECT e.id_ejercicio, e.nombre FROM ejercicio e WHERE e.id_zona_cuerpo = %s;")
+    resultado = cursor.fetchall()
+    return resultado
+
+def obtener_zonas_cuerpo():
+    cursor.execute("SELECT id_zona_cuerpo, nombre FROM zona_cuerpo;")
+    resultado = cursor.fetchall()
+    return resultado
+
+
+def obtener_clientes_por_entrenador(id_entrenador):
     cursor.execute("""
-        INSERT INTO zona_cuerpo (nombre, id_rutina)
-        VALUES (%s, %s)
-    """, (nombre_zona, id_rutina))
-    connection.commit()
-
-
-def obtener_rutinas_por_plan(id_plan):
-    cursor.execute("""
-        SELECT r.nombre, r.descripcion, r.dia_semana, z.nombre AS zona, m.nombre AS maquina
-        FROM rutina r
-        LEFT JOIN zona_cuerpo z ON r.id_rutina = z.id_rutina
-        LEFT JOIN maquina m ON r.id_maquina = m.id_maquina
-        WHERE r.id_plan_trabajo = %s
-        ORDER BY FIELD(r.dia_semana, 'Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo')
-    """, (id_plan,))
-    return cursor.fetchall()
-
-def obtener_rutinas_por_plan(id_plan):
-    cursor.execute("""
-        SELECT r.nombre, r.descripcion, r.dia_semana, 
-               z.nombre AS zona, 
-               m.nombre AS maquina
-        FROM rutina r
-        LEFT JOIN zona_cuerpo z ON r.id_rutina = z.id_rutina
-        LEFT JOIN maquina m ON r.id_maquina = m.id_maquina
-        WHERE r.id_plan_trabajo = %s
-        ORDER BY FIELD(r.dia_semana, 
-                       'Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo')
-    """, (id_plan,))
-    return cursor.fetchall()
-
-def obtener_cliente_por_plan(id_plan):
-    cursor.execute("""
-        SELECT m.id_miembro, m.nombre, m.apellido, u.correo, u.identificacion
-        FROM asignacion_pla_trabajo a
-        JOIN miembros m ON a.id_miembro_plan = m.id_miembro
-        JOIN usuario u ON m.id_usuario = u.id_usuario
-        WHERE a.id_plan = %s
-    """, (id_plan,))
-    return cursor.fetchone()  # Un solo cliente
+    SELECT c.id_usuario, c.nombre, c.apellido,
+           CASE WHEN EXISTS (
+             SELECT 1 FROM asignacion_rutina ar WHERE ar.id_cliente = c.id_usuario
+           ) THEN TRUE ELSE FALSE END AS tieneRutina
+    FROM cliente c
+    WHERE c.id_entrenador = %s
+    """(id_entrenador,))
+    resultado = cursor.fetchall()
+    return resultado

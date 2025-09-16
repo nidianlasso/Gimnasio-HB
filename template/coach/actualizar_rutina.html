@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block menu %}
+  {% include "coach/menu.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+  <div class="card shadow border-0 rounded-4 overflow-hidden">
+    <!-- Header -->
+    <div class="card-header text-white text-center py-4"
+         style="background: linear-gradient(90deg, #007bff, #00c6ff);">
+      <h2 class="mb-0 fw-bold">✏️ Actualizar Rutina del Cliente</h2>
+      <p class="mb-0 small text-light">Edita y guarda la rutina para cada día</p>
+    </div>
+
+    <div class="card-body px-4 px-md-5 py-5 bg-light">
+      <form method="POST" action="{{ url_for('actualizar_rutina', id_usuario_miembro=id_usuario_miembro) }}">
+        <input type="hidden" name="id_cliente" value="{{ id_usuario_miembro }}">
+        <input type="hidden" name="id_entrenador" value="{{ id_entrenador }}">
+
+        <div class="row gy-4">
+          {% for dia in dias %}
+          <div class="col-md-6">
+            <div class="card h-100 shadow-sm border-0 rounded-4">
+              <div class="card-header bg-white border-bottom d-flex align-items-center justify-content-between rounded-top py-3">
+                <span class="fw-bold text-primary">📅 {{ dia[1] }}</span>
+                <span class="badge bg-secondary text-light">{{ loop.index }}/7</span>
+              </div>
+              <div class="card-body">
+                <label class="form-label mb-2 fw-semibold">Ejercicios:</label>
+                <select 
+                  name="rutinas[{{ dia[0] }}][]" 
+                  class="form-select shadow-sm" multiple size="7">
+                  
+                  {% for ejercicio in ejercicios %}
+                    {% set seleccionado = false %}
+                    {% for asignacion in rutinas_asignadas %}
+                      {% if asignacion.id_dia == dia[0] and asignacion.id_rutina == ejercicio[0] %}
+                        {% set seleccionado = true %}
+                        {% break %}
+                      {% endif %}
+                    {% endfor %}
+                    <option value="{{ ejercicio[0] }}" {% if seleccionado %}selected{% endif %}>
+                      {{ ejercicio[1] }}
+                    </option>
+                  {% endfor %}
+                </select>
+                <small class="form-text text-muted mt-2 d-block text-center">
+                  Presiona <b>Ctrl</b> o <b>Cmd</b> para selección múltiple.
+                </small>
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        <hr class="my-5">
+
+        <div class="text-center">
+          <button type="submit"
+                  class="btn btn-lg px-5 py-3 rounded-pill fw-bold text-white"
+                  style="background: linear-gradient(135deg, #28a745, #218838); border: none;">
+            ✅ Guardar Cambios
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

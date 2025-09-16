@@ -1226,3 +1226,131 @@ function calcularNomina() {
     document.getElementById("liquido").value = liquido.toFixed(2);
 }
 
+//CARGAR LOS CLIENTES ASIGNADOS AL ENTRENADOR
+function cargarClientesAsignados(id_entrenador) {
+  fetch('/clientes-entrenador-asignado', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id_entrenador })
+  })
+  .then(response => {
+    if (!response.ok) throw new Error('Error al obtener clientes asignados');
+    return response.json();
+  })
+  .then(clientes => {
+    const tbody = document.querySelector('#tablaClientesAsignados tbody');
+    tbody.innerHTML = '';
+
+    if (clientes.length === 0) {
+      document.getElementById('mensaje').style.display = 'block';
+      return;
+    } else {
+      document.getElementById('mensaje').style.display = 'none';
+    }
+
+    clientes.forEach(c => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${c.id_usuario}</td>
+        <td>${c.nombre}</td>
+        <td>${c.apellido}</td>
+        <td>
+          ${c.tieneRutina ? `
+            <div class="btn-group">
+              <button type="button" class="btn btn-warning btn-sm dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                Gestionar Rutina
+              </button>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="/actualizar-rutina/${c.id_usuario}">Actualizar</a></li>
+                <li><a class="dropdown-item text-danger" href="#" onclick="eliminarRutina(${c.id_usuario})">Eliminar</a></li>
+              </ul>
+            </div>
+          ` : `
+            <a href="/crear-rutina/${c.id_usuario}" class="btn btn-primary btn-sm">Crear Rutina</a>
+          `}
+        </td>
+      `;
+      tbody.appendChild(tr);
+    });
+  })
+  .catch(error => {
+    console.error(error);
+    alert('No se pudieron cargar los clientes asignados.');
+  });
+}
+
+function eliminarRutina(id_usuario) {
+  if (!confirm('¿Seguro que quieres eliminar la rutina? Esta acción no se puede deshacer.')) return;
+
+  fetch(`/eliminar-rutina/${id_usuario}`, {
+    method: 'DELETE',
+  })
+  .then(response => {
+    if (!response.ok) throw new Error('Error al eliminar la rutina');
+    alert('Rutina eliminada correctamente.');
+    // Recarga la lista o actualiza la fila
+    cargarClientesAsignados(id_entrenador);
+  })
+  .catch(error => {
+    console.error(error);
+    alert('No se pudo eliminar la rutina.');
+  });
+}
+
+
+
+// static/js/asignarRutina.js
+
+function asignarRutina(formId) {
+  const form = document.getElementById(formId);
+
+  if (!form) {
+    console.error(`No se encontró el formulario con ID '${formId}'`);
+    return;
+  }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    const data = {};
+
+    // Recorremos todos los valores (incluidos repetidos)
+    formData.forEach((value, key) => {
+      if (key.endsWith("[]")) {
+        // Si es un array (rutinas[1][], rutinas[2][], etc.)
+        const cleanKey = key.replace("[]", "");
+        if (!data[cleanKey]) {
+          data[cleanKey] = [];
+        }
+        data[cleanKey].push(value);
+      } else {
+        // Campos normales
+        data[key] = value;
+      }
+    });
+
+    fetch("/asignar-rutina", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    })
+    .then(response => {
+      if (response.ok) {
+        alert("✅ Rutina asignada con éxito");
+        window.location.href = "/mis-clientes";
+      } else {
+        alert("❌ Error al asignar la rutina");
+      }
+    })
+    .catch(error => {
+      console.error("Error:", error);
+      alert("❌ Ocurrió un error");
+    });
+  });
+}
+document.addEventListener("DOMContentLoaded", () => {
+  asignarRutina("formAsignarRutina");
+});
