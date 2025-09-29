@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container py-5">
+<div class="container py-5" style="margin-top: -390px;">
   <div class="card shadow border-0 rounded-4 overflow-hidden">
     <!-- Header -->
     <div class="card-header text-white text-center py-4"
@@ -31,14 +31,16 @@
                 <label class="form-label mb-2 fw-semibold">Ejercicios:</label>
                 <select 
                   name="rutinas[{{ dia[0] }}][]" 
-                  class="form-select shadow-sm" multiple size="7">
-                  
+                  class="form-select shadow-sm" 
+                  multiple 
+                  size="7">
+
                   {% for ejercicio in ejercicios %}
                     {% set seleccionado = false %}
                     {% for asignacion in rutinas_asignadas %}
-                      {% if asignacion.id_dia == dia[0] and asignacion.id_rutina == ejercicio[0] %}
+                      {# asignacion = (id_asignacion, id_rutina, nombre_ejercicio, estado, id_dia, nombre_dia) #}
+                      {% if asignacion[4] == dia[0] and asignacion[1] == ejercicio[0] %}
                         {% set seleccionado = true %}
-                        {% break %}
                       {% endif %}
                     {% endfor %}
                     <option value="{{ ejercicio[0] }}" {% if seleccionado %}selected{% endif %}>
@@ -46,9 +48,20 @@
                     </option>
                   {% endfor %}
                 </select>
+
                 <small class="form-text text-muted mt-2 d-block text-center">
                   Presiona <b>Ctrl</b> o <b>Cmd</b> para selección múltiple.
                 </small>
+
+                {# OPCIONAL: Mostrar ejercicios actuales (modo texto) debajo del select #}
+                <ul class="mt-2 small text-muted">
+                  {% for asignacion in rutinas_asignadas %}
+                    {% if asignacion[4] == dia[0] %}
+                      <li>✔️ {{ asignacion[2] }}</li>
+                    {% endif %}
+                  {% endfor %}
+                </ul>
+
               </div>
             </div>
           </div>

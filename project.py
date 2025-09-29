@@ -31,7 +31,7 @@ from query import (
     consultar_acceso_usuario, obtener_entrenador, obtener_horario_usuario, get_maquina_by_nombre, insert_maquina,insert_inventario_maquina, get_proveedores,
     actualizar_maquina, actualizar_inventario_maquina, eliminar_maquina_bd, obtener_usuarios_activos_por_rol, obtener_usuarios_activos_por_rol, asignar_entrenador_a_miembro, obtener_usuarios_activos,
     obtener_clientes_asignados, insertar_asignacion_rutina, obtener_rutinas_asignadas_por_cliente, actualizar_estado_rutina_asignada, eliminar_rutina_asignada,
-    obtener_dias_semana, obtener_ejercicios, obtener_ejercicios_por_zona, obtener_zonas_cuerpo)
+    obtener_dias_semana, obtener_ejercicios, obtener_ejercicios_por_zona, obtener_zonas_cuerpo, eliminar_rutina_dia)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -1388,22 +1388,25 @@ def actualizar_rutina(id_usuario_miembro):
         id_entrenador = datos.get("id_entrenador")[0]
 
         try:
-            # Aquí primero elimina las asignaciones previas para este cliente (opcional pero recomendable)
-            eliminar_rutina_asignada(id_cliente)
-
-            # Guardar nuevas asignaciones
+            # Guardar nuevas asignaciones (día por día)
             for dia_id, ejercicios in datos.items():
                 if dia_id.startswith("rutinas["):
                     id_dia = dia_id.split("[")[1].split("]")[0]
-                    for id_ejercicio in ejercicios:
-                        insertar_asignacion_rutina(id_ejercicio, id_cliente, id_entrenador, id_dia)
 
-            flash("✅ Rutina actualizada correctamente", "success")
+                    # 🔴 Eliminar solo ese día usando función externa
+                    eliminar_rutina_dia(id_cliente, id_dia)
+
+                    # 🟢 Insertar lo nuevo con la función ya existente
+                    for id_ejercicio in ejercicios:
+                        insertar_asignacion_rutina(
+                            id_ejercicio, id_cliente, id_entrenador, id_dia
+                        )
+
+            flash("✅ Rutina del cliente actualizada correctamente", "success")
             return redirect(url_for("mis_clientes_rutina"))
 
         except Exception as e:
             flash(f"❌ Error al actualizar rutina: {str(e)}", "danger")
-            # Puedes también retornar render_template con error
 
     # GET → Cargar datos para el formulario
     dias = obtener_dias_semana()

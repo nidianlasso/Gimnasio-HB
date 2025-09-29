@@ -1338,16 +1338,21 @@ def actualizar_datos_miembro(id_usuario, nombre, apellido, identificacion, edad,
 def obtener_clientes_asignados(id_entrenador):
     query = """
         SELECT u.id_usuario, u.nombre, u.apellido,
-               EXISTS (
-                   SELECT 1 FROM asignacion_rutina ar WHERE ar.id_cliente = u.id_usuario
-               ) AS tieneRutina
+               CASE 
+                   WHEN EXISTS (
+                       SELECT 1 
+                       FROM asignacion_rutina ar 
+                       WHERE ar.id_cliente = u.id_usuario
+                   ) 
+                   THEN 1 ELSE 0 
+               END AS tieneRutina
         FROM cliente_entrenador ce
         JOIN usuario u ON ce.id_cliente = u.id_usuario
         WHERE ce.id_entrenador = %s;
     """
     cursor.execute(query, (id_entrenador,))
     resultado = cursor.fetchall()
-
+    print(f"esto llega de resultado {resultado}")
     clientes = []
     for row in resultado:
         clientes.append({
@@ -1357,8 +1362,8 @@ def obtener_clientes_asignados(id_entrenador):
             "tieneRutina": bool(row[3])  # convierte 0/1 a True/False
         })
 
+    print(f"esto llega del json de clientes {clientes}")
     return clientes
-
 def obtener_clientes_sin_avance_hoy(id_entrenador):
     hoy = date.today()
     cursor.execute("""
@@ -1701,16 +1706,23 @@ def insertar_asignacion_rutina(id_rutina, id_cliente, id_entrenador, id_dia):
 
 
 def obtener_rutinas_asignadas_por_cliente(id_cliente):
-    cursor.execute( """
-    SELECT ar.id_asignacion, ar.id_rutina, r.nombre AS nombre_rutina, esr.nombre AS estado_rutina, ds.id_dia, ds.nombre AS dia_semana
-    FROM asignacion_rutina ar
-    JOIN rutina r ON ar.id_rutina = r.id_rutina
-    JOIN estado_rutina esr ON ar.id_estado_rutina = esr.id_estado_rutina
-    JOIN dia_semana ds ON ar.id_dia = ds.id_dia
-    WHERE ar.id_cliente = %s;
-    """(id_cliente,))
-    resultado = cursor.fetchall()
+    cursor.execute("""
+        SELECT ar.id_asignacion, 
+               er.id_ejercicio_rutina AS id_rutina,  -- usamos el id del ejercicio
+               er.nombre AS nombre_rutina, 
+               esr.nombre AS estado_rutina, 
+               ds.id_dia, 
+               ds.nombre AS dia_semana
+        FROM asignacion_rutina ar
+        JOIN ejercicio_rutina er ON ar.id_rutina = er.id_ejercicio_rutina
+        JOIN estado_rutina esr ON ar.id_estado_rutina = esr.id_estado_rutina
+        JOIN dia_semana ds ON ar.id_dia = ds.id_dia
+        WHERE ar.id_cliente = %s
+    """, (id_cliente,))
+    resultado =  cursor.fetchall()
+    print(f"esto llega de la consulta de!!!!! {resultado}")
     return resultado
+
 
 
 
@@ -1755,12 +1767,41 @@ def obtener_zonas_cuerpo():
 
 def obtener_clientes_por_entrenador(id_entrenador):
     cursor.execute("""
-    SELECT c.id_usuario, c.nombre, c.apellido,
-           CASE WHEN EXISTS (
-             SELECT 1 FROM asignacion_rutina ar WHERE ar.id_cliente = c.id_usuario
-           ) THEN TRUE ELSE FALSE END AS tieneRutina
-    FROM cliente c
-    WHERE c.id_entrenador = %s
-    """(id_entrenador,))
+        SELECT c.id_usuario, c.nombre, c.apellido,
+               CASE WHEN EXISTS (
+                 SELECT 1 FROM asignacion_rutina ar WHERE ar.id_cliente = c.id_usuario
+               ) THEN TRUE ELSE FALSE END AS tieneRutina
+        FROM cliente c
+        WHERE c.id_entrenador = %s
+    """, (id_entrenador,))
     resultado = cursor.fetchall()
     return resultado
+
+
+
+#PARA ACTUALIZAR LA RUTINA PERO GARANTIZANDO QUE SOLO PUEDA ACTUALIZAR UN EJERCICIO
+def actualizar_rutina_dia(id_cliente, id_entrenador, id_dia, ejercicios):
+    # 🔴 Eliminar SOLO lo de ese día
+    cursor.execute("""
+        DELETE FROM asignacion_rutina 
+        WHERE id_cliente = %s AND id_dia = %s
+    """, (id_cliente, id_dia))
+
+    # 🟢 Insertar lo nuevo
+    for id_rutina in ejercicios:
+        cursor.execute("""
+            INSERT INTO asignacion_rutina
+            (id_rutina, id_cliente, id_entrenador, id_dia, fecha_asignacion, id_estado_rutina)
+            VALUES (%s, %s, %s, %s, CURDATE(), 1)
+        """, (id_rutina, id_cliente, id_entrenador, id_dia))
+
+    connection.commit()
+
+
+def eliminar_rutina_dia(id_cliente, id_dia):
+    cursor.execute("""
+        DELETE FROM asignacion_rutina
+        WHERE id_cliente = %s AND id_dia = %s
+    """, (id_cliente, id_dia))
+    connection.commit()
+

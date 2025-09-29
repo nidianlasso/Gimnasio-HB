@@ -1227,6 +1227,9 @@ function calcularNomina() {
 }
 
 //CARGAR LOS CLIENTES ASIGNADOS AL ENTRENADOR
+// =======================
+// Cargar clientes asignados
+// =======================
 function cargarClientesAsignados(id_entrenador) {
   fetch('/clientes-entrenador-asignado', {
     method: 'POST',
@@ -1237,7 +1240,9 @@ function cargarClientesAsignados(id_entrenador) {
     if (!response.ok) throw new Error('Error al obtener clientes asignados');
     return response.json();
   })
+  
   .then(clientes => {
+    console.log('Clientes recibidos:', clientes);
     const tbody = document.querySelector('#tablaClientesAsignados tbody');
     tbody.innerHTML = '';
 
@@ -1247,9 +1252,11 @@ function cargarClientesAsignados(id_entrenador) {
     } else {
       document.getElementById('mensaje').style.display = 'none';
     }
-
+    console.log("ANTES DE ENTRAR AL FOREACH DE CLIENTES");
     clientes.forEach(c => {
+      console.log(`Cliente ID: ${c.id_usuario}, tieneRutina:`, c.tieneRutina);
       const tr = document.createElement('tr');
+
       tr.innerHTML = `
         <td>${c.id_usuario}</td>
         <td>${c.nombre}</td>
@@ -1262,7 +1269,7 @@ function cargarClientesAsignados(id_entrenador) {
               </button>
               <ul class="dropdown-menu">
                 <li><a class="dropdown-item" href="/actualizar-rutina/${c.id_usuario}">Actualizar</a></li>
-                <li><a class="dropdown-item text-danger" href="#" onclick="eliminarRutina(${c.id_usuario})">Eliminar</a></li>
+                <li><a class="dropdown-item text-danger" href="#" onclick="eliminarRutina(${c.id_usuario}, ${id_entrenador})">Eliminar</a></li>
               </ul>
             </div>
           ` : `
@@ -1270,6 +1277,7 @@ function cargarClientesAsignados(id_entrenador) {
           `}
         </td>
       `;
+
       tbody.appendChild(tr);
     });
   })
@@ -1279,7 +1287,10 @@ function cargarClientesAsignados(id_entrenador) {
   });
 }
 
-function eliminarRutina(id_usuario) {
+// =======================
+// Eliminar rutina
+// =======================
+function eliminarRutina(id_usuario, id_entrenador) {
   if (!confirm('¿Seguro que quieres eliminar la rutina? Esta acción no se puede deshacer.')) return;
 
   fetch(`/eliminar-rutina/${id_usuario}`, {
@@ -1288,7 +1299,7 @@ function eliminarRutina(id_usuario) {
   .then(response => {
     if (!response.ok) throw new Error('Error al eliminar la rutina');
     alert('Rutina eliminada correctamente.');
-    // Recarga la lista o actualiza la fila
+    // 🔥 Refrescar clientes con el id_entrenador correcto
     cargarClientesAsignados(id_entrenador);
   })
   .catch(error => {
@@ -1297,9 +1308,6 @@ function eliminarRutina(id_usuario) {
   });
 }
 
-
-
-// static/js/asignarRutina.js
 
 function asignarRutina(formId) {
   const form = document.getElementById(formId);

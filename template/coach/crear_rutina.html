@@ -28,10 +28,21 @@
             <td>{{ c.nombre }}</td>
             <td>{{ c.apellido }}</td>
             <td>
-              <a href="{{ url_for('crear_rutina', id_usuario_miembro=c.id_usuario) }}" 
-   class="btn btn-primary btn-sm">
-   Crear Rutina
-</a>
+              {% if c.tieneRutina %}
+  <a href="{{ url_for('actualizar_rutina', id_usuario_miembro=c.id_usuario) }}" 
+     class="btn btn-warning btn-sm">
+     Actualizar
+  </a>
+  <a href="{{ url_for('eliminar_rutina', id_usuario_miembro=c.id_usuario) }}" 
+     class="btn btn-danger btn-sm">
+     Eliminar
+  </a>
+{% else %}
+  <a href="{{ url_for('crear_rutina', id_usuario_miembro=c.id_usuario) }}" 
+     class="btn btn-primary btn-sm">
+     Crear Rutina
+  </a>
+{% endif %}
 
             </td>
           </tr>
