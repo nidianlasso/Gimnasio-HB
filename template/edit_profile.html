@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block menu %}
-    {% include carpeta_rol + '/menu.html' %}
+  {% include carpeta_rol + '/menu.html' %}
 {% endblock %}
 
 {% block content %}
@@ -10,15 +10,13 @@
     <div class="col-12 col-md-11 col-lg-8">
 
       <!-- Card principal -->
-      <div class="card shadow-lg border-0 rounded-4 p-4" 
-           style="background: linear-gradient(145deg, #fffef0, #f9f8e0);">
+      <div class="card shadow-lg border-0 rounded-4 p-4" style="background: linear-gradient(145deg, #fffef0, #f9f8e0);">
 
         <!-- Encabezado -->
         <div class="d-flex flex-column flex-md-row align-items-center justify-content-between mb-4 gap-3">
           <div class="d-flex align-items-center">
-            <!-- Imagen decorativa -->
             <div class="rounded-circle d-flex align-items-center justify-content-center shadow-sm"
-                 style="width: 100px; height: 100px; background-color: rgba(247, 243, 15, 0.2);">
+              style="width: 100px; height: 100px; background-color: rgba(247, 243, 15, 0.2);">
               <i class="fas fa-user fa-3x" style="color: #F1B63C;"></i>
             </div>
             <div class="ms-3">
@@ -31,68 +29,88 @@
         <hr class="mb-4 border-2 border-warning opacity-50">
 
         <!-- Formulario unificado -->
-        <form method="POST" action="{{ url_for('update_profile', id=usuario.id_usuario) }}">
+        <form method="POST" action="{{ url_for('edit_profile', rol=usuario.rol|lower) }}">
           <div class="row g-3 mb-4">
 
-            <!-- Datos generales -->
+            <!-- Nombre -->
             <div class="col-12 col-md-6">
               <label for="nombre" class="form-label fw-semibold">Nombre</label>
-              <input type="text" class="form-control rounded-pill shadow-sm" 
-                     id="nombre" name="nombre" value="{{ usuario.nombre }}" required>
+              <input type="text" class="form-control rounded-pill shadow-sm" id="nombre" name="nombre"
+                value="{{ usuario.nombre }}" required>
             </div>
+
+            <!-- Apellido -->
             <div class="col-12 col-md-6">
               <label for="apellido" class="form-label fw-semibold">Apellido</label>
-              <input type="text" class="form-control rounded-pill shadow-sm" 
-                     id="apellido" name="apellido" value="{{ usuario.apellido }}" required>
+              <input type="text" class="form-control rounded-pill shadow-sm" id="apellido" name="apellido"
+                value="{{ usuario.apellido }}" required>
             </div>
+
+            <!-- Identificación (AGREGADO) -->
+            <div class="col-12 col-md-6">
+              <label for="identificacion" class="form-label fw-semibold">Identificación</label>
+              <input type="text" class="form-control rounded-pill shadow-sm" id="identificacion" name="identificacion"
+                value="{{ usuario.identificacion }}" readonly>
+            </div>
+
+            <!-- Correo -->
             <div class="col-12 col-md-6">
               <label for="correo" class="form-label fw-semibold">Correo</label>
-              <input type="email" class="form-control rounded-pill shadow-sm" 
-                     id="correo" name="correo" value="{{ usuario.correo }}" required>
+              <input type="email" class="form-control rounded-pill shadow-sm" id="correo" name="correo"
+                value="{{ usuario.correo }}" required>
             </div>
+
+            <!-- Teléfono -->
             <div class="col-12 col-md-6">
               <label for="telefono" class="form-label fw-semibold">Teléfono</label>
-              <input type="text" class="form-control rounded-pill shadow-sm" 
-                     id="telefono" name="telefono" value="{{ usuario.telefono }}">
+              <input type="text" class="form-control rounded-pill shadow-sm" id="telefono" name="telefono"
+                value="{{ usuario.telefono }}">
             </div>
+
+            <!-- Edad -->
             <div class="col-12 col-md-6">
               <label for="edad" class="form-label fw-semibold">Edad</label>
-              <input type="number" class="form-control rounded-pill shadow-sm" 
-                     id="edad" name="edad" value="{{ usuario.edad }}">
+              <input type="number" class="form-control rounded-pill shadow-sm" id="edad" name="edad"
+                value="{{ usuario.edad }}">
             </div>
           </div>
 
-          <!-- Campos dinámicos según rol -->
+          <!-- Si el usuario es miembro, muestra su membresía -->
           {% if usuario.rol.lower() == "miembro" %}
           <div class="mb-4">
             <label for="membresia" class="form-label fw-semibold">Membresía actual</label>
             <select id="membresia" name="membresia" class="form-select rounded-pill shadow-sm">
               {% for m in membresias %}
-                <option value="{{ m.id }}" {% if m.id == usuario.id_membresia %}selected{% endif %}>
-                  {{ m.tipo }} - ${{ m.costo }}
-                </option>
+              <option value="{{ m.id }}" {% if m.id==usuario.id_membresia %}selected{% endif %}>
+                {{ m.tipo }} - ${{ m.costo }}
+              </option>
               {% endfor %}
             </select>
           </div>
-          
-          
           {% endif %}
 
-          <!-- Contraseña -->
+          <!-- Contraseña con ojito -->
           <div class="mb-4">
             <label for="contrasena" class="form-label fw-semibold">Nueva contraseña</label>
-            <input type="password" class="form-control rounded-pill shadow-sm" 
-                   id="contrasena" name="contrasena" placeholder="Dejar vacío si no cambia">
+            <div class="position-relative">
+              <input type="password" class="form-control rounded-pill shadow-sm pe-5" id="contrasena" name="contrasena"
+                placeholder="Dejar vacío si no cambia">
+              <button type="button" id="toggleContrasena"
+                class="btn btn-sm border-0 bg-transparent position-absolute end-0 top-50 translate-middle-y me-3 p-0"
+                style="outline: none; box-shadow: none;">
+                <i class="fas fa-eye" id="iconoOjo" style="color:#F1B63C;"></i>
+              </button>
+            </div>
           </div>
 
           <!-- Botones -->
           <div class="d-flex justify-content-end gap-3">
-            <a href="{{ url_for('profile', rol=usuario.rol|lower) }}" 
-               class="btn btn-outline-secondary rounded-pill px-4 shadow-sm">
+            <a href="{{ url_for('profile', rol=usuario.rol|lower) }}"
+              class="btn btn-outline-secondary rounded-pill px-4 shadow-sm">
               Cancelar
             </a>
-            <button type="submit" class="btn" 
-                    style="background-color:#F1B63C; color:#212529; border-radius:50px; padding:0.6rem 1.8rem; transition: all 0.3s;">
+            <button type="submit" class="btn"
+              style="background-color:#F1B63C; color:#212529; border-radius:50px; padding:0.6rem 1.8rem; transition: all 0.3s;">
               Guardar cambios
             </button>
           </div>
@@ -102,4 +120,18 @@
     </div>
   </div>
 </div>
+
+<!-- Script -->
+<script>
+  const toggleButton = document.getElementById('toggleContrasena');
+  const passwordInput = document.getElementById('contrasena');
+  const icon = document.getElementById('iconoOjo');
+
+  toggleButton.addEventListener('click', () => {
+    const isPassword = passwordInput.type === 'password';
+    passwordInput.type = isPassword ? 'text' : 'password';
+    icon.classList.toggle('fa-eye');
+    icon.classList.toggle('fa-eye-slash');
+  });
+</script>
 {% endblock %}

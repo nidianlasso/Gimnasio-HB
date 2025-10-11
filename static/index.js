@@ -1,6 +1,22 @@
 let isActive = false;
 let inicio = null;
 
+//MOSTRAR LA CONTRASENA INGRESADA
+function togglePasswordVisibility(inputId, buttonId) {
+      const passwordInput = document.getElementById(inputId);
+      const toggleButton = document.getElementById(buttonId);
+
+      toggleButton.addEventListener('click', () => {
+        const tipo = passwordInput.type === 'password' ? 'text' : 'password';
+        passwordInput.type = tipo;
+
+        // Cambiar icono
+        toggleButton.textContent = tipo === 'password' ? '👁️' : '🙈';
+      });
+    }
+
+    // Llamada a la función
+    togglePasswordVisibility('password', 'togglePassword');
 
 
 /*MOSTRAR LA INFORMACION DE LOS USUARIOS*/
@@ -199,66 +215,74 @@ function assign_membreship() {
 }
 function update_membreship() {
     const asignacionMembresia = document.getElementById('actualizacionMembresia').getElementsByTagName('tbody')[0];
+
     fetch('/get_assigned_memberships')
         .then(response => {
-            if (!response.ok) {
-                throw new Error('Error en la solicitud');
-            }
+            if (!response.ok) throw new Error('Error en la solicitud');
             return response.json();
         })
         .then(data => {
             console.log("Información recibida:", data);
             asignacionMembresia.innerHTML = '';
 
-            // Filtrar los datos para mostrar solo aquellos con información incompleta
-            const datosFiltrados = data.filter(info_user => {
-                return info_user[3] || info_user[4] || info_user[5] || info_user[6]; // costos, tipo, fechaInicio, estadoMembresia
-            });
-
-
-            datosFiltrados.forEach(info_user => {
-
+            data.forEach(info_user => {
+                
                 const fila = document.createElement('tr');
 
+                // Identificación
                 const id = document.createElement('td');
-                id.textContent = info_user[0]; // Identificación
+                id.textContent = info_user[0];
                 fila.appendChild(id);
 
+                // Nombre
                 const nombre = document.createElement('td');
-                nombre.textContent = info_user[1]; // Nombre
+                nombre.textContent = info_user[1];
                 fila.appendChild(nombre);
 
+                // Apellido
                 const apellido = document.createElement('td');
-                apellido.textContent = info_user[2]; // Apellido
+                apellido.textContent = info_user[2];
                 fila.appendChild(apellido);
 
+                // Botón
                 const membresiaCelda = document.createElement('td');
                 const botonMembresia = document.createElement('button');
                 botonMembresia.textContent = 'Actualizar';
-                botonMembresia.className = 'btn btn-primary';
+                botonMembresia.className = 'btn btn-primary btn-sm';
 
                 botonMembresia.onclick = function () {
-                    document.getElementById('tipoMembresia').value = info_user[3]; // id_membresia
-                    document.getElementById('fechaInicio').value = info_user[4];
-                    document.getElementById('fechaFin').value = info_user[5];
-                    document.getElementById('estadoMembresia').value = info_user[6];
+    console.log("Datos del usuario seleccionados:", info_user);
 
-                    document.getElementById('id_user_update').value = info_user[0]; // id usuario
-                    document.getElementById('id_membresia_usuario').value = info_user[7]; // id membresia_usuario
+    const tipoMembresia = info_user[5]; 
+    const fechaInicio = info_user[6] ? info_user[6].split('T')[0] : '';
+    const fechaFin = info_user[7] ? info_user[7].split('T')[0] : '';
+    const estadoMembresia = info_user[8]; 
+    const idMembresiaUsuario = info_user[10];
+    const idUsuario = info_user[11];
 
-                    $('#updateMembresia').modal('show');
-                };
+    console.log("Valores que se asignarán:");
+    console.log({ tipoMembresia, fechaInicio, fechaFin, estadoMembresia, idMembresiaUsuario, idUsuario });
+
+    document.getElementById('tipoMembresia').value = tipoMembresia;
+    document.getElementById('fechaInicio').value = fechaInicio;
+    document.getElementById('fechaFin').value = fechaFin;
+    document.getElementById('estadoMembresia').value = estadoMembresia;
+    document.getElementById('id_user_update').value = idUsuario;
+    document.getElementById('id_membresia_usuario').value = idMembresiaUsuario;
+
+    const modal = new bootstrap.Modal(document.getElementById('updateMembresia'));
+    modal.show();
+};
+
 
                 membresiaCelda.appendChild(botonMembresia);
                 fila.appendChild(membresiaCelda);
-
                 asignacionMembresia.appendChild(fila);
             });
         })
-        .catch(error => {
-            console.error('Hubo un problema con la solicitud:', error);
-        });
+        .catch(error => console.error('Hubo un problema con la solicitud:', error));
 }
+
 
 function abrirModalRevision(idInventario) {
     const modalRevision = document.getElementById("modalRevision");
@@ -736,7 +760,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const select = document.getElementById('maquina');
     const form = document.getElementById('formReservaMaquina');
 
-    // Si el formulario y el select existen en esta página
+    
     if (form && select) {
         // Llenar el select con máquinas disponibles
         fetch('/api/maquinas_disponibles')
@@ -866,7 +890,7 @@ function registrarIngreso() {
   .then(data => {
     mostrarUsuario(data);
     obtenerAcceso(data.id_usuario);
-    cargarAccesosActivos();  // 🚀 Carga usuarios con acceso activo al mostrar usuario
+    cargarAccesosActivos();  // Carga usuarios con acceso activo al mostrar usuario
   })
   .catch(error => {
     console.error('Error al registrar ingreso:', error);
@@ -1013,29 +1037,22 @@ function assign_coach() {
             return response.json();
         })
         .then(data => {
-            // Asumimos que el backend envía:
-            // data.miembros y data.entrenadores
-            // Cada elemento: [id_usuario, nombre, apellido, tipo_acceso, rol, id_plan_trabajo]
-
             const miembrosActivos = data.miembros;
             const entrenadoresActivos = data.entrenadores;
 
-            asignacionEntrenador.innerHTML = ''; // Limpiar tabla
+            asignacionEntrenador.innerHTML = ''; 
 
             miembrosActivos.forEach(miembro => {
                 const fila = document.createElement('tr');
 
-                // ID del miembro
                 const id = document.createElement('td');
                 id.textContent = miembro[0];
                 fila.appendChild(id);
 
-                // Nombre
                 const nombre = document.createElement('td');
                 nombre.textContent = miembro[1];
                 fila.appendChild(nombre);
 
-                // Apellido
                 const apellido = document.createElement('td');
                 apellido.textContent = miembro[2];
                 fila.appendChild(apellido);
@@ -1151,7 +1168,7 @@ function assign_membreship() {
                     document.getElementById('fechaFin').value = '';
                     document.getElementById('estadoMembresia').value = '';
 
-                    const usuarioId = info_user[3]; // CORRECTO: índice 3
+                    const usuarioId = info_user[3]; 
                     document.getElementById('usuarioId').value = usuarioId;
 
                     $('#detallesMembresia').modal('show');
@@ -1299,7 +1316,6 @@ function eliminarRutina(id_usuario, id_entrenador) {
   .then(response => {
     if (!response.ok) throw new Error('Error al eliminar la rutina');
     alert('Rutina eliminada correctamente.');
-    // 🔥 Refrescar clientes con el id_entrenador correcto
     cargarClientesAsignados(id_entrenador);
   })
   .catch(error => {
@@ -1347,15 +1363,15 @@ function asignarRutina(formId) {
     })
     .then(response => {
       if (response.ok) {
-        alert("✅ Rutina asignada con éxito");
+        alert(" Rutina asignada con éxito");
         window.location.href = "/mis-clientes";
       } else {
-        alert("❌ Error al asignar la rutina");
+        alert("Error al asignar la rutina");
       }
     })
     .catch(error => {
       console.error("Error:", error);
-      alert("❌ Ocurrió un error");
+      alert(" Ocurrió un error");
     });
   });
 }

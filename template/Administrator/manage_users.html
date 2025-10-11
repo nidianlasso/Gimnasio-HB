@@ -67,17 +67,6 @@
   </tbody>
 </table>
 
-{% with messages = get_flashed_messages(with_categories=True) %}
-{% if messages %}
-<div class="alert alert-dismissible fade show" role="alert">
-  {% for category, message in messages %}
-  <div class="alert alert-{{ category }}">
-    {{ message }}
-  </div>
-  {% endfor %}
-</div>
-{% endif %}
-{% endwith %}
 <!--MODAL PARA AGREGAR USUARIOS-->
 <div class="modal fade" id="exampleModalLong" tabindex="-1" role="dialog" aria-labelledby="exampleModalLongTitle"
   aria-hidden="true">

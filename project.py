@@ -31,7 +31,8 @@ from query import (
     consultar_acceso_usuario, obtener_entrenador, obtener_horario_usuario, get_maquina_by_nombre, insert_maquina,insert_inventario_maquina, get_proveedores,
     actualizar_maquina, actualizar_inventario_maquina, eliminar_maquina_bd, obtener_usuarios_activos_por_rol, obtener_usuarios_activos_por_rol, asignar_entrenador_a_miembro, obtener_usuarios_activos,
     obtener_clientes_asignados, insertar_asignacion_rutina, obtener_rutinas_asignadas_por_cliente, actualizar_estado_rutina_asignada, eliminar_rutina_asignada,
-    obtener_dias_semana, obtener_ejercicios, obtener_ejercicios_por_zona, obtener_zonas_cuerpo, eliminar_rutina_dia)
+    obtener_dias_semana, obtener_ejercicios, obtener_ejercicios_por_zona, obtener_zonas_cuerpo, eliminar_rutina_dia, insertar_rutina_ejercicio_db, crear_rutinabd,
+    obtener_rutinas_cliente, obtener_ejercicios_rutina)
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -497,66 +498,6 @@ def review_machines():
     return jsonify(asignacion)
 #ENVIO DE MAQUINA A REVISION
 
-#LLAMADO AL TEMPLATE MIEMBRO
-# @app.route('/profile-member')
-# @login_required_member
-# def profile_member():
-#     identificacion = session.get('identificacion')
-#     print(f"Identificación obtenida de la sesión: {identificacion}")
-#     if not identificacion :
-#         return redirect(url_for('login'))
-    
-#     if "id_usuario" not in session:
-#         return redirect(url_for("login"))
-
-#     id_usuario = session["id_usuario"]
-    
-#     plan_trabajo = obtener_plan_trabajo(identificacion)
-#     membresia_asignada = obtener_membrehip_user(identificacion)
-#     miembro = datos_miembro(id_usuario)
-#     print(f"Esto llega de los datos del miembro")
-
-#     if not miembro:
-#         return "No se encontró el perfil del entrenador o no tiene rol 'Entrenador'", 404
-
-
-#     return render_template('member/profile.html', plan_trabajo=plan_trabajo, membresia = membresia_asignada, miembro = miembro)
-
-# @app.route("/editar-profile-member", methods=["GET"])
-# def edit_profile_member():
-#     if "id_usuario" not in session:
-#         return redirect(url_for("login"))
-    
-#     id_usuario = session["id_usuario"]
-#     entrenador = datos_miembro(id_usuario)
-    
-#     if not entrenador:
-#         flash("No se encontró el entrenador.", "error")
-#         return redirect(url_for("profile_member"))
-    
-#     return render_template("edit_profile.html", entrenador=entrenador)
-
-# @app.route('/update-profile-member', methods=['POST'])
-# def update_profile_member():
-#     id_usuario =  session["id_usuario"]
-#     nombre = request.form['nombre']
-#     apellido = request.form['apellido']
-#     identificacion = request.form['identificacion']
-#     edad = request.form['edad']
-#     correo = request.form['correo']
-#     telefono = request.form['telefono']
-#     contrasena = request.form.get('contrasena', '').strip()
-
-#     if contrasena:
-#         contrasena_hash = hash_password(contrasena)
-#     else:
-#         contrasena_hash = None
-
-#     actualizar_datos_miembro(id_usuario, nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash)
-
-#     return redirect(url_for('perfil_entrenador'))
-
-
 
 #TEMPLETE PRINCIPAL DEL MIEMBRO
 @app.route('/inicio')
@@ -744,10 +685,10 @@ def save_assignments():
         return jsonify({'mensaje': 'Asignaciones guardadas correctamente'}), 200
 
     except ValueError as ve:
-        return jsonify({'error': str(ve)}), 400  # Respuesta controlada si no coinciden planes
+        return jsonify({'error': str(ve)}), 400 
 
     except Exception as e:
-        print("❌ Error al guardar asignaciones:", e)
+        print(" Error al guardar asignaciones:", e)
         return jsonify({'error': 'Error al guardar asignaciones'}), 500
 
 
@@ -1052,55 +993,6 @@ def historial_avances():
     
     return render_template("coach/historial_avances.html", avances=avances)
 
-# @app.route("/perfil-entrenador")
-# def perfil_entrenador():
-#     if "id_usuario" not in session:
-#         return redirect(url_for("login"))
-
-#     id_usuario = session["id_usuario"]
-
-#     entrenador = datos_entrenador(id_usuario)
-#     print("Entrenador:", entrenador)
-
-#     if not entrenador:
-#         return "No se encontró el perfil del entrenador o no tiene rol 'Entrenador'", 404
-
-#     return render_template('coach/profile.html', entrenador=entrenador) 
-
-# @app.route("/editar-perfil-entrenador", methods=["GET"])
-# def editar_perfil_entrenador():
-#     if "id_usuario" not in session:
-#         return redirect(url_for("login"))
-    
-#     id_usuario = session["id_usuario"]
-#     entrenador = datos_entrenador(id_usuario)
-    
-#     if not entrenador:
-#         flash("No se encontró el entrenador.", "error")
-#         return redirect(url_for("perfil_entrenador"))
-    
-#     return render_template("edit_profile.html", entrenador=entrenador)
-
-# @app.route('/actualizar_perfil_entrenador', methods=['POST'])
-# def actualizar_perfil_entrenador():
-#     id_usuario =  session["id_usuario"]
-#     nombre = request.form['nombre']
-#     apellido = request.form['apellido']
-#     identificacion = request.form['identificacion']
-#     edad = request.form['edad']
-#     correo = request.form['correo']
-#     telefono = request.form['telefono']
-#     contrasena = request.form.get('contrasena', '').strip()
-
-#     if contrasena:
-#         contrasena_hash = hash_password(contrasena)
-#     else:
-#         contrasena_hash = None
-
-#     actualizar_datos_entrenador(id_usuario, nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash)
-
-#     return redirect(url_for('perfil_entrenador'))
-
 
 #REVISION DE LAS MAQUINAS
 @app.route('/maquinas-no-disponibles')
@@ -1118,11 +1010,11 @@ def enviar_revision():
         id_inventario_maquina = data.get("id_inventario")
         print(f" Inventario recibido: {id_inventario_maquina}")
 
-        id_usuario = session.get("id_usuario")   # admin logueado
+        id_usuario = session.get("id_usuario") 
         print(f" Usuario (admin) que envía: {id_usuario}")
 
         observacion_admin = data.get("observacion", "Revisión asignada por el administrador")
-        estado = data.get("estado", 1)  # 1 = pendiente
+        estado = data.get("estado", 1) 
 
         id_revision = insertar_revision(id_inventario_maquina, id_usuario, observacion_admin, estado)
 
@@ -1152,7 +1044,7 @@ def revisar_maquina(id_revision):
         observacion_tecnico = request.form['observacion']
         id_usuario = session.get('id_usuario')
         if not id_usuario:
-            flash("⚠️ Debes iniciar sesión para registrar una observación.", "warning")
+            flash("Debes iniciar sesión para registrar una observación.", "warning")
             return redirect(url_for('login'))
         actualizar_estado_revision(id_revision, estado)
 
@@ -1164,35 +1056,6 @@ def revisar_maquina(id_revision):
     observaciones = obtener_observaciones(id_revision)
 
     return render_template("Technical/review.html", revision=revision, observaciones=observaciones)
-
-
-# @app.route('/profile')
-# def profile_tech():
-#     datosTec = lista_tecnicos()
-#     print(f"esto llega de {datosTec}")
-#     return render_template('Technical/profile.html', datos = datosTec)
-
-# @app.route('/profile/edit/<int:id>', methods=['GET'])
-# def edit_profile(id):
-#     tecnico = lista_tecnicos(id)
-#     return render_template('Technical/edit_profile.html', tecnico=tecnico)
-
-# @app.route('/profile/update/<int:id>', methods=['POST'])
-# def update_profile(id):
-#     nombre = request.form['nombre']
-#     apellido = request.form['apellido']
-#     correo = request.form['correo']
-#     edad = request.form['edad']
-#     contrasena = request.form.get('contrasena')
-
-#     actualizado = actualizar_usuario(id, nombre, apellido, correo, edad)
-
-#     if actualizado:
-#         flash("Perfil actualizado correctamente.")
-#     else:
-#         flash(" No se realizaron cambios.")
-
-#     return redirect(url_for('profile_tech'))
 
 # Mapeo de roles a carpetas
 ROL_TO_CARPETA = {
@@ -1217,7 +1080,7 @@ def profile(rol):
     membresia = plan_trabajo = horario = None
     clientes_asignados = []
 
-    # ✅ Cargar datos específicos por rol
+    
     if usuario["rol"].lower() == "miembro":
         membresia = obtener_membrehip_user(usuario["identificacion"])
         plan_trabajo = obtener_plan_trabajo(usuario["identificacion"])
@@ -1233,7 +1096,7 @@ def profile(rol):
         membresia=membresia,
         plan_trabajo=plan_trabajo,
         clientes_asignados=clientes_asignados,
-        horario=horario,  # ✅ pásalo siempre si existe
+        horario=horario,  
         carpeta_rol=ROL_TO_CARPETA[rol_lower]
     )
 @app.route('/profile/edit/<rol>', methods=['GET', 'POST'])
@@ -1258,7 +1121,6 @@ def edit_profile(rol):
         clientes_asignados = obtener_clientes_sin_avance_hoy(usuario["identificacion"])
 
     if request.method == "POST":
-        # Obtener los datos del formulario
         nombre = request.form.get("nombre")
         apellido = request.form.get("apellido")
         identificacion = request.form.get("identificacion")
@@ -1267,10 +1129,9 @@ def edit_profile(rol):
         telefono = request.form.get("telefono")
         contrasena = request.form.get("contrasena")
 
-        # Si se ingresó contraseña, aplicar hash antes de enviar
         contrasena_hash = hash_password(contrasena) if contrasena else None
+        print(f" CONTRASEÑA HASHEADA: {contrasena_hash}")
 
-        # Llamar a la función unificada para actualizar datos
         actualizar_datos_usuario(
             id_usuario=usuario["id_usuario"],
             nombre=nombre,
@@ -1294,6 +1155,8 @@ def edit_profile(rol):
         plan_trabajo=plan_trabajo,
         clientes_asignados=clientes_asignados
     )
+
+
 @app.route('/profile/update/<int:id>', methods=['POST'])
 def update_profile(id):
     nombre = request.form['nombre']
@@ -1329,7 +1192,6 @@ def mis_clientes_rutina():
         return redirect(url_for("login"))
     id_entrenador = session["id_usuario"]
     clientes = obtener_clientes_asignados(id_entrenador)
-    print(f"Clientes enviados a plantilla: {clientes}")  # Para debug
 
     return render_template('coach/crear_rutina.html', clientes=clientes)
 
@@ -1345,24 +1207,31 @@ def clientes_entrenador_asignado():
     clientes = obtener_clientes_asignados(id_entrenador)
     return jsonify(clientes)
 
-
-# @app.route("/ver-plan/<int:id_plan>", methods=['POST'])
-# def ver_plan(id_plan):
-#     rutinas = obtener_rutinas_por_plan(id_plan)
-#     return render_template("coach/ver_plan.html", rutinas=rutinas)
 @app.route("/asignar-rutina", methods=["POST"])
 def asignar_rutina():
-    id_rutina = request.form["id_rutina"]
     id_cliente = request.form["id_cliente"]
-    id_entrenador = session["id_usuario"]  # Coach logueado
     id_dia = request.form["id_dia"]
+    id_entrenador = session["id_usuario"]
+    ejercicios = request.form.get("ejercicios")  
+    id_rutina = request.form.get("id_rutina")    
 
     try:
-        insertar_asignacion_rutina( id_rutina, id_cliente, id_entrenador, id_dia)
-        return "✅ Rutina asignada correctamente"
+        if not id_rutina and ejercicios:
+            id_rutina = crear_rutina(
+                nombre=f"Rutina {id_dia}",
+                descripcion=ejercicios,
+                id_plan_trabajo=1,
+                id_entrenador=id_entrenador
+            )
+
+        insertar_asignacion_rutina(id_rutina, id_cliente, id_entrenador, id_dia)
+
+        
+        return " Rutina guardada y asignada"
 
     except Exception as e:
-        return f"❌ Error al asignar rutina: {str(e)}"
+        
+        return f" Error: {str(e)}"
 
 @app.route('/rutinas-asignadas', methods=['POST'])
 def rutinas_asignadas():
@@ -1388,25 +1257,25 @@ def actualizar_rutina(id_usuario_miembro):
         id_entrenador = datos.get("id_entrenador")[0]
 
         try:
-            # Guardar nuevas asignaciones (día por día)
+            # Guarda nuevas asignaciones por dia
             for dia_id, ejercicios in datos.items():
                 if dia_id.startswith("rutinas["):
                     id_dia = dia_id.split("[")[1].split("]")[0]
 
-                    # 🔴 Eliminar solo ese día usando función externa
+                    # Elimina solo ese día usando función externa
                     eliminar_rutina_dia(id_cliente, id_dia)
 
-                    # 🟢 Insertar lo nuevo con la función ya existente
+                    # Insertar lo nuevo con la función ya existente
                     for id_ejercicio in ejercicios:
                         insertar_asignacion_rutina(
                             id_ejercicio, id_cliente, id_entrenador, id_dia
                         )
 
-            flash("✅ Rutina del cliente actualizada correctamente", "success")
+            flash("Rutina del cliente actualizada correctamente", "success")
             return redirect(url_for("mis_clientes_rutina"))
 
         except Exception as e:
-            flash(f"❌ Error al actualizar rutina: {str(e)}", "danger")
+            flash(f"Error al actualizar rutina: {str(e)}")
 
     # GET → Cargar datos para el formulario
     dias = obtener_dias_semana()
@@ -1435,6 +1304,7 @@ def eliminar_rutina():
 
 
 @app.route("/crear-rutina/<int:id_usuario_miembro>", methods=["GET", "POST"])
+
 def crear_rutina(id_usuario_miembro):
     if "id_usuario" not in session:
         return redirect(url_for("login"))
@@ -1444,27 +1314,33 @@ def crear_rutina(id_usuario_miembro):
     if request.method == "POST":
         datos = request.form.to_dict(flat=False)
         id_cliente = datos.get("id_cliente")[0]
-        id_entrenador = datos.get("id_entrenador")[0]
-
-        print("📌 Datos recibidos en POST:", datos)
 
         try:
-            # Recorremos los días seleccionados
+            # 1. Crear rutina (SOLO una vez)
+            id_rutina = crear_rutinabd(
+                f"Rutina Cliente {id_cliente}",
+                "Plan personalizado",
+                
+                id_entrenador
+            )
+
+            # 2. Insertar ejercicios asociados a esa rutina
             for dia_id, ejercicios in datos.items():
                 if dia_id.startswith("rutinas["):
-                    id_dia = dia_id.split("[")[1].split("]")[0]  # Ej: "1" de rutinas[1][]
+                    id_dia = dia_id.split("[")[1].split("]")[0]
                     for id_ejercicio in ejercicios:
-                        print(f"➡️ Guardar: Cliente {id_cliente}, Entrenador {id_entrenador}, Día {id_dia}, Ejercicio {id_ejercicio}")
-                        insertar_asignacion_rutina(id_ejercicio, id_cliente, id_entrenador, id_dia)
+                        insertar_rutina_ejercicio_db(id_rutina, id_ejercicio, id_dia)
 
-            # ✅ Mostrar mensaje y redirigir
-            flash("✅ Rutina guardada en DB correctamente", "success")
+            # Asignar la rutina al cliente (solo 1 vez)
+            insertar_asignacion_rutina(id_rutina, id_cliente, id_entrenador)
+
+        
             return redirect(url_for("mis_clientes_rutina"))
 
         except Exception as e:
-            return f"❌ Error al guardar la rutina: {str(e)}"
+            return f" Error al guardar la rutina: {str(e)}"
 
-    # GET → cargar formulario
+    
     dias = obtener_dias_semana()
     ejercicios = obtener_ejercicios()
     zonas = obtener_zonas_cuerpo()
@@ -1477,6 +1353,43 @@ def crear_rutina(id_usuario_miembro):
         ejercicios=ejercicios,
         zonas=zonas
     )
+
+
+@app.route("/mi-rutina")
+def mis_rutinas():
+    if "id_usuario" not in session:
+        return redirect(url_for("login"))
+
+    id_cliente = session["id_usuario"]
+
+    try:
+        # Obtener todas las rutinas del cliente
+        rutinas = obtener_rutinas_cliente(id_cliente)
+
+        if not rutinas:
+            flash("No tienes ninguna rutina asignada todavía", "warning")
+            return render_template("member/mi_rutina.html", rutinas=[])
+
+        # Para cada rutina, obtener sus ejercicios y agregarlos
+        for rutina in rutinas:
+            
+            rutina["descripcion_lista"] = [e.strip() for e in rutina["descripcion"].split(",")]
+
+            ejercicios = obtener_ejercicios_rutina(rutina["id"])
+            rutina["ejercicios"] = [
+                {
+                    "nombre": e[0],
+                    "descripcion": e[1],
+                    "dia": e[2] if e[2] else "Sin día asignado"
+                }
+                for e in ejercicios
+            ]
+            print(f"esto llewga de rutinas {rutina}")
+
+        return render_template("member/mi_rutina.html", rutinas=rutinas)
+
+    except Exception as e:
+        return f" Error al consultar rutinas: {str(e)}"
 
 
 

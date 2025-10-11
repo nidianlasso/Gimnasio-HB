@@ -37,7 +37,6 @@
                 <td style="padding: 10px;">{{ c[5] }}</td>
                 <td style="padding: 10px;">{{ c[6] }}</td>
 
-                <!-- Avances -->
                 <td style="padding: 10px; text-align: center;">
                     <form method="POST" action="{{ url_for('guardar_progreso') }}"
                           style="display: flex; flex-direction: column; align-items: center; gap: 8px; background: rgba(255,255,255,0.05); padding: 10px; border-radius: 8px; width: 200px;">
@@ -59,7 +58,6 @@
                     </form>
                 </td>
 
-                <!-- Nueva columna de acciones -->
                 <td style="padding: 10px;">
                     <a href="{{ url_for('crear_rutina', id_plan=c[0]) }}"
                        style="background: #3B77B6; color: white; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: bold;">

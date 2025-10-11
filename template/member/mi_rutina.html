@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block menu %}
+    {% include "member/menu.html" %}
+{% endblock %}
+
+{% block content %}
+<div class="container py-5" style="margin-top: -370px;">
+    <h1>💪 Mis Rutinas</h1>
+
+    {% if rutinas %}
+    {% for rutina in rutinas %}
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body">
+
+            {% if rutina.ejercicios %}
+                {% set dias = rutina.ejercicios | groupby('dia') %}
+                {% set primer_dia = dias[0][0] %}
+                <h4 class="card-title text-primary">{{ primer_dia }} - {{ rutina.nombre }}</h4>
+            {% else %}
+                <h4 class="card-title text-primary">{{ rutina.nombre }}</h4>
+            {% endif %}
+
+            <p><strong>Descripción general:</strong></p>
+            <ul>
+                {% for ejercicio_desc in rutina.descripcion_lista %}
+                <li>{{ ejercicio_desc }}</li>
+                {% endfor %}
+            </ul>
+
+            <p><strong>Asignada el:</strong> {{ rutina.fecha_asignacion }}</p>
+            <hr>
+
+            {% if rutina.ejercicios %}
+                {% set dias = rutina.ejercicios | groupby('dia') %}
+                {% for dia, ejercicios in dias %}
+                <div class="mb-4">
+                    <!-- <h6 class="text-success">{{ dia }}</h6> -->
+
+                    {% for ejercicio in ejercicios %}
+                    <div class="card mb-2 border-light shadow-sm">
+                        <div class="card-body p-2">
+                            <div class="d-flex align-items-start">
+                                <div>
+                                    <h6 class="mb-1 text-primary">{{ ejercicio.nombre }}</h6>
+                                    <p class="mb-0 text-muted small">
+                                        {{ ejercicio.descripcion }}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <p><em>No hay ejercicios disponibles para esta rutina.</em></p>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    <div class="alert alert-warning">No tienes ninguna rutina asignada todavía.</div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -4,18 +4,35 @@ from functools import wraps
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 from datetime import datetime, date, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
+from pymysql.cursors import DictCursor
+
 
 
 app = Flask(__name__, static_folder='static', template_folder='template')
 connection = pymysql.connect(host="localhost", user="root", passwd="12345", database="bd_gimnasio2")
 cursor = connection.cursor()
 
+def get_connection():
+    return pymysql.connect(
+        host="localhost",
+        user="root",
+        passwd="12345",
+        database="bd_gimnasio2"
+    )
+
+def get_cursor():
+    conn = get_connection()
+    return conn, conn.cursor()
+
+
 def hash_password(password):
-    # Genera un hash
+    """Genera un hash seguro para una contraseña"""
+    if not password:
+        return None
     return generate_password_hash(password)
 
 def verify_password(hashed_password, password):
-    # Verifica si la contraseña coincide con el hash
+    """Verifica si la contraseña coincide con el hash"""
     return check_password_hash(hashed_password, password)
 
 def obtenerUsuarios():
@@ -24,8 +41,6 @@ def obtenerUsuarios():
     cursor.close()  
     return rows
 
-
-# Función para validar el login del usuario
 def validarLogin(identificacion, contrasena):
     info_user = check_credentials(identificacion, contrasena)
     
@@ -393,6 +408,9 @@ def info_machine():
     return result_busqueda
 
 
+
+
+
 #CREAR EL ACCESO DE LOS USUARIOS QUE INGRESAN O SALEN DEL GIMNASIO
 def access_users(identificacion):
     cursor.execute("""
@@ -497,13 +515,14 @@ def consultar_acceso_usuario(id_usuario):
     except Exception as e:
         return {'error': f'Error al obtener acceso: {str(e)}'}
 
-from pymysql.cursors import DictCursor
+
+
 
 def cambiar_estado_acceso_db(id_usuario):
     try:
         cursor = connection.cursor(DictCursor)
 
-        # 1️⃣ Buscar acceso activo
+        #Buscar acceso activo
         cursor.execute("""
             SELECT id_acceso, fecha_inicio
             FROM acceso
@@ -515,7 +534,7 @@ def cambiar_estado_acceso_db(id_usuario):
         if acceso_actual is None:
             return {'error': f"No se encontró acceso activo para el usuario ID: {id_usuario}."}
 
-        # 2️⃣ Cerrar acceso (cambia estado y fecha_fin)
+        #Cerrar acceso (cambia estado y fecha_fin)
         cursor.execute("""
             UPDATE acceso
             SET tipo_acceso = 'Inactive', fecha_fin = NOW()
@@ -523,20 +542,20 @@ def cambiar_estado_acceso_db(id_usuario):
         """, (acceso_actual['id_acceso'],))
         connection.commit()
 
-        # 3️⃣ Calcular duración en segundos
+        #Calcular duración en segundos
         cursor.execute("""
             SELECT TIMESTAMPDIFF(SECOND, fecha_inicio, fecha_fin) AS duracion_segundos
             FROM acceso WHERE id_acceso = %s
         """, (acceso_actual['id_acceso'],))
         segundos = cursor.fetchone()['duracion_segundos']
 
-        # 4️⃣ Convertir duración a HH:MM:SS
+        #Convertir duración a HH:MM:SS
         horas = segundos // 3600
         minutos = (segundos % 3600) // 60
         segundos = segundos % 60
         duracion_legible = f"{horas:02}:{minutos:02}:{segundos:02}"
 
-        # 5️⃣ Guardar duración en la tabla
+        # Guardar duración en la tabla
         cursor.execute("""
             UPDATE acceso
             SET duracion = %s
@@ -554,91 +573,8 @@ def cambiar_estado_acceso_db(id_usuario):
 
 
 
-#ASIGNAR ENTRENADOR
-# def asignar_supervision_db(id_acceso_miembro, id_usuario_miembro):
-#     try:
-#         cursor = connection.cursor(DictCursor)
-
-#         # 1️⃣ Obtener el plan del miembro
-#         cursor.execute("""
-#             SELECT id_plan_trabajo
-#             FROM usuario
-#             WHERE id_usuario = %s
-#         """, (id_usuario_miembro,))
-#         miembro = cursor.fetchone()
-
-#         if not miembro or not miembro['id_plan_trabajo']:
-#             return {'error': 'El miembro no tiene plan de trabajo asignado.'}
-
-#         id_plan_trabajo = miembro['id_plan_trabajo']
-
-#         # 2️⃣ Buscar un entrenador con el mismo plan y acceso activo
-#         cursor.execute("""
-#             SELECT a.id_acceso, u.id_usuario, u.nombre, u.apellido
-#             FROM usuario u
-#             JOIN acceso a ON u.id_usuario = a.id_usuario
-#             WHERE u.id_plan_trabajo = %s
-#               AND u.id_rol = 2   -- rol entrenador
-#               AND a.tipo_acceso = 'Active'
-#               AND a.fecha_fin IS NULL
-#             LIMIT 1
-#         """, (id_plan_trabajo,))
-#         entrenador = cursor.fetchone()
-
-#         if not entrenador:
-#             return {'error': 'No hay entrenadores disponibles en este momento.'}
-
-#         id_acceso_entrenador = entrenador['id_acceso']
-
-#         # 3️⃣ Insertar en supervision
-#         cursor.execute("""
-#             INSERT INTO supervision (id_acceso_miembro, id_acceso_entrenador)
-#             VALUES (%s, %s)
-#         """, (id_acceso_miembro, id_acceso_entrenador))
-#         connection.commit()
-
-#         return {
-#             'message': f"Supervisión asignada con el entrenador {entrenador['nombre']} {entrenador['apellido']}",
-#             'id_acceso_miembro': id_acceso_miembro,
-#             'id_acceso_entrenador': id_acceso_entrenador
-#         }
-
-#     except Exception as e:
-#         return {'error': f'Error al asignar supervisión: {str(e)}'}
-
-# def asignar_entrenador():
-#     cursor.execute("SELECT u.identificacion, u.nombre, u.apellido, a.id_acceso, a.tipo_acceso, a.fecha, r.nombre AS nombre_rol, u.id_usuario, pt.nombre FROM acceso a INNER JOIN usuario u ON a.id_usuario = u.id_usuario INNER JOIN rol r ON u.id_rol = r.id_rol INNER JOIN plan_trabajo pt ON pt.id_plan_trabajo = u.id_plan_trabajo  WHERE r.nombre IN ('Miembro', 'Entrenador') AND a.tipo_acceso = 'Active' AND DATE(a.fecha) = CURDATE();")
-#     resultado = cursor.fetchall()
-#     print('ESTE ES EL RESULTADO DE LA CONSULTA')
-#     print(resultado)
-#     return resultado
-
-# Obtener datos del entrenador (id_usuario, id_plan y horario)
-def obtener_entrenador(id_entrenador, cursor):
-    query = """
-        SELECT id_usuario, id_plan, horario
-        FROM empleados
-        WHERE id_usuario = %s
-    """
-    cursor.execute(query, (id_entrenador,))
-    return cursor.fetchone()  # Retorna un dict o tupla
-
-
-# Obtener miembros que tengan el mismo plan del entrenador
-def obtener_miembros_por_plan(id_plan, cursor):
-    query = """
-        SELECT id_usuario
-        FROM miembros
-        WHERE id_plan = %s
-    """
-    cursor.execute(query, (id_plan,))
-    return cursor.fetchall()  # Lista de miembros
-
 def asignar_entrenador_a_miembro(id_miembro, id_entrenador, id_estado=1):
-    """
-    Asigna un entrenador a un miembro si no tiene ya una rutina.
-    Retorna un dict con resultado o error.
-    """
+  
     if not id_miembro or not id_entrenador:
         return {'error': 'Faltan parámetros obligatorios'}
 
@@ -665,7 +601,7 @@ def asignar_entrenador_a_miembro(id_miembro, id_entrenador, id_estado=1):
         return {'message': 'Entrenador asignado con éxito'}
 
     except Exception as e:
-        db.session.rollback()
+        
         return {'error': str(e)}
 
 def obtener_usuarios_activos():
@@ -680,55 +616,34 @@ def obtener_usuarios_activos():
     return cursor.fetchall()
 
 
-# Insertar la supervisión (relación entrenador - miembro)
-# def insertar_supervision(id_miembro, id_entrenador, cursor, connection):
-#     try:
-#         cursor.execute("""
-#             INSERT INTO supervision (id_acceso_miembro, id_acceso_entrenador)
-#             VALUES (%s, %s)
-#         """, (id_miembro, id_entrenador))
-#         connection.commit()
-#         return True, "Entrenador asignado correctamente."
-#     except Exception as e:
-#         connection.rollback()
-#         return False, f"Error al asignar entrenador: {str(e)}"
 
-# def consultar_miembros_y_entrenadores():
-#     try:
-#         cursor.execute("""
-#            SELECT 
-#     u.id_usuario,
-#     u.nombre,
-#     u.apellido,
-#     acc.tipo_acceso,
-#     r2.nombre AS rol,
-#     r.id_rutina,
-#     r.id_usuario_entrenador,
-#     ent.nombre AS nombre_entrenador,
-#     ent.apellido AS apellido_entrenador,
-#     r.id_plan_trabajo
-# FROM usuario u
-# LEFT JOIN rol r2 ON u.id_rol = r2.id_rol
-# INNER JOIN (
-#     SELECT a1.*
-#     FROM acceso a1
-#     INNER JOIN (
-#         SELECT id_usuario, MAX(fecha_inicio) AS ultima_fecha
-#         FROM acceso
-#         GROUP BY id_usuario
-#     ) a2 ON a1.id_usuario = a2.id_usuario AND a1.fecha_inicio = a2.ultima_fecha
-#     WHERE a1.tipo_acceso = 'Active' AND (a1.duracion IS NULL OR a1.duracion = '00:00:00')
-# ) AS acc ON acc.id_usuario = u.id_usuario
-# LEFT JOIN rutina r ON u.id_usuario = r.id_usuario_miembro
-# LEFT JOIN usuario ent ON ent.id_usuario = r.id_usuario_entrenador
-# WHERE u.id_rol IN (2, 5);
-#         """)
-#         resultado = cursor.fetchall()  # Trae todos los registros
-#         print("Datos obtenidos:", resultado)
-#         return resultado  # <-- Aquí debes retornar el resultado
-#     except Exception as e:
-#         print("Error al ejecutar consulta:", e)
-#         return []
+# Insertar la supervisión (relación entrenador - miembro)
+def insertar_supervision(id_miembro, id_entrenador, cursor, connection):
+    try:
+        cursor.execute("""
+            INSERT INTO supervision (id_acceso_miembro, id_acceso_entrenador)
+            VALUES (%s, %s)
+        """, (id_miembro, id_entrenador))
+        connection.commit()
+        return True, "Entrenador asignado correctamente."
+    except Exception as e:
+        connection.rollback()
+        return False, f"Error al asignar entrenador: {str(e)}"
+
+def consultar_miembros_y_entrenadores():
+    try:
+        cursor.callproc('sp_consultar_miembros_y_entrenadores')
+
+        for result in cursor.stored_results():
+            resultado = result.fetchall()
+
+        print("Datos obtenidos:", resultado)
+        return resultado
+
+    except Exception as e:
+        print("Error al ejecutar procedimiento:", e)
+        return []
+
 
 
 def obtener_usuarios_activos_por_rol(rol_nombre):
@@ -768,7 +683,7 @@ def asignar_entrenador_a_miembro(id_miembro, id_entrenador):
         connection.commit()
 
     except Exception as e:
-        print("❌ Error en asignar_entrenador_a_miembro:", e)
+        print(" Error en asignar_entrenador_a_miembro:", e)
         raise  # Para que el error también sea capturado arriba si se desea
 
 #MIEMBRO
@@ -899,7 +814,7 @@ def actualizar_inventario_maquina(id_inventario_maquina, serial, fecha_compra, p
 
 def eliminar_maquina_bd(id_inventario):
     try:
-        # 1. Obtener el id_maquina asociado al inventario
+        # Obtener el id_maquina asociado al inventario
         cursor.execute("SELECT id_maquina FROM inventario_maquina WHERE id_inventario_maquina = %s", (id_inventario,))
         resultado = cursor.fetchone()
         if not resultado:
@@ -907,15 +822,14 @@ def eliminar_maquina_bd(id_inventario):
         
         id_maquina = resultado[0]
 
-        # 2. Eliminar el registro de inventario
         cursor.execute("DELETE FROM inventario_maquina WHERE id_inventario_maquina = %s", (id_inventario,))
         connection.commit()
 
-        # 3. Verificar si existen más registros de inventario para esa máquina
+        # Verificar si existen más registros de inventario para esa máquina
         cursor.execute("SELECT COUNT(*) FROM inventario_maquina WHERE id_maquina = %s", (id_maquina,))
         count = cursor.fetchone()[0]
 
-        # 4. Si no hay más inventarios, eliminar la máquina de la tabla maquina
+        # Si no hay más inventarios, eliminar la máquina de la tabla maquina
         if count == 0:
             cursor.execute("DELETE FROM maquina WHERE id_maquina = %s", (id_maquina,))
             connection.commit()
@@ -925,22 +839,6 @@ def eliminar_maquina_bd(id_inventario):
     except Exception as e:
         return False, str(e)
 
-
-
-
-#REGISTRAR LAS MAQUINAS
-# def registrar_maquina_inventario(fecha_compra, precio, serial, id_proveedor, id_maquina, disponibilidad):
-#     try:
-#         cursor = connection.cursor()
-#         query = """
-#             INSERT INTO inventario_maquina (fecha_compra, precio, serial, id_proveedor, id_maquina, disponibilidad)
-#             VALUES (%s, %s, %s, %s, %s, %s)
-#         """
-#         cursor.execute(query, (fecha_compra, precio, serial, id_proveedor, id_maquina, disponibilidad))
-#         connection.commit()
-#         return {"message": "Máquina registrada en inventario exitosamente."}
-#     except Exception as e:
-#         return {"error": f"Error al registrar máquina: {str(e)}"}
 
 
 #Obtener las reservas de las maquinas de hoy
@@ -1416,59 +1314,6 @@ def obtener_historial_avances(id_entrenador):
     """, (id_entrenador,))
     return cursor.fetchall()
 
-# def datos_entrenador(id_usuario):
-#     cursor.execute('''
-#         SELECT 
-#             u.id_usuario, 
-#             u.identificacion, 
-#             u.nombre, 
-#             u.apellido, 
-#             u.edad, 
-#             u.correo, 
-#             u.telefono, 
-#             u.contrasena, 
-#             g.tipo, 
-#             u.id_plan_trabajo, 
-#             u.id_rol 
-#         FROM 
-#             usuario u 
-#         JOIN 
-#             rol r ON u.id_rol = r.id_rol  JOIN genero g ON u.id_genero = g.id_genero
-#         WHERE 
-#             u.id_usuario = %s AND r.nombre = 'Entrenador'
-#     ''', (id_usuario,))
-    
-#     resultado = cursor.fetchone()
-#     return resultado
-
-# def actualizar_datos_entrenador(id_usuario, nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash=None):
-#     if contrasena_hash:
-#         cursor.execute("""
-#             UPDATE usuario
-#             SET nombre = %s,
-#                 apellido = %s,
-#                 identificacion = %s,
-#                 edad = %s,
-#                 correo = %s,
-#                 telefono = %s,
-#                 contrasena = %s
-#             WHERE id_usuario = %s
-#         """, (nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash, id_usuario))
-#     else:
-#         cursor.execute("""
-#             UPDATE usuario
-#             SET nombre = %s,
-#                 apellido = %s,
-#                 identificacion = %s,
-#                 edad = %s,
-#                 correo = %s,
-#                 telefono = %s
-#             WHERE id_usuario = %s
-#         """, (nombre, apellido, identificacion, edad, correo, telefono, id_usuario))
-#     connection.commit()
-#     return True
-
-
 #ENVIAR LA MAQUINA PARA LA REVISION 
 def maquinas_sin_disponibles():
     cursor.execute("""
@@ -1650,49 +1495,67 @@ def datos_usuario(id_usuario, rol=None):
     return usuario
 
 def obtener_horario_usuario(id_usuario):
-    query = """
+   
+
+    cursor.execute("""
     SELECT h.nombre, h.descripcion
     FROM horario_entrenador he
     JOIN horario h ON he.id_horario = h.id_horario
     WHERE he.id_usuario = %s
-    """
-    cursor.execute(query, (id_usuario,))
+    """,(id_usuario,))
     resultados = cursor.fetchall()
     return [{"nombre": r[0], "descripcion": r[1]} for r in resultados]
 
 
-def actualizar_datos_usuario(id_usuario, nombre, apellido, identificacion, edad, correo, telefono, contrasena=None):
-    hashed_password = hash_password(contrasena)
+def actualizar_datos_usuario(id_usuario, nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash=None):
+    try:
+       
+        if contrasena_hash:
+            cursor.execute("""
+                UPDATE usuario 
+                SET nombre=%s, apellido=%s, identificacion=%s, edad=%s, correo=%s, telefono=%s, contrasena=%s
+                WHERE id_usuario=%s
+            """, (nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash, id_usuario))
+        else:
+            cursor.execute("""
+                UPDATE usuario 
+                SET nombre=%s, apellido=%s, identificacion=%s, edad=%s, correo=%s, telefono=%s
+                WHERE id_usuario=%s
+            """, (nombre, apellido, identificacion, edad, correo, telefono, id_usuario))
 
-    if hashed_password:
-        cursor.execute("""
-            UPDATE usuario
-            SET nombre = %s,
-                apellido = %s,
-                identificacion = %s,
-                edad = %s,
-                correo = %s,
-                telefono = %s,
-                contrasena = %s
-            WHERE id_usuario = %s
-        """, (nombre, apellido, identificacion, edad, correo, telefono, contrasena_hash, id_usuario))
-    else:
-        cursor.execute("""
-            UPDATE usuario
-            SET nombre = %s,
-                apellido = %s,
-                identificacion = %s,
-                edad = %s,
-                correo = %s,
-                telefono = %s
-            WHERE id_usuario = %s
-        """, (nombre, apellido, identificacion, edad, correo, telefono, id_usuario))
+        connection.commit()
+        print(" Usuario actualizado correctamente")
+
+    except Exception as e:
+        print(f" Error al actualizar datos: {e}")
+        connection.rollback()  
+        return False
+
+    return True
+
+
+# CREACION Y ASIGNACION DE LAS RUTINAS
+def crear_rutinabd(nombre, descripcion, id_plan_trabajo, id_entrenador):
+    cursor = connection.cursor()
+    cursor.execute("""
+        INSERT INTO rutina (nombre, descripcion, id_plan_trabajo, id_usuario_entrenador, fecha_asignacion, id_estado_rutina)
+        VALUES (%s, %s, %s, %s, CURDATE(), 1)
+    """, (nombre, descripcion, id_plan_trabajo, id_entrenador))
+    id_rutina = cursor.lastrowid
+    connection.commit()
+    return id_rutina
+
+
+def insertar_rutina_ejercicio_db(id_rutina, id_ejercicio, id_dia):
+    cursor = connection.cursor()
+    cursor.execute("""
+        INSERT INTO rutina_ejercicio (id_rutina, id_ejercicio_rutina, id_dia)
+        VALUES (%s, %s, %s)
+    """, (id_rutina, id_ejercicio, id_dia))
     connection.commit()
     return True
 
 
-
-# CREACION Y ASIGNACION DE LAS RUTINAS
 def insertar_asignacion_rutina(id_rutina, id_cliente, id_entrenador, id_dia):
     cursor.execute("""
         INSERT INTO asignacion_rutina 
@@ -1702,6 +1565,7 @@ def insertar_asignacion_rutina(id_rutina, id_cliente, id_entrenador, id_dia):
     
     connection.commit()
     return True
+
 
 
 
@@ -1779,15 +1643,14 @@ def obtener_clientes_por_entrenador(id_entrenador):
 
 
 
-#PARA ACTUALIZAR LA RUTINA PERO GARANTIZANDO QUE SOLO PUEDA ACTUALIZAR UN EJERCICIO
+#PARA ACTUALIZAR LA RUTINA PERO GARANTIZANDO QUE TAMBIEN PUEDA  ACTUALIZAR UN EJERCICIO
 def actualizar_rutina_dia(id_cliente, id_entrenador, id_dia, ejercicios):
-    # 🔴 Eliminar SOLO lo de ese día
+    
     cursor.execute("""
         DELETE FROM asignacion_rutina 
         WHERE id_cliente = %s AND id_dia = %s
     """, (id_cliente, id_dia))
 
-    # 🟢 Insertar lo nuevo
     for id_rutina in ejercicios:
         cursor.execute("""
             INSERT INTO asignacion_rutina
@@ -1805,3 +1668,58 @@ def eliminar_rutina_dia(id_cliente, id_dia):
     """, (id_cliente, id_dia))
     connection.commit()
 
+
+
+
+def obtener_rutinas_cliente(id_cliente):
+    cursor.execute("""
+        SELECT DISTINCT r.id_rutina, r.nombre, r.descripcion, r.fecha_asignacion
+        FROM asignacion_rutina ar
+        INNER JOIN rutina r 
+            ON ar.id_rutina = r.id_rutina
+        INNER JOIN rutina_ejercicio re 
+            ON re.id_rutina = r.id_rutina   -- asegura que solo salgan las rutinas con ejercicios
+        WHERE ar.id_cliente = %s
+        ORDER BY r.fecha_asignacion ASC
+    """, (id_cliente,))
+    
+    resultados = cursor.fetchall()
+    
+    # Eliminar duplicados y organizar
+    rutinas_unicas = {}
+    for id_rutina, nombre, descripcion, fecha_asignacion in resultados:
+        if id_rutina not in rutinas_unicas:
+            rutinas_unicas[id_rutina] = {
+                "id": id_rutina,
+                "nombre": nombre,
+                "descripcion": descripcion,
+                "fecha_asignacion": fecha_asignacion,
+                "ejercicios": []
+            }
+    return list(rutinas_unicas.values())
+
+
+def obtener_ejercicios_rutina(id_rutina):
+    cursor.execute("""
+        SELECT er.nombre, 
+               er.descripcion, 
+               COALESCE(d.nombre, 'Sin día asignado') AS dia
+        FROM rutina_ejercicio re
+        INNER JOIN ejercicio_rutina er 
+            ON re.id_ejercicio_rutina = er.id_ejercicio_rutina
+        LEFT JOIN dia_semana d 
+            ON re.id_dia = d.id_dia
+        WHERE re.id_rutina = %s
+        ORDER BY 
+            CASE d.nombre
+                WHEN 'Lunes' THEN 1
+                WHEN 'Martes' THEN 2
+                WHEN 'Miércoles' THEN 3
+                WHEN 'Jueves' THEN 4
+                WHEN 'Viernes' THEN 5
+                WHEN 'Sábado' THEN 6
+                WHEN 'Domingo' THEN 7
+                ELSE 8
+            END ASC
+    """, (id_rutina,))
+    return cursor.fetchall()
