@@ -351,14 +351,12 @@ def obtener_usuarios_con_membresia():
 
 def actualizar_membresia( tipo, fecha_inicio, fecha_fin, estado, id_membresia_usuario):
     try:
-        cursor.execute('UPDATE membresia_usuario SET id_membresia=%s, fecha_inicio=%s, fecha_fin=%s, id_estado_membresia=%s WHERE id_membresia_usuario=%s',
-               (tipo, fecha_inicio, fecha_fin, estado, id_membresia_usuario))
-
+        cursor.execute('UPDATE membresia_usuario SET id_membresia=%s, fecha_inicio=%s, fecha_fin=%s, id_estado_membresia=%s WHERE id_membresia_usuario=%s', (tipo, fecha_inicio, fecha_fin, estado, id_membresia_usuario)) 
         connection.commit()
-        return True
-    except Exception as e:
-        print("Error al actualizar la membresía:", e)
-        print("Información que se intenta actualizar:", tipo, fecha_inicio, fecha_fin, estado, id_membresia_usuario)
+        return True 
+    except Exception as e: 
+        print("Error al actualizar la membresía:", e) 
+        print("Información que se intenta actualizar:", tipo, fecha_inicio, fecha_fin, estado, id_membresia_usuario) 
         return False
 
 
@@ -1673,27 +1671,25 @@ def eliminar_rutina_dia(id_cliente, id_dia):
 
 def obtener_rutinas_cliente(id_cliente):
     cursor.execute("""
-        SELECT DISTINCT r.id_rutina, r.nombre, r.descripcion, r.fecha_asignacion
+        SELECT DISTINCT r.id_rutina, r.nombre, r.descripcion
         FROM asignacion_rutina ar
         INNER JOIN rutina r 
             ON ar.id_rutina = r.id_rutina
         INNER JOIN rutina_ejercicio re 
             ON re.id_rutina = r.id_rutina   -- asegura que solo salgan las rutinas con ejercicios
         WHERE ar.id_cliente = %s
-        ORDER BY r.fecha_asignacion ASC
     """, (id_cliente,))
     
     resultados = cursor.fetchall()
     
     # Eliminar duplicados y organizar
     rutinas_unicas = {}
-    for id_rutina, nombre, descripcion, fecha_asignacion in resultados:
+    for id_rutina, nombre, descripcion in resultados:
         if id_rutina not in rutinas_unicas:
             rutinas_unicas[id_rutina] = {
                 "id": id_rutina,
                 "nombre": nombre,
                 "descripcion": descripcion,
-                "fecha_asignacion": fecha_asignacion,
                 "ejercicios": []
             }
     return list(rutinas_unicas.values())

@@ -72,18 +72,7 @@
   <tbody></tbody>
 </table>
 
-<!-- Flash -->
-{% with messages = get_flashed_messages(with_categories=True) %}
-  {% if messages %}
-    <div class="alert-container" style="width: 90%; margin: 2% auto;">
-      {% for category, message in messages %}
-        <div class="alert alert-{{ category }}" style="padding: 12px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); margin-bottom: 1%;">
-          {{ message }}
-        </div>
-      {% endfor %}
-    </div>
-  {% endif %}
-{% endwith %}
+
 
 <!-- Modal Editar Máquina -->
 <div class="modal fade" id="modalEditarMaquina" tabindex="-1" role="dialog" aria-labelledby="modalEditarMaquinaLabel" aria-hidden="true">

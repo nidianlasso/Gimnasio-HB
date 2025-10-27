@@ -28,11 +28,11 @@ from query import (
     insert_revision_sql, insert_observacion_sql, insertar_revision, reports_machine, actualizar_estado_revision, insertar_observacion, obtener_revision, obtener_observaciones, obtener_revisiones_pendientes,
     actualizar_observacion_tecnico, lista_tecnicos, actualizar_usuario, datos_usuario,
     actualizar_datos_usuario, hash_password,  finalizar_acceso,
-    consultar_acceso_usuario, obtener_entrenador, obtener_horario_usuario, get_maquina_by_nombre, insert_maquina,insert_inventario_maquina, get_proveedores,
+    consultar_acceso_usuario,obtener_horario_usuario, get_maquina_by_nombre, insert_maquina,insert_inventario_maquina, get_proveedores,
     actualizar_maquina, actualizar_inventario_maquina, eliminar_maquina_bd, obtener_usuarios_activos_por_rol, obtener_usuarios_activos_por_rol, asignar_entrenador_a_miembro, obtener_usuarios_activos,
     obtener_clientes_asignados, insertar_asignacion_rutina, obtener_rutinas_asignadas_por_cliente, actualizar_estado_rutina_asignada, eliminar_rutina_asignada,
-    obtener_dias_semana, obtener_ejercicios, obtener_ejercicios_por_zona, obtener_zonas_cuerpo, eliminar_rutina_dia, insertar_rutina_ejercicio_db, crear_rutinabd,
-    obtener_rutinas_cliente, obtener_ejercicios_rutina)
+    obtener_dias_semana, obtener_ejercicios, obtener_ejercicios_por_zona, obtener_ejercicios_rutina, obtener_rutinas_cliente, obtener_zonas_cuerpo, eliminar_rutina_dia, insertar_rutina_ejercicio_db, crear_rutinabd,
+    )
 
 from flask import Flask, jsonify, render_template, request, redirect, url_for, flash, session, make_response
 app = Flask(__name__, static_folder='static', template_folder='template')
@@ -156,25 +156,28 @@ def save_membreship():
 def get_assigned_memberships():
     data = obtener_usuarios_con_membresia()
     return jsonify(data)
-
 @app.route('/update_membreship', methods=['POST'])
 @login_required_admin
 def update_membreship():
     if request.method == 'POST':
-        # usuario_id = request.form.get('id_user_update')
         membresia_usuario = request.form.get('id_membresia_usuario')
         tipo_membresia = request.form.get('tipoMembresia')
         fecha_inicio = request.form.get('fechaInicio')
         fecha_fin = request.form.get('fechaFin')
         estado = request.form.get('estadoMembresia')
+
         print("DATOS QUE SE VAN A ACTUALIZAR EN LA BD")
         print(membresia_usuario, tipo_membresia, fecha_inicio, fecha_fin, estado)
+
         if actualizar_membresia(tipo_membresia, fecha_inicio, fecha_fin, estado, membresia_usuario):
             flash('Membresía actualizada exitosamente.', 'success')
         else:
             flash('Hubo un error al actualizar la membresía.', 'danger')
 
-    return redirect(url_for('manage_users'))
+        # ✅ Siempre redirigir, sin importar si fue éxito o error
+        return redirect(url_for('manage_users'))
+
+
 
 #GESTION DE LAS MAQUINAS
 @app.route('/manage-machine')
@@ -452,7 +455,8 @@ def reservar_clase():
             return jsonify({"error": "Ya has reservado esta clase"}), 400
 
         resultado = insertar_reserva_clase(fecha, hora, id_clase, id_membresia_usuario)
-        return jsonify({"mensaje": "Reserva realizada con éxito"}), 200
+        return redirect(url_for("mis_clases"))
+
 
     except Exception as e:
         print("Error en reservar_clase:", e)
@@ -465,6 +469,7 @@ def mis_clases():
     if not id_usuario:
         return "Usuario no autenticado", 401
     reservas = obtener_reservas_usuario(id_usuario)
+    print(f"esto llega de las clases reservadas {reservas}")
     return render_template('/member/mis_clases.html', reservas=reservas)
 
 @app.route('/cancelar-reserva', methods=['POST'])

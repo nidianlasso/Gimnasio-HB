@@ -225,8 +225,11 @@ function update_membreship() {
             console.log("Información recibida:", data);
             asignacionMembresia.innerHTML = '';
 
+            const datosFiltrados = data.filter(info_user => { 
+                return info_user[3] || info_user[4] || info_user[5] || info_user[6]; // costos, tipo, fechaInicio, estadoMembresia 
+            });
+
             data.forEach(info_user => {
-                
                 const fila = document.createElement('tr');
 
                 // Identificación
@@ -251,37 +254,28 @@ function update_membreship() {
                 botonMembresia.className = 'btn btn-primary btn-sm';
 
                 botonMembresia.onclick = function () {
-    console.log("Datos del usuario seleccionados:", info_user);
+                    document.getElementById('tipoMembresia').value = info_user[3];
+                    document.getElementById('fechaInicio').value = info_user[4];
+                    document.getElementById('fechaFin').value = info_user[5]; 
+                    document.getElementById('estadoMembresia').value = info_user[6];
 
-    const tipoMembresia = info_user[5]; 
-    const fechaInicio = info_user[6] ? info_user[6].split('T')[0] : '';
-    const fechaFin = info_user[7] ? info_user[7].split('T')[0] : '';
-    const estadoMembresia = info_user[8]; 
-    const idMembresiaUsuario = info_user[10];
-    const idUsuario = info_user[11];
+                    document.getElementById('id_user_update').value = info_user[0];
+                    document.getElementById('id_membresia_usuario').value = info_user[7];
 
-    console.log("Valores que se asignarán:");
-    console.log({ tipoMembresia, fechaInicio, fechaFin, estadoMembresia, idMembresiaUsuario, idUsuario });
-
-    document.getElementById('tipoMembresia').value = tipoMembresia;
-    document.getElementById('fechaInicio').value = fechaInicio;
-    document.getElementById('fechaFin').value = fechaFin;
-    document.getElementById('estadoMembresia').value = estadoMembresia;
-    document.getElementById('id_user_update').value = idUsuario;
-    document.getElementById('id_membresia_usuario').value = idMembresiaUsuario;
-
-    const modal = new bootstrap.Modal(document.getElementById('updateMembresia'));
-    modal.show();
-};
-
-
-                membresiaCelda.appendChild(botonMembresia);
-                fila.appendChild(membresiaCelda);
-                asignacionMembresia.appendChild(fila);
-            });
-        })
-        .catch(error => console.error('Hubo un problema con la solicitud:', error));
+                    $('#updateMembresia').modal('show');
+                    }; 
+                    membresiaCelda.appendChild(botonMembresia); 
+                    fila.appendChild(membresiaCelda); 
+                    asignacionMembresia.appendChild(fila);
+                    });
+                }) .catch(error => { console.error('Hubo un problema con la solicitud:', error); })
 }
+
+
+// Ejecuta la función al cargar la página
+document.addEventListener('DOMContentLoaded', update_membreship);
+
+
 
 
 function abrirModalRevision(idInventario) {
